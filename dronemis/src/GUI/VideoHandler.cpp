@@ -2,10 +2,7 @@
 // Created by hippomormor on 5/28/16.
 //
 
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/highgui.hpp>
 #include "VideoHandler.h"
-#include "GUI.h"
 
 VideoHandler::VideoHandler(){
     gui = new GUI();

@@ -9,6 +9,7 @@
 #include <string>
 #include <ros/ros.h>
 #include "GUI.h"
+#include <cv_bridge/cv_bridge.h>
 
 class VideoHandler {
 private:
