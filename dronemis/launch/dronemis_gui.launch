@@ -1,0 +1,4 @@
+<launch>
+  <node name="dronemis_gui" pkg="dronemis" type="dronemis_gui">
+  </node>
+</launch>
