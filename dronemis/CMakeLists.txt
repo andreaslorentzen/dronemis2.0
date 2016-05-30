@@ -152,6 +152,13 @@ add_dependencies(dronemis_gui ${PROJECT_NAME}_gencpp)
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 
+#add_executable(controller src/controller.cpp)
+#target_link_libraries(controller ${catkin_LIBRARIES})
+#add_dependencies(controller dronemis_generate_messages_cpp)
+
+add_executable(controller src/controller.cpp)
+target_link_libraries(controller ${catkin_LIBRARIES})
+add_dependencies(controller dronemis_generate_messages_cpp)
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
