@@ -6,14 +6,15 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Empty.h"
 
+#define LOOP_RATE (50)
 double current_time() {
     return ros::Time::now().toSec();
 }
 
 int main(int argc, char **argv) {
-    double start_time;
-    double takeoff_time = 3.0;
-    double fly_time = 10.0;
+
+    int takeoff_time = 3;
+    double fly_time = 1.0;
     double land_time = 3.0;
 
     ros::init(argc, argv, "controller");
@@ -22,39 +23,31 @@ int main(int argc, char **argv) {
 
     ros::Publisher pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     ros::Publisher pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
-    ros::Rate loop_rate(50);
+    ros::Rate loop_rate(LOOP_RATE);
 
-    ros::Time::init();
-
-    start_time = current_time();
-    ROS_INFO("Start Time %f", start_time);
+    int i = 0;
+    int j = 0;
     while (ros::ok()) {
 
-        ROS_INFO("takeoff");
-        while (current_time() < (start_time + takeoff_time)) {
+        ROS_INFO("takeoff %d", (int)takeoff_time*LOOP_RATE);
+        for(; i < takeoff_time*LOOP_RATE; i++){
 
             std_msgs::Empty empty_msg;
-
             pub_takeoff.publish(empty_msg);
 
             ros::spinOnce();
             loop_rate.sleep();
         }
 
-        ROS_INFO("landing");
-        while (current_time() < (start_time + takeoff_time + land_time)) {
+        for(; j < (takeoff_time+fly_time+land_time)*LOOP_RATE; j++){
 
             std_msgs::Empty empty_msg;
-
             pub_land.publish(empty_msg);
 
             ros::spinOnce();
             loop_rate.sleep();
         }
     }
-
-
-    //  system("rostopic pub /ardrone/takeoff std_msgs/Empty");
 
     return 0;
 }
