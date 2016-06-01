@@ -27,6 +27,8 @@ int main(int argc, char **argv) {
 
     int i = 0;
     int j = 0;
+    printf("Enter a key to start: ");
+    getchar();
     while (ros::ok()) {
 
         ROS_INFO("takeoff %d", (int)takeoff_time*LOOP_RATE);

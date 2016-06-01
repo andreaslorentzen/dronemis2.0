@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find tum_ardrone)/launch/ardrone_driver.launch" required="true" />
+  <node pkg="dronemis" type="dronemis_gui" name="dronemis_gui" ></node>
+  <node pkg="dronemis" type="controller" name="controller" output="screen" launch-prefix="xterm -e"></node>
+</launch>
