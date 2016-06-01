@@ -1,5 +1,6 @@
 <launch>
-  <include file="$(find cvg_sim_gazebo)/launch/ardrone_testworld.launch" required="true" />
+  <include file="$(find ardrone_autonomy)/launch/ardrone.launch"/>
+  <include file="$(find cvg_sim_gazebo)/launch/ardrone_testworld.launch"/>
   <node pkg="dronemis" type="dronemis_gui" name="dronemis_gui" ></node>
   <node pkg="dronemis" type="controller" name="controller" output="screen" launch-prefix="xterm -e"></node>
 </launch>
