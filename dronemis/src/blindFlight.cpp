@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 
     int routeLength = 4;
     Waypoint route[4];
-    route[0] = Waypoint(0.0, 1.0);
+    route[0] = Waypoint(1.0, 1.0);
     route[1] = Waypoint(1.0, 1.0);
     route[2] = Waypoint(1.0, 0.0);
     route[3] = Waypoint(0.0, 0.0);
@@ -100,27 +100,51 @@ int main(int argc, char **argv) {
                 ros::spinOnce();
                 loop_rate.sleep();
             }
-            break;
+            // return to stop the program
+            return 0;
         }
 
 
         double diffX = route[j].x - currentX;
         double diffY = route[j].y - currentY;
 
-        if(diffX != 0) {
-            timeToFly = std::abs(diffX) / baseSpeed;
-            if(diffX < 0)
-                cmd.linear.x = -baseSpeed;
-            else
-                cmd.linear.x = baseSpeed;
+        double deltaDiffs;
+        double ySpeed;
+        double xSpeed;
+
+        ROS_INFO("diffX = %f", diffX);
+        ROS_INFO("diffY = %f", diffY);
+
+        if(diffX != 0 && diffY != 0){
+            timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY,2)) / baseSpeed;
+            if (diffX > diffY){
+                deltaDiffs = diffY / diffX;
+                cmd.linear.y = baseSpeed * deltaDiffs;
+                cmd.linear.x = baseSpeed * (1.0-deltaDiffs);
+            } else if(diffX < diffY){
+                deltaDiffs = diffX / diffX;
+                cmd.linear.x = baseSpeed * deltaDiffs;
+                cmd.linear.y = baseSpeed * (1.0-deltaDiffs);
+            } else{
+                double actualSpeed = sqrt(std::pow(baseSpeed,2)/2.0);
+                cmd.linear.x = actualSpeed;
+                cmd.linear.y = actualSpeed;
+            }
         } else{
-            timeToFly = std::abs(diffY) / baseSpeed;
-            if(diffY < 0)
-                cmd.linear.y = -baseSpeed;
-            else
-                cmd.linear.y = baseSpeed;
+            if (diffX != 0) {
+                timeToFly = std::abs(diffX) / baseSpeed;
+                if (diffX < 0)
+                    cmd.linear.x = -baseSpeed;
+                else
+                    cmd.linear.x = baseSpeed;
+            } else {
+                timeToFly = std::abs(diffY) / baseSpeed;
+                if (diffY < 0)
+                    cmd.linear.y = -baseSpeed;
+                else
+                    cmd.linear.y = baseSpeed;
+            }
         }
-        
         for(int k = 0; k < timeToFly*LOOP_RATE; k++){
             pub_control.publish(cmd);
 
