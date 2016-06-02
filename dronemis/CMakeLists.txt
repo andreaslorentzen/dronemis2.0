@@ -168,6 +168,9 @@ add_executable(listener src/listener.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES})
 add_dependencies(listener dronemis_generate_messages_cpp)
 
+add_executable(blindFlight src/blindFlight.cpp)
+target_link_libraries(blindFlight ${catkin_LIBRARIES})
+add_dependencies(blindFlight dronemis_generate_messages_cpp)
 
 #############
 ## Install ##
