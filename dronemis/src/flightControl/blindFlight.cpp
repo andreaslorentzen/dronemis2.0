@@ -6,19 +6,19 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Empty.h"
 #include "geometry_msgs/Twist.h"
-#include <cmath>
+#include "Route.h"
 
 #define LOOP_RATE (50)
 double current_time() {
     return ros::Time::now().toSec();
 }
 
+
 int main(int argc, char **argv) {
 
     int takeoff_time = 3;
     double fly_time = 1.0;
     double land_time = 3.0;
-    double drift_time = 2.0;
 
     ros::init(argc, argv, "blindFlight");
 
@@ -40,59 +40,29 @@ int main(int argc, char **argv) {
 
     double currentX = 0.0;
     double currentY = 0.0;
-    double currentZ = 0.0;
-
-    struct Waypoint{
-        double x;
-        double y;
-        double z;
-        Waypoint(double newX, double newY): x(newX), y(newY)
-        {
-        }
-        Waypoint(){
-
-        }
-    };
 
 
-    /*int routeLength = 8;
-    Waypoint route[8];
-    route[0] = Waypoint(0.0, 5.0);
-    route[1] = Waypoint(2.0, 5.0);
-    route[2] = Waypoint(2.0, 0.0);
-    route[3] = Waypoint(4.0, 0.0);
-    route[4] = Waypoint(4.0, 5.0);
-    route[5] = Waypoint(6.0, 5.0);
-    route[6] = Waypoint(6.0, 0.0);
-    route[7] = Waypoint(0.0, 0.0);*/
-
-    int routeLength = 4;
-    Waypoint route[4];
-    route[0] = Waypoint(1.0, 1.0);
-    route[1] = Waypoint(1.0, 1.0);
-    route[2] = Waypoint(1.0, 0.0);
-    route[3] = Waypoint(0.0, 0.0);
-
-    double timeToFly = 0.0;
+    double timeToFly;
     double baseSpeed = 0.5;
 
+    Route myRoute;
+
     int i = 0;
-    int j = 0;
     while (ros::ok()) {
 
         ROS_INFO("takeoff %d", (int)takeoff_time*LOOP_RATE);
+        // take off
         for(; i < takeoff_time*LOOP_RATE; i++){
-
             std_msgs::Empty empty_msg;
             pub_takeoff.publish(empty_msg);
 
             ros::spinOnce();
             loop_rate.sleep();
         }
+
         // Land if the route has finished
-        if(j == routeLength) {
-            j = 0;
-            for (; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
+        if(myRoute.hasAllBeenVisited()) {
+            for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
 
                 std_msgs::Empty empty_msg;
                 pub_land.publish(empty_msg);
@@ -104,31 +74,60 @@ int main(int argc, char **argv) {
             return 0;
         }
 
+        Waypoint currentWaypoint = myRoute.nextWaypoint();
 
-        double diffX = route[j].x - currentX;
-        double diffY = route[j].y - currentY;
+        ROS_INFO("waypoint = %f", currentWaypoint.x);
+        ROS_INFO("waypoint = %f", currentWaypoint.y);
+
+        double diffX = currentWaypoint.x - currentX;
+        double diffY = currentWaypoint.y - currentY;
+        double absX = abs(diffX);
+        double absY = abs(diffY);
 
         double deltaDiffs;
-        double ySpeed;
-        double xSpeed;
 
         ROS_INFO("diffX = %f", diffX);
         ROS_INFO("diffY = %f", diffY);
 
         if(diffX != 0 && diffY != 0){
             timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY,2)) / baseSpeed;
-            if (diffX > diffY){
-                deltaDiffs = diffY / diffX;
-                cmd.linear.y = baseSpeed * deltaDiffs;
-                cmd.linear.x = baseSpeed * (1.0-deltaDiffs);
-            } else if(diffX < diffY){
-                deltaDiffs = diffX / diffX;
-                cmd.linear.x = baseSpeed * deltaDiffs;
-                cmd.linear.y = baseSpeed * (1.0-deltaDiffs);
-            } else{
-                double actualSpeed = sqrt(std::pow(baseSpeed,2)/2.0);
-                cmd.linear.x = actualSpeed;
-                cmd.linear.y = actualSpeed;
+            double glideSpeed = pow(baseSpeed, 2);
+            if(absX == absY){
+                double actualSpeed = sqrt(glideSpeed * 0.5);
+                if(diffX < 0)
+                    cmd.linear.x = -actualSpeed;
+                else
+                    cmd.linear.x = actualSpeed;
+
+                if(diffY < 0)
+                    cmd.linear.y = -actualSpeed;
+                else
+                    cmd.linear.y = actualSpeed;
+            } else if (absX > absY){
+                // De her to elseifs virker måske, men er ikke ligefrem sikker.
+                deltaDiffs = absY / absX;
+                if(diffY < 0)
+                    cmd.linear.y = -sqrt(glideSpeed*deltaDiffs);
+                else
+                    cmd.linear.y = sqrt(glideSpeed*deltaDiffs);
+
+                if(diffX < 0)
+                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));
+                else
+                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));
+
+            } else if(absX < absY){
+                deltaDiffs = absX / absY;
+
+                if(diffX < 0)
+                    cmd.linear.x = sqrt(glideSpeed*deltaDiffs);
+                else
+                    cmd.linear.x = -sqrt(glideSpeed*deltaDiffs);
+
+                if(diffY < 0)
+                    cmd.linear.y = -sqrt(glideSpeed*(1.0-deltaDiffs));
+                else
+                    cmd.linear.y = sqrt(glideSpeed*(1.0-deltaDiffs));
             }
         } else{
             if (diffX != 0) {
@@ -152,20 +151,19 @@ int main(int argc, char **argv) {
             loop_rate.sleep();
         }
 
-        currentX = route[j].x;
-        currentY = route[j].y;
+        currentX = currentWaypoint.x;
+        currentY = currentWaypoint.y;
 
         cmd.linear.x = 0.0;
         cmd.linear.y = 0.0;
         cmd.linear.z = 0.0;
 
-        for(int k = 0; k < 0.2*LOOP_RATE; k++){
+        for(int k = 0; k < 0.4*LOOP_RATE; k++){
             pub_control.publish(cmd);
             ros::spinOnce();
             loop_rate.sleep();
         }
 
-        j++;
     }
 
     return 0;
