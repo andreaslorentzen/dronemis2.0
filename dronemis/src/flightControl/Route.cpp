@@ -6,8 +6,6 @@
 
 
 Route::Route() {
-    routeLength = 4;
-
     waypoints.push_back(Waypoint(1.0, 0.0));
     waypoints.push_back(Waypoint(1.0, 1.0));
     waypoints.push_back(Waypoint(0.0, 1.0));
@@ -35,7 +33,8 @@ Waypoint Route::findNearestWaypoint(double x, double y) {
 }
 
 Waypoint Route::nextWaypoint() {
-    if(currentWaypoint == routeLength-1)
+
+    if(currentWaypoint == ((int)waypoints.size()))
         currentWaypoint = 0;
     else
         currentWaypoint++;
