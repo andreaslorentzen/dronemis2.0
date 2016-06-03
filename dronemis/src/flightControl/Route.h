@@ -14,6 +14,7 @@ using namespace std;
 struct Waypoint{
     double x;
     double y;
+    double z;
     bool visited;
     Waypoint(double newX, double newY): x(newX), y(newY)
     {
