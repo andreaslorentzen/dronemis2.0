@@ -172,7 +172,7 @@ set(BLINDFLIGHT_SOURCE_FILES
         src/flightControl/blindFlight.cpp
         src/flightControl/Route.cpp)
 set(BLINDFLIGHT_HEADER_FILES
-        src/flightControl/Route.h)
+        src/flightControl/Route.h src/OpenCv/Color.cpp src/OpenCv/Color.h src/OpenCv/Cascade.cpp src/OpenCv/Cascade.h src/OpenCv/CV_Handler.cpp src/OpenCv/CV_Handler.h)
 
 add_executable(blindFlight src/flightControl/blindFlight.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES})
 target_link_libraries(blindFlight ${catkin_LIBRARIES})
