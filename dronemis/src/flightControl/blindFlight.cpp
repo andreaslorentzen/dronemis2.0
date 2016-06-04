@@ -48,8 +48,8 @@ void *controlThread(void *thread_arg) {
     int takeoff_time = 3;
     double fly_time = 1.0;
     double land_time = 3.0;
-    struct thread_data *my_data;
-    my_data = (struct thread_data*) thread_arg;
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data*) thread_arg;
 
     ros::Rate loop_rate(LOOP_RATE);
 
@@ -73,12 +73,14 @@ void *controlThread(void *thread_arg) {
 
     int i = 0;
     while (ros::ok()) {
+        printf("Enter a key to start: ");
+        getchar();
 
         ROS_INFO("takeoff %d", (int)takeoff_time*LOOP_RATE);
         // take off
         for(; i < takeoff_time*LOOP_RATE; i++){
             std_msgs::Empty empty_msg;
-            my_data->pub_takeoff.publish(empty_msg);
+            thread_data->pub_takeoff.publish(empty_msg);
 
             ros::spinOnce();
             loop_rate.sleep();
@@ -89,7 +91,7 @@ void *controlThread(void *thread_arg) {
             for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
 
                 std_msgs::Empty empty_msg;
-                my_data->pub_land.publish(empty_msg);
+                thread_data->pub_land.publish(empty_msg);
 
                 ros::spinOnce();
                 loop_rate.sleep();
@@ -169,7 +171,7 @@ void *controlThread(void *thread_arg) {
             }
         }
         for(int k = 0; k < timeToFly*LOOP_RATE; k++){
-            my_data->pub_control.publish(cmd);
+            thread_data->pub_control.publish(cmd);
 
             ros::spinOnce();
             loop_rate.sleep();
@@ -183,7 +185,7 @@ void *controlThread(void *thread_arg) {
         cmd.linear.z = 0.0;
 
         for(int k = 0; k < 0.4*LOOP_RATE; k++){
-            my_data->pub_control.publish(cmd);
+            thread_data->pub_control.publish(cmd);
             ros::spinOnce();
             loop_rate.sleep();
         }
@@ -194,23 +196,24 @@ void *controlThread(void *thread_arg) {
 
 
 void *abortThread(void *thread_arg) {
-    struct thread_data *my_data;
-    my_data = (struct thread_data*) thread_arg;
-    int c;
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data*) thread_arg;
 
     // System call to make terminal send all keystrokes directly to stdin
     system("/bin/stty raw");
-    // Abort if 'Esc' is pressed
-    while ((c = getchar()) != 27) {
-        putchar(c);
-        usleep(10);
+
+    while (1) {
+        // Abort if 'Esc' is pressed
+        if  (getchar() == 27) {
+            ROS_INFO("MANUEL ABORT!");
+            std_msgs::Empty empty_msg;
+            thread_data->pub_land.publish(empty_msg);
+            break;
+        }   usleep(10);
     }
+
     // System call to set terminal behaviour to normal
     system("/bin/stty cooked");
-
-    std_msgs::Empty empty_msg;
-    my_data->pub_land.publish(empty_msg);
-    ROS_INFO("MANUEL ABORT!");
 
     pthread_exit(NULL);
 }
