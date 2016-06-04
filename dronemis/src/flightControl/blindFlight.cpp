@@ -72,9 +72,9 @@ void *controlThread(void *thread_arg) {
     Route myRoute;
 
     int i = 0;
+    printf("Enter a key to start: ");
+    getchar();
     while (ros::ok()) {
-        printf("Enter a key to start: ");
-        getchar();
 
         ROS_INFO("takeoff %d", (int)takeoff_time*LOOP_RATE);
         // take off
