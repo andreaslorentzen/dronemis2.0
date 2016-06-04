@@ -41,11 +41,13 @@ int main(int argc, char **argv) {
     double currentX = 0.0;
     double currentY = 0.0;
 
-
     double timeToFly;
     double baseSpeed = 0.5;
 
     Route myRoute;
+    myRoute.initRoute(true);
+
+    return 0;
 
     int i = 0;
     while (ros::ok()) {
