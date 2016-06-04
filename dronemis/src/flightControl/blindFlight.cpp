@@ -8,25 +8,49 @@
 #include "geometry_msgs/Twist.h"
 #include "Route.h"
 
+#define NUM_THREADS 2
 #define LOOP_RATE (50)
-double current_time() {
-    return ros::Time::now().toSec();
-}
 
+struct thread_data{
+    ros::Publisher pub_land;
+    ros::Publisher pub_takeoff;
+    ros::Publisher pub_control;
+};
+
+void *controlThread(void *thread_arg);
+void *abortThread(void *thread_arg);
 
 int main(int argc, char **argv) {
-
-    int takeoff_time = 3;
-    double fly_time = 1.0;
-    double land_time = 3.0;
+    struct thread_data td[NUM_THREADS];
 
     ros::init(argc, argv, "blindFlight");
-
     ros::NodeHandle n;
-
     ros::Publisher pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     ros::Publisher pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
     ros::Publisher pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+
+    td[0].pub_land = pub_land;
+    td[0].pub_takeoff = pub_takeoff;
+    td[0].pub_control = pub_control;
+    td[1].pub_land = pub_land;
+
+    pthread_t threads[NUM_THREADS];
+    pthread_create(&threads[0], NULL, controlThread, &td[0]);
+    pthread_create(&threads[1], NULL, abortThread, &td[1]);
+
+    ros::spin();
+
+    pthread_exit(NULL);
+}
+
+
+void *controlThread(void *thread_arg) {
+    int takeoff_time = 3;
+    double fly_time = 1.0;
+    double land_time = 3.0;
+    struct thread_data *my_data;
+    my_data = (struct thread_data*) thread_arg;
+
     ros::Rate loop_rate(LOOP_RATE);
 
     geometry_msgs::Twist cmd;
@@ -54,7 +78,7 @@ int main(int argc, char **argv) {
         // take off
         for(; i < takeoff_time*LOOP_RATE; i++){
             std_msgs::Empty empty_msg;
-            pub_takeoff.publish(empty_msg);
+            my_data->pub_takeoff.publish(empty_msg);
 
             ros::spinOnce();
             loop_rate.sleep();
@@ -65,13 +89,13 @@ int main(int argc, char **argv) {
             for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
 
                 std_msgs::Empty empty_msg;
-                pub_land.publish(empty_msg);
+                my_data->pub_land.publish(empty_msg);
 
                 ros::spinOnce();
                 loop_rate.sleep();
             }
             // return to stop the program
-            return 0;
+            pthread_exit(NULL);
         }
 
         Waypoint currentWaypoint = myRoute.nextWaypoint();
@@ -112,9 +136,9 @@ int main(int argc, char **argv) {
                     cmd.linear.y = sqrt(glideSpeed*deltaDiffs);
 
                 if(diffX < 0)
-                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));
+                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));                              //Mathias de er ens?
                 else
-                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));
+                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));                              //Mathias de er ens?
 
             } else if(absX < absY){
                 deltaDiffs = absX / absY;
@@ -145,7 +169,7 @@ int main(int argc, char **argv) {
             }
         }
         for(int k = 0; k < timeToFly*LOOP_RATE; k++){
-            pub_control.publish(cmd);
+            my_data->pub_control.publish(cmd);
 
             ros::spinOnce();
             loop_rate.sleep();
@@ -159,12 +183,34 @@ int main(int argc, char **argv) {
         cmd.linear.z = 0.0;
 
         for(int k = 0; k < 0.4*LOOP_RATE; k++){
-            pub_control.publish(cmd);
+            my_data->pub_control.publish(cmd);
             ros::spinOnce();
             loop_rate.sleep();
         }
-
     }
 
-    return 0;
+    pthread_exit(NULL);
+}
+
+
+void *abortThread(void *thread_arg) {
+    struct thread_data *my_data;
+    my_data = (struct thread_data*) thread_arg;
+    int c;
+
+    // System call to make terminal send all keystrokes directly to stdin
+    system("/bin/stty raw");
+    // Abort if 'Esc' is pressed
+    while ((c = getchar()) != 27) {
+        putchar(c);
+        usleep(10);
+    }
+    // System call to set terminal behaviour to normal
+    system("/bin/stty cooked");
+
+    std_msgs::Empty empty_msg;
+    my_data->pub_land.publish(empty_msg);
+    ROS_INFO("MANUEL ABORT!");
+
+    pthread_exit(NULL);
 }
