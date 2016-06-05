@@ -6,12 +6,14 @@
 
 using namespace cv;
 
+
 void Cascade::Cascade() {
 
     if(!cascade_classifier.load("cascades/cascade700.xml")){
         ROS_INFO("ERROR LOADING DEFAULT CASCADE..");
     };
 }
+
 
 bool Cascade::setCascade(const String cascadeName) {
 
@@ -33,7 +35,7 @@ int Cascade::checkCascade( sensor_msgs::ImageConstPtr img )
     equalizeHist( cv_ptr->image, frame_modified );
 
     //-- Detect cubes
-    cascade_classifier.detectMultiScale( frame_modified, cubes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
+    cascade_classifier.detectMultiScale( frame_modified, cubes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(20, 20) );
 
     for( size_t i = 0; i < cubes.size(); i++ )
     {
@@ -41,4 +43,6 @@ int Cascade::checkCascade( sensor_msgs::ImageConstPtr img )
         ellipse( cv_ptr->image, center, Size( cubes[i].width*0.5, cubes[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
 
     }
+
+    return 0;
 }
