@@ -16,9 +16,13 @@ wget https://www.dropbox.com/s/gn9knl6swyw88j9/dronemis_world.world
 
 mkdir -p /home/hippomormor/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/meshes/quadrotor/
 
-cd /home/hippomormor/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/meshes/quadrotor/
+cd /home/hippomormor/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/meshes
 
-rm quadrotor_4.stl
+rm -r quadrotor
 
-wget https://www.dropbox.com/s/fjdabks6ot65y9x/quadrotor_4.stl
+wget https://www.dropbox.com/s/pctl7ey201noqvl/quadrotor.zip
+
+unzip quadrotor.zip
+
+rm quadrotor.zip
 
