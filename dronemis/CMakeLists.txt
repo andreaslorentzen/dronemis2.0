@@ -178,7 +178,7 @@ set(BLINDFLIGHT_SOURCE_FILES
         src/GUI/ControlPanel/controlpanel.cpp
         )
 set(BLINDFLIGHT_HEADER_FILES
-        src/flightControl/Route.h src/OpenCv/Color.cpp src/OpenCv/Color.h src/OpenCv/Cascade.cpp src/OpenCv/Cascade.h src/OpenCv/CV_Handler.cpp src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h)
+        src/flightControl/blindFlight.h src/flightControl/Route.h src/OpenCv/Color.cpp src/OpenCv/Color.h src/OpenCv/Cascade.cpp src/OpenCv/Cascade.h src/OpenCv/CV_Handler.cpp src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h)
 
 set(BLINDFLIGHT_UI_FILES
         src/GUI/ControlPanel/controlpanel.ui
