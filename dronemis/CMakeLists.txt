@@ -140,6 +140,7 @@ set(GUI_HEADER_FILES
         src/GUI/GUI.h
         src/GUI/VideoHandler.h
         )
+
 add_executable(dronemis_gui src/GUI/main_gui.cpp ${GUI_SOURCE_FILES} ${GUI_HEADER_FILES})
 set_target_properties(dronemis_gui PROPERTIES COMPILE_FLAGS "-D_LINUX -D_REENTRANT -Wall  -O3 -march=nocona -msse3")
 target_link_libraries(dronemis_gui ${catkin_LIBRARIES} ${OpenCV_LIBS})
@@ -200,6 +201,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(blindFlight src/flightControl/blindFlight.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES} ${BLINDFLIGHT_RESOURCE_FILES_CPP} ${BLINDFLIGHT_UI_FILES_HPP} ${BLINDFLIGHT_HEADER_FILES_HPP})
 target_link_libraries(blindFlight ${QT_LIBRARIES} cvd ${catkin_LIBRARIES})
 add_dependencies(blindFlight dronemis_generate_messages_cpp)
+
+# Copy cascades along with executable to final dir and save in /cascades/
+add_custom_command(TARGET blindFlight POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/cascades"
+        $<TARGET_FILE_DIR:blindFlight>)
 
 #############
 ## Install ##
