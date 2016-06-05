@@ -9,7 +9,7 @@ ros::Publisher pub_takeoff;
 ros::Publisher pub_control;
 
 void *controlThread(void *thread_arg);
-void *abortThread(void *thread_arg);
+void *buttonThread(void *thread_arg);
 int run(void);
 struct blindFlight::thread_data td[NUM_THREADS];
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
     pthread_t threads[NUM_THREADS];
-    pthread_create(&threads[1], NULL, abortThread, &td[1]);
+    pthread_create(&threads[1], NULL, buttonThread, &td[1]);
 
     ros::spin();
 
@@ -191,7 +191,7 @@ void *controlThread(void *thread_arg) {
     pthread_exit(NULL);
 }
 
-void *abortThread(void *thread_arg) {
+void *buttonThread(void *thread_arg) {
     struct blindFlight::thread_data *thread_data;
     thread_data = (struct blindFlight::thread_data *) thread_arg;
 
