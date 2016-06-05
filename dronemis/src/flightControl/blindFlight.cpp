@@ -10,8 +10,9 @@ ros::Publisher pub_control;
 
 void *controlThread(void *thread_arg);
 void *buttonThread(void *thread_arg);
-int run(void);
+void run(void);
 struct blindFlight::thread_data td[NUM_THREADS];
+bool started = false;
 
 int main(int argc, char **argv) {
 
@@ -33,12 +34,13 @@ int main(int argc, char **argv) {
 }
 
 
-int run(void) {
-
-    pthread_t threads[NUM_THREADS];
-    pthread_create(&threads[0], NULL, controlThread, &td[0]);
-
-    pthread_exit(NULL);
+void run(void) {
+    if (!started) {
+        ROS_INFO("STARTING!");
+        pthread_t threads[NUM_THREADS];
+        pthread_create(&threads[0], NULL, controlThread, &td[0]);
+        started = true;
+    }
 }
 
 
@@ -217,6 +219,5 @@ void blindFlight::resetProgram(void) {
 }
 
 void blindFlight::startProgram(void) {
-    ROS_INFO("STARTING!");
     run();
 }
