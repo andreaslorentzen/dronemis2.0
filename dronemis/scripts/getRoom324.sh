@@ -14,15 +14,7 @@ rm dronemis_world.world
 
 wget https://www.dropbox.com/s/gn9knl6swyw88j9/dronemis_world.world
 
-mkdir -p /home/hippomormor/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/meshes/quadrotor/
 
-cd /home/hippomormor/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/meshes
 
-rm -r quadrotor
-
-wget https://www.dropbox.com/s/pctl7ey201noqvl/quadrotor.zip
-
-unzip quadrotor.zip
-
-rm quadrotor.zip
+# go to ~/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/worlds/dronemisworld.world and replace 'hippomormor' with your linux username..
 
