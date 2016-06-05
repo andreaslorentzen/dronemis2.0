@@ -2,43 +2,41 @@
 // Created by mathias on 6/1/16.
 //
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Empty.h"
-#include "geometry_msgs/Twist.h"
-#include "Route.h"
+#include "blindFlight.h"
 
-#define NUM_THREADS 2
-#define LOOP_RATE (50)
-
-struct thread_data{
-    ros::Publisher pub_land;
-    ros::Publisher pub_takeoff;
-    ros::Publisher pub_control;
-};
+ros::Publisher pub_land;
+ros::Publisher pub_takeoff;
+ros::Publisher pub_control;
 
 void *controlThread(void *thread_arg);
 void *abortThread(void *thread_arg);
+int run(void);
+struct blindFlight::thread_data td[NUM_THREADS];
 
 int main(int argc, char **argv) {
-    struct thread_data td[NUM_THREADS];
+
+    td[1].argc = argc;
+    td[1].argv = argv;
 
     ros::init(argc, argv, "blindFlight");
     ros::NodeHandle n;
-    ros::Publisher pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
-    ros::Publisher pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
-    ros::Publisher pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
-
-    td[0].pub_land = pub_land;
-    td[0].pub_takeoff = pub_takeoff;
-    td[0].pub_control = pub_control;
-    td[1].pub_land = pub_land;
+    pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
+    pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
+    pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
     pthread_t threads[NUM_THREADS];
-    pthread_create(&threads[0], NULL, controlThread, &td[0]);
     pthread_create(&threads[1], NULL, abortThread, &td[1]);
 
     ros::spin();
+
+    pthread_exit(NULL);
+}
+
+
+int run(void) {
+
+    pthread_t threads[NUM_THREADS];
+    pthread_create(&threads[0], NULL, controlThread, &td[0]);
 
     pthread_exit(NULL);
 }
@@ -48,8 +46,6 @@ void *controlThread(void *thread_arg) {
     int takeoff_time = 3;
     double fly_time = 1.0;
     double land_time = 3.0;
-    struct thread_data *thread_data;
-    thread_data = (struct thread_data*) thread_arg;
 
     ros::Rate loop_rate(LOOP_RATE);
 
@@ -72,26 +68,25 @@ void *controlThread(void *thread_arg) {
     Route myRoute;
 
     int i = 0;
-    printf("Enter a key to start: ");
-    getchar();
+
     while (ros::ok()) {
 
-        ROS_INFO("takeoff %d", (int)takeoff_time*LOOP_RATE);
+        ROS_INFO("takeoff %d", (int) takeoff_time * LOOP_RATE);
         // take off
-        for(; i < takeoff_time*LOOP_RATE; i++){
+        for (; i < takeoff_time * LOOP_RATE; i++) {
             std_msgs::Empty empty_msg;
-            thread_data->pub_takeoff.publish(empty_msg);
+            pub_takeoff.publish(empty_msg);
 
             ros::spinOnce();
             loop_rate.sleep();
         }
 
         // Land if the route has finished
-        if(myRoute.hasAllBeenVisited()) {
+        if (myRoute.hasAllBeenVisited()) {
             for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
 
                 std_msgs::Empty empty_msg;
-                thread_data->pub_land.publish(empty_msg);
+                pub_land.publish(empty_msg);
 
                 ros::spinOnce();
                 loop_rate.sleep();
@@ -115,47 +110,49 @@ void *controlThread(void *thread_arg) {
         ROS_INFO("diffX = %f", diffX);
         ROS_INFO("diffY = %f", diffY);
 
-        if(diffX != 0 && diffY != 0){
-            timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY,2)) / baseSpeed;
+        if (diffX != 0 && diffY != 0) {
+            timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2)) / baseSpeed;
             double glideSpeed = pow(baseSpeed, 2);
-            if(absX == absY){
+            if (absX == absY) {
                 double actualSpeed = sqrt(glideSpeed * 0.5);
-                if(diffX < 0)
+                if (diffX < 0)
                     cmd.linear.x = -actualSpeed;
                 else
                     cmd.linear.x = actualSpeed;
 
-                if(diffY < 0)
+                if (diffY < 0)
                     cmd.linear.y = -actualSpeed;
                 else
                     cmd.linear.y = actualSpeed;
-            } else if (absX > absY){
+            } else if (absX > absY) {
                 // De her to elseifs virker måske, men er ikke ligefrem sikker.
                 deltaDiffs = absY / absX;
-                if(diffY < 0)
-                    cmd.linear.y = -sqrt(glideSpeed*deltaDiffs);
+                if (diffY < 0)
+                    cmd.linear.y = -sqrt(glideSpeed * deltaDiffs);
                 else
-                    cmd.linear.y = sqrt(glideSpeed*deltaDiffs);
+                    cmd.linear.y = sqrt(glideSpeed * deltaDiffs);
 
-                if(diffX < 0)
-                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));                              //Mathias de er ens?
+                if (diffX < 0)
+                    cmd.linear.x = -sqrt(
+                            glideSpeed * (1.0 - deltaDiffs));                              //Mathias de er ens?
                 else
-                    cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));                              //Mathias de er ens?
+                    cmd.linear.x = -sqrt(
+                            glideSpeed * (1.0 - deltaDiffs));                              //Mathias de er ens?
 
-            } else if(absX < absY){
+            } else if (absX < absY) {
                 deltaDiffs = absX / absY;
 
-                if(diffX < 0)
-                    cmd.linear.x = sqrt(glideSpeed*deltaDiffs);
+                if (diffX < 0)
+                    cmd.linear.x = sqrt(glideSpeed * deltaDiffs);
                 else
-                    cmd.linear.x = -sqrt(glideSpeed*deltaDiffs);
+                    cmd.linear.x = -sqrt(glideSpeed * deltaDiffs);
 
-                if(diffY < 0)
-                    cmd.linear.y = -sqrt(glideSpeed*(1.0-deltaDiffs));
+                if (diffY < 0)
+                    cmd.linear.y = -sqrt(glideSpeed * (1.0 - deltaDiffs));
                 else
-                    cmd.linear.y = sqrt(glideSpeed*(1.0-deltaDiffs));
+                    cmd.linear.y = sqrt(glideSpeed * (1.0 - deltaDiffs));
             }
-        } else{
+        } else {
             if (diffX != 0) {
                 timeToFly = std::abs(diffX) / baseSpeed;
                 if (diffX < 0)
@@ -170,8 +167,8 @@ void *controlThread(void *thread_arg) {
                     cmd.linear.y = baseSpeed;
             }
         }
-        for(int k = 0; k < timeToFly*LOOP_RATE; k++){
-            thread_data->pub_control.publish(cmd);
+        for (int k = 0; k < timeToFly * LOOP_RATE; k++) {
+            pub_control.publish(cmd);
 
             ros::spinOnce();
             loop_rate.sleep();
@@ -184,8 +181,8 @@ void *controlThread(void *thread_arg) {
         cmd.linear.y = 0.0;
         cmd.linear.z = 0.0;
 
-        for(int k = 0; k < 0.4*LOOP_RATE; k++){
-            thread_data->pub_control.publish(cmd);
+        for (int k = 0; k < 0.4 * LOOP_RATE; k++) {
+            pub_control.publish(cmd);
             ros::spinOnce();
             loop_rate.sleep();
         }
@@ -194,26 +191,32 @@ void *controlThread(void *thread_arg) {
     pthread_exit(NULL);
 }
 
-
 void *abortThread(void *thread_arg) {
-    struct thread_data *thread_data;
-    thread_data = (struct thread_data*) thread_arg;
+    struct blindFlight::thread_data *thread_data;
+    thread_data = (struct blindFlight::thread_data *) thread_arg;
 
-    // System call to make terminal send all keystrokes directly to stdin
-    system("/bin/stty raw");
-
-    while (1) {
-        // Abort if 'Esc' is pressed
-        if  (getchar() == 27) {
-            ROS_INFO("MANUEL ABORT!");
-            std_msgs::Empty empty_msg;
-            thread_data->pub_land.publish(empty_msg);
-            break;
-        }   usleep(10);
-    }
-
-    // System call to set terminal behaviour to normal
-    system("/bin/stty cooked");
+    // Creating Control panel
+    QApplication a(thread_data->argc, thread_data->argv);
+    ControlPanel w;
+    w.show();
+    a.exec();
 
     pthread_exit(NULL);
+}
+
+void blindFlight::abortProgram(void) {
+    ROS_INFO("MANUEL ABORT!");
+    std_msgs::Empty empty_msg;
+    pub_land.publish(empty_msg);
+}
+
+void blindFlight::resetProgram(void) {
+    ROS_INFO("MANUEL RESET!");
+    std_msgs::Empty empty_msg;
+    pub_land.publish(empty_msg);
+}
+
+void blindFlight::startProgram(void) {
+    ROS_INFO("STARTING!");
+    run();
 }
