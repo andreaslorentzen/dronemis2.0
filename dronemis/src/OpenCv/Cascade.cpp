@@ -9,14 +9,14 @@ using namespace cv;
 
 Cascade::Cascade() {
 
-    if(!cascade_classifier.load("cascades/cascade700.xml")){
+    if(!cascade_classifier.load("../workspaces/dronemis_ws/src/dronemis/src/OpenCv/cascades/cascade700.xml")){
         ROS_INFO("ERROR LOADING DEFAULT CASCADE..");
     };
 }
 
 Cascade::~Cascade() {
 
-    delete(cascade_classifier);
+
 }
 
 bool Cascade::setCascade(const int cascadeNumber) {
@@ -25,13 +25,13 @@ bool Cascade::setCascade(const int cascadeNumber) {
 
     switch(cascadeNumber) {
         case 0:
-            cascadeName = "cascades/cascade700.xml";
+            cascadeName = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/cascades/cascade700.xml";
             break;
         case 1:
-            cascadeName = "cascades/cascade.xml";
+            cascadeName = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/cascades/cascade.xml";
             break;
         case 2:
-            cascadeName = "cascades/cascadeX.xml";
+            cascadeName = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/cascades/cascadeX.xml";
             break;
     }
 
@@ -39,6 +39,8 @@ bool Cascade::setCascade(const int cascadeNumber) {
         ROS_INFO("ERROR LOADING CASCADE..");
         return false;
     };
+
+    return true;
 }
 
 
