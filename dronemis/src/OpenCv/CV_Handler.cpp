@@ -3,3 +3,17 @@
 //
 
 #include "CV_Handler.h"
+
+
+using namespace cv;
+
+
+CV_Handler::CV_Handler() {
+    cascade = new Cascade();
+
+}
+
+CV_Handler::~CV_Handler() {
+    delete(cascade);
+}
+
