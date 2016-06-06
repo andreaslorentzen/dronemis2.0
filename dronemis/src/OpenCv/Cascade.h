@@ -18,6 +18,7 @@ class Cascade {
 private:
     cv::CascadeClassifier cascade_classifier;
     Cascade();
+    ~Cascade();
 
 
 public:
@@ -29,7 +30,7 @@ public:
     };
 
 
-    bool setCascade(const cv::String cascadeName);
+    bool Cascade::setCascade(const int cascadeNumber);
     int checkCascade( sensor_msgs::ImageConstPtr img );
 };
 

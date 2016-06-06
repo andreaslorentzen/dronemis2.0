@@ -14,8 +14,26 @@ Cascade::Cascade() {
     };
 }
 
+Cascade::~Cascade() {
 
-bool Cascade::setCascade(const String cascadeName) {
+    delete(cascade_classifier);
+}
+
+bool Cascade::setCascade(const int cascadeNumber) {
+
+    String cascadeName;
+
+    switch(cascadeNumber) {
+        case 0:
+            cascadeName = "cascades/cascade700.xml";
+            break;
+        case 1:
+            cascadeName = "cascades/cascade.xml";
+            break;
+        case 2:
+            cascadeName = "cascades/cascadeX.xml";
+            break;
+    }
 
     if(!cascade_classifier.load(cascadeName)){
         ROS_INFO("ERROR LOADING CASCADE..");
@@ -24,8 +42,8 @@ bool Cascade::setCascade(const String cascadeName) {
 }
 
 
-int Cascade::checkCascade( sensor_msgs::ImageConstPtr img )
-{
+int Cascade::checkCascade( sensor_msgs::ImageConstPtr img ) {
+
     std::vector<Rect> cubes;
     Mat frame_modified;
 
