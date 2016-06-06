@@ -7,7 +7,7 @@
 using namespace cv;
 
 
-void Cascade::Cascade() {
+Cascade::Cascade() {
 
     if(!cascade_classifier.load("cascades/cascade700.xml")){
         ROS_INFO("ERROR LOADING DEFAULT CASCADE..");
