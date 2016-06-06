@@ -8,34 +8,25 @@
 #include <vector>
 #include <cmath>
 #include "ros/ros.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "Command.h"
 
 using namespace std;
-
-struct Waypoint{
-    double x;
-    double y;
-    double z;
-    bool visited;
-    Waypoint(double newX, double newY): x(newX), y(newY)
-    {
-        visited = false;
-    }
-    Waypoint(){
-
-    }
-};
 
 class Route{
 
 public:
     Route();
-    Waypoint findNearestWaypoint(double x, double y);
-    Waypoint nextWaypoint();
+    ~Route();
+    void initRoute(bool useFile);
+    //Command findNearestWaypoint(double x, double y);
+    Command nextCommand();
     bool hasAllBeenVisited();
 private:
-    vector<Waypoint> waypoints;
-    int routeLength;
-    int currentWaypoint;
+    vector<Command> commands;
+    int currentCommand;
 };
 
 #endif //PROJECT_ROUTE_H
