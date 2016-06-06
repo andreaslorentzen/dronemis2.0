@@ -17,3 +17,13 @@ CV_Handler::~CV_Handler() {
     delete(cascade);
 }
 
+
+CV_Handler::cascadeInfo** CV_Handler::checkColors(bool camera) {
+    return NULL;
+}
+
+
+CV_Handler::cascadeInfo** CV_Handler::checkCascades(bool camera) {
+    return NULL;
+}
+
