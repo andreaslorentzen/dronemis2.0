@@ -17,20 +17,21 @@ class Cascade {
 
 private:
     cv::CascadeClassifier cascade_classifier;
-    Cascade();
-    ~Cascade();
-
 
 public:
     struct foundCascade{
+        int x;
+        int y;
+        int z;
         int min_x;
-        int min_y;
         int max_x;
+        int min_y;
         int max_y;
     };
 
-
-    bool Cascade::setCascade(const int cascadeNumber);
+    Cascade();
+    virtual ~Cascade();
+    bool setCascade(const int cascadeNumber);
     int checkCascade( sensor_msgs::ImageConstPtr img );
 };
 
