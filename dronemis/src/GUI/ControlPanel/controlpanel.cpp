@@ -27,7 +27,7 @@ void ControlPanel::on_pushButton_Reset_clicked(void)
 
 void ControlPanel::on_pushButton_Stop_clicked(void)
 {
-    blindFlight::abortProgram(void);
+    blindFlight::abortProgram();
 }
 
 void ControlPanel::on_pushButton_shutdown_clicked(void)
