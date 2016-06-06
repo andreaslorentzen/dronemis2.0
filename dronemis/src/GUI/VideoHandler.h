@@ -21,9 +21,13 @@ private:
     std::string video_channel;
 public:
     VideoHandler();
-    ~VideoHandler();
+    virtual ~VideoHandler();
 
     void video(const sensor_msgs::ImageConstPtr img);
+
+    const ros::Subscriber &getVideo_subscriber() const {
+        return video_subscriber;
+    }
 };
 
 
