@@ -7,14 +7,14 @@
 using namespace cv;
 
 
-Cascade::Cascade() {
+Cascade::Cascade(void) {
 
     if(!cascade_classifier.load("../workspaces/dronemis_ws/src/dronemis/src/OpenCv/cascades/cascade700.xml")){
         ROS_INFO("ERROR LOADING DEFAULT CASCADE..");
     };
 }
 
-Cascade::~Cascade() {
+Cascade::~Cascade(void) {
 
 
 }

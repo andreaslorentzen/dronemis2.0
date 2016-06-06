@@ -6,12 +6,12 @@
 
 
 
-CV_Handler::CV_Handler() {
+CV_Handler::CV_Handler(void) {
     cascade = new Cascade();
     video = new VideoHandler();
 }
 
-CV_Handler::~CV_Handler() {
+CV_Handler::~CV_Handler(void) {
    delete(cascade);
    delete(video);
 }

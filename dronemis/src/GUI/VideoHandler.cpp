@@ -4,16 +4,16 @@
 
 #include "VideoHandler.h"
 
-VideoHandler::VideoHandler(){
+VideoHandler::VideoHandler(void){
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &VideoHandler::video, this);
 }
 
-VideoHandler::~VideoHandler(){
+VideoHandler::~VideoHandler(void){
     delete gui;
 }
 
-void VideoHandler::runGUI(){
+void VideoHandler::runGUI(void){
     gui = new GUI();
 }
 

@@ -10,27 +10,27 @@ ControlPanel::ControlPanel(QWidget *parent) :
     ui->setupUi(this);
 }
 
-ControlPanel::~ControlPanel()
+ControlPanel::~ControlPanel(void)
 {
     delete ui;
 }
 
-void ControlPanel::on_pushButton_Start_clicked()
+void ControlPanel::on_pushButton_Start_clicked(void)
 {
     blindFlight::startProgram();
 }
 
-void ControlPanel::on_pushButton_Reset_clicked()
+void ControlPanel::on_pushButton_Reset_clicked(void)
 {
     blindFlight::resetProgram();
 }
 
-void ControlPanel::on_pushButton_Stop_clicked()
+void ControlPanel::on_pushButton_Stop_clicked(void)
 {
-    blindFlight::abortProgram();
+    blindFlight::abortProgram(void);
 }
 
-void ControlPanel::on_pushButton_shutdown_clicked()
+void ControlPanel::on_pushButton_shutdown_clicked(void)
 {
     const char* command = "kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')";
     blindFlight::abortProgram();

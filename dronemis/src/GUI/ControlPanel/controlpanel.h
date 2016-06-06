@@ -13,17 +13,17 @@ class ControlPanel : public QMainWindow
 
 public:
     explicit ControlPanel(QWidget *parent = 0);
-    ~ControlPanel();
+    ~ControlPanel(void);
 
 
 private slots:
-    void on_pushButton_Start_clicked();
+    void on_pushButton_Start_clicked(void);
 
-    void on_pushButton_Reset_clicked();
+    void on_pushButton_Reset_clicked(void);
 
-    void on_pushButton_Stop_clicked();
+    void on_pushButton_Stop_clicked(void);
 
-    void on_pushButton_shutdown_clicked();
+    void on_pushButton_shutdown_clicked(void);
 
 private:
     Ui::ControlPanel *ui;

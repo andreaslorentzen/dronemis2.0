@@ -29,8 +29,8 @@ public:
         int max_y;
     };
 
-    Cascade();
-    virtual ~Cascade();
+    Cascade(void);
+    virtual ~Cascade(void);
     bool setCascade(const int cascadeNumber);
     int checkCascade( sensor_msgs::ImageConstPtr img );
 };

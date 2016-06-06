@@ -23,7 +23,7 @@ public:
     };
 
     CV_Handler(void);
-    virtual ~CV_Handler();
+    virtual ~CV_Handler(void);
     cascadeInfo** checkColors(bool camera);
     cascadeInfo** checkCascades(bool camera);
 };
