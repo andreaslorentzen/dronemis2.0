@@ -12,6 +12,7 @@ class CV_Handler {
 
 private:
     Cascade *cascade;
+    VideoHandler *video;
 
 public:
     struct cascadeInfo {
@@ -21,7 +22,7 @@ public:
        unsigned char color;
     };
 
-    CV_Handler();
+    CV_Handler(void);
     virtual ~CV_Handler();
     cascadeInfo** checkColors(bool camera);
     cascadeInfo** checkCascades(bool camera);

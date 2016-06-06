@@ -5,16 +5,15 @@
 #include "CV_Handler.h"
 
 
-using namespace cv;
-
 
 CV_Handler::CV_Handler() {
     cascade = new Cascade();
-
+    video = new VideoHandler();
 }
 
 CV_Handler::~CV_Handler() {
-    delete(cascade);
+   delete(cascade);
+   delete(video);
 }
 
 
