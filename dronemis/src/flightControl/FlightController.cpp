@@ -61,7 +61,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     if (!straightFlight) {
         if (diffX != 0 && diffY != 0) {
-            timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2)) / baseSpeed;
+            timeToFly = (std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2)) / baseSpeed)/2;
             double glideSpeed = pow(baseSpeed, 2);
             if (absX == absY) {
                 double actualSpeed = sqrt(glideSpeed * 0.5);
@@ -103,13 +103,13 @@ void FlightController::goToWaypoint(Command newWaypoint) {
             }
         } else {
             if (diffX != 0) {
-                timeToFly = absX / baseSpeed;
+                timeToFly = (absX / baseSpeed)/2;
                 if (diffX < 0)
                     cmd.linear.x = -baseSpeed;
                 else
                     cmd.linear.x = baseSpeed;
             } else {
-                timeToFly = absX / baseSpeed;
+                timeToFly = (absX / baseSpeed)/2;
                 if (diffY < 0)
                     cmd.linear.y = -baseSpeed;
                 else
@@ -126,7 +126,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         y = newWaypoint.y;
     } else{
         if(diffX != 0.0){
-            timeToFly = absX / baseSpeed;
+            timeToFly = (absX / baseSpeed)/2;
 
             if(diffX < 0){
                 cmd.linear.x = -baseSpeed;
@@ -136,13 +136,13 @@ void FlightController::goToWaypoint(Command newWaypoint) {
             ROS_INFO("Time to fly = %F", timeToFly);
             ROS_INFO("X = %F", cmd.linear.x);
 
-            publishToControl(timeToFly);
+            publishToControl(timeToFly/2);
 
             x = newWaypoint.x;
         }
 
         if(diffY != 0.0){
-            timeToFly = absY / baseSpeed;
+            timeToFly = (absY / baseSpeed)/2;
 
             if(diffY < 0)
                 cmd.linear.y = -baseSpeed;
@@ -152,13 +152,13 @@ void FlightController::goToWaypoint(Command newWaypoint) {
             ROS_INFO("Time to fly = %F", timeToFly);
             ROS_INFO("Y = %F", cmd.linear.x);
 
-            publishToControl(timeToFly);
+            publishToControl(timeToFly/2);
 
             y = newWaypoint.y;
         }
     }
     if (diffZ != 0.0){
-        timeToFly = abs(diffZ) / baseSpeed;
+        timeToFly = (abs(diffZ) / baseSpeed)/2;
 
         if(diffZ < 0)
             cmd.linear.z = -baseSpeed;
@@ -196,7 +196,8 @@ void FlightController::publishToControl(double timeToFly){
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
-    for(int k = 0; k < 0.4*LOOP_RATE; k++){
+
+    for(int k = 0; k < LOOP_RATE; k++){
         pub_control.publish(cmd);
 
         ros::spinOnce();
@@ -218,7 +219,9 @@ void FlightController::hover(int time){
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
 
+    ROS_INFO("HOVER");
     publishToControl(time);
+
 }
 
 void FlightController::takeOff() {
@@ -230,6 +233,11 @@ void FlightController::takeOff() {
         ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
+
+    hover(1);
+
+    cmd.linear.z = 0.5;
+    publishToControl(2);
 }
 
 void FlightController::land() {
