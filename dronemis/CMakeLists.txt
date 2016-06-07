@@ -131,22 +131,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-set(GUI_SOURCE_FILES
-        src/GUI/main_gui.cpp
-        src/GUI/GUI.cpp
-        src/GUI/VideoHandler.cpp)
-set(GUI_HEADER_FILES
-        src/GUI/GUI.h
-        src/GUI/VideoHandler.h
-        )
-
-add_executable(dronemis_gui src/GUI/main_gui.cpp ${GUI_SOURCE_FILES} ${GUI_HEADER_FILES})
-set_target_properties(dronemis_gui PROPERTIES COMPILE_FLAGS "-D_LINUX -D_REENTRANT -Wall  -O3 -march=nocona -msse3")
-target_link_libraries(dronemis_gui ${catkin_LIBRARIES} ${OpenCV_LIBS})
-target_include_directories(dronemis_gui PUBLIC ${OPENCV_INCLUDE_DIRS})
-
-add_dependencies(dronemis_gui ${PROJECT_NAME}_gencpp)
-
 ## Declare a C++ library
 # add_library(dronemis
 #   src/${PROJECT_NAME}/dronemis.cpp
