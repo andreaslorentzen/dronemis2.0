@@ -130,8 +130,7 @@ include_directories(
 set(GUI_SOURCE_FILES
         src/GUI/main_gui.cpp
         src/GUI/GUI.cpp
-        src/GUI/VideoHandler.cpp
-        )
+        src/GUI/VideoHandler.cpp)
 set(GUI_HEADER_FILES
         src/GUI/GUI.h
         src/GUI/VideoHandler.h
@@ -170,9 +169,11 @@ add_dependencies(listener dronemis_generate_messages_cpp)
 
 set(BLINDFLIGHT_SOURCE_FILES
         src/flightControl/blindFlight.cpp
-        src/flightControl/Route.cpp)
+        src/flightControl/Route.cpp
+        src/flightControl/FlightController.cpp)
 set(BLINDFLIGHT_HEADER_FILES
-        src/flightControl/Route.h)
+        src/flightControl/Route.h
+        src/flightControl/FlightController.h src/flightControl/Command.h)
 
 add_executable(blindFlight src/flightControl/blindFlight.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES})
 target_link_libraries(blindFlight ${catkin_LIBRARIES})
