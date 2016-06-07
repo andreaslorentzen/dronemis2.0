@@ -9,6 +9,7 @@
 #include "Route.h"
 #include "FlightController.h"
 
+#define NUM_THREADS 2
 #define LOOP_RATE (50)
 
 struct thread_data{
@@ -29,9 +30,11 @@ int main(int argc, char **argv) {
 
     ros::NodeHandle n;
 
-    td[0].controller = FlightController(LOOP_RATE, n);
+    FlightController controller(LOOP_RATE, n);
+
+    td[0].controller = controller;
     td[0].myRoute = Route();
-    td[1].pub_land = pub_land;
+    td[1].controller = controller;
 
     pthread_t threads[NUM_THREADS];
     pthread_create(&threads[0], NULL, controlThread, &td[0]);
@@ -44,18 +47,16 @@ int main(int argc, char **argv) {
 
 
 void *controlThread(void *thread_arg) {
-    int takeoff_time = 3;
-    double fly_time = 1.0;
-    double land_time = 3.0;
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
     thread_data->controller.setStraightFlight(true);
 
-    int i = 0;
-    printf("Enter a key to start: ");
-    getchar();
+
     while (ros::ok()) {
+
+        printf("Enter a key to start: ");
+        getchar();
 
         thread_data->controller.takeOff();
 
@@ -63,11 +64,11 @@ void *controlThread(void *thread_arg) {
             Command currentCommand = thread_data->myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
-                controller.goToWaypoint(currentCommand);
+                thread_data->controller.goToWaypoint(currentCommand);
             } else if (currentCommand.commandType == Command::hover) {
-                controller.hover(currentCommand.timeToHover);
+                thread_data->controller.hover(currentCommand.timeToHover);
             } else if (currentCommand.commandType == Command::turn) {
-                controller.turnDrone(currentCommand.degrees);
+                thread_data->controller.turnDrone(currentCommand.degrees);
             }
         }
 
@@ -91,8 +92,7 @@ void *abortThread(void *thread_arg) {
         // Abort if 'Esc' is pressed
         if  (getchar() == 27) {
             ROS_INFO("MANUEL ABORT!");
-            std_msgs::Empty empty_msg;
-            thread_data->pub_land.publish(empty_msg);
+            thread_data->controller.land();
             break;
         }   usleep(10);
     }
