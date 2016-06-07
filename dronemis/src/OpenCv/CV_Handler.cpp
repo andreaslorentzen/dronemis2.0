@@ -6,14 +6,17 @@
 
 
 
-CV_Handler::CV_Handler(void) {
+CV_Handler::CV_Handler(const sensor_msgs::ImageConstPtr img) {
     cascade = new Cascade();
-    video = new VideoHandler();
+
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO8);
+
+    cv::imshow("TEST", cv_ptr->image);
+    cv::waitKey(10);
 }
 
 CV_Handler::~CV_Handler(void) {
    delete(cascade);
-   delete(video);
 }
 
 

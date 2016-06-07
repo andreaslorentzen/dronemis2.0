@@ -9,25 +9,23 @@
 #include <string>
 #include <ros/ros.h>
 #include "GUI.h"
-#include <cv_bridge/cv_bridge.h>
+#include "../OpenCv/CV_Handler.h"
 
 class VideoHandler {
-private:
-    GUI *gui;
 
+private:
     ros::NodeHandle nodeHandle;
     ros::Subscriber video_subscriber;
     std::string video_channel;
 
 public:
+
+
     VideoHandler(void);
     virtual ~VideoHandler(void);
 
     void video(const sensor_msgs::ImageConstPtr img);
-    void runGUI();
-    const ros::Subscriber &getVideo_subscriber() const {
-        return video_subscriber;
-    }
+
 };
 
 

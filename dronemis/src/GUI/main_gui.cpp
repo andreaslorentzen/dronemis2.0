@@ -12,8 +12,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("Starting Dronemis!!!! Be ready!");
 
-    VideoHandler *videoNode = new VideoHandler();
-    videoNode->runGUI();
+    new VideoHandler();
 
     ros::spin();
 

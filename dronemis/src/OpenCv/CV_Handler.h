@@ -6,13 +6,14 @@
 #define PROJECT_CV_HANDLER_H
 
 #include "Cascade.h"
-#include "../GUI/VideoHandler.h"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "cv_bridge/cv_bridge.h"
 
 class CV_Handler {
 
 private:
     Cascade *cascade;
-    VideoHandler *video;
 
 public:
     struct cascadeInfo {
@@ -22,7 +23,7 @@ public:
        unsigned char color;
     };
 
-    CV_Handler(void);
+    CV_Handler(const sensor_msgs::ImageConstPtr img);
     virtual ~CV_Handler(void);
     cascadeInfo** checkColors(bool camera);
     cascadeInfo** checkCascades(bool camera);

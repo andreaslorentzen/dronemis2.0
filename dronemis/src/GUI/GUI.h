@@ -13,9 +13,9 @@
 #include <sensor_msgs/Image.h>
 
 class GUI {
-public:
-    void video(sensor_msgs::ImageConstPtr img);
 
+public:
+    GUI(sensor_msgs::ImageConstPtr img);
 };
 
 
