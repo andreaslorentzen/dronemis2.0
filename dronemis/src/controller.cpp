@@ -16,7 +16,7 @@ double current_time() {
     return ros::Time::now().toNSec();
 }
 
-void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr& msg)
+void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg)
 {
 
     state = msg->state;
