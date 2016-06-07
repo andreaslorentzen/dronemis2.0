@@ -24,7 +24,7 @@ void Route::initRoute(bool useFile) {
             ROS_INFO("is open");
             while (!flightPlan.eof()) {
                 flightPlan >> input;
-
+                ROS_INFO("the input is: %s", input);
                 if(strcmp(input, "goto") == 0){
                     flightPlan >> input;
                     double tempX = atof(input);
@@ -33,11 +33,13 @@ void Route::initRoute(bool useFile) {
                     flightPlan >> input;
                     double tempZ = atof(input);
                     commands.push_back(Command(tempX, tempY, tempZ));
-                } else if(strcmp(input, "turn")) {
+                } else if(strcmp(input, "turn") == 0) {
+
                     flightPlan >> input;
+                    ROS_INFO("input = %s", input);
                     double degrees =  atof(input);
                     commands.push_back(Command(degrees));
-                } else if(strcmp(input, "hover")) {
+                } else if(strcmp(input, "hover") == 0) {
                     flightPlan >> input;
                     int time = atof(input);
                     commands.push_back(time);

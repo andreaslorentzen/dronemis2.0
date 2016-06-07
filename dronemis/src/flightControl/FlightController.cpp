@@ -204,7 +204,7 @@ void FlightController::publishToControl(double timeToFly){
 
 void FlightController::turnDrone(double degrees) {
     cmd.angular.z = 0.5;
-
+    ROS_INFO("Turning %F", degrees);
     publishToControl(((degrees/22.5)));
 }
 

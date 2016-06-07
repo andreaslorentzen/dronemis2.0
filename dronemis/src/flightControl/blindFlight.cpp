@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
             } else if(currentCommand.commandType == Command::hover){
                 controller.hover(currentCommand.timeToHover);
             } else if(currentCommand.commandType == Command::turn){
-                controller.turnDrone(currentCommand.turn);
+                controller.turnDrone(currentCommand.degrees);
             }
         }
 
