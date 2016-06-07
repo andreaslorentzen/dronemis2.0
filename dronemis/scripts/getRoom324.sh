@@ -14,3 +14,8 @@ rm dronemis_world.world
 
 wget https://www.dropbox.com/s/gn9knl6swyw88j9/dronemis_world.world
 
+myUser=$(whoami)
+
+sed -i 's/hippomormor/'$myUser'/g' ~/workspaces/tum_simulator_ws/src/tum_simulator/cvg_sim_gazebo/worlds/dronemis_world.world
+
+

@@ -8,7 +8,7 @@ FlightController::FlightController(){
     x = 0;
     y = 0;
     z = 0;
-    baseSpeed;
+    baseSpeed = 0.5;
     LOOP_RATE = 0;
     takeoff_time = 3;
     cmd.linear.x = 0.0;
@@ -31,6 +31,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     pub_land = nh.advertise<std_msgs::Empty>("/ardrone/land", 1);
     pub_takeoff = nh.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     pub_control = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    pub_reset = nh.advertise<std_msgs::Empty>("/ardrone/reset", 1);
 
 
     cmd.linear.x = 0.0;
@@ -243,6 +244,12 @@ void FlightController::land() {
         ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
+}
+
+void FlightController::reset(){
+    std_msgs::Empty empty_msg;
+    pub_reset.publish(empty_msg);
+    ros::spinOnce();
 }
 
 void FlightController::setStraightFlight(bool newState) {

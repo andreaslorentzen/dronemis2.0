@@ -20,6 +20,7 @@ public:
     void hover(int time);
     void takeOff();
     void land();
+    void reset();
     void setStraightFlight(bool newState);
 private:
     // drone possition
@@ -33,6 +34,7 @@ private:
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;
+    ros::Publisher pub_reset;
 
     geometry_msgs::Twist cmd;
     void publishToControl(double timeToFly);
