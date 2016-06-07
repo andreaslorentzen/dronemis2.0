@@ -1,1 +1,4 @@
-Hi there
+goto 2.0 1.0 1
+goto 3.0 2 1.5
+goto 5 3 0.5
+goto 0 0 0

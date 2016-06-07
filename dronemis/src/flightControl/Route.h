@@ -10,39 +10,23 @@
 #include "ros/ros.h"
 #include <iostream>
 #include <fstream>
+#include <string>
+#include "Command.h"
 
 using namespace std;
-
-struct Waypoint{
-    double x;
-    double y;
-    double z;
-    bool visited;
-    Waypoint(double newX, double newY): x(newX), y(newY)
-    {
-        visited = false;
-    }
-    Waypoint(double newX, double newY, double newZ): x(newX), y(newY), z(newZ)
-    {
-        visited = false;
-    }
-    Waypoint(){
-        visited = false;
-    }
-};
 
 class Route{
 
 public:
     Route();
+    ~Route();
     void initRoute(bool useFile);
-    Waypoint findNearestWaypoint(double x, double y);
-    Waypoint nextWaypoint();
+    //Command findNearestWaypoint(double x, double y);
+    Command nextCommand();
     bool hasAllBeenVisited();
 private:
-    vector<Waypoint> waypoints;
-    int routeLength;
-    int currentWaypoint;
+    vector<Command> commands;
+    int currentCommand;
 };
 
 #endif //PROJECT_ROUTE_H

@@ -6,65 +6,96 @@
 
 
 Route::Route() {
-    currentWaypoint = -1;
+    currentCommand = -1;
+}
+
+//Destructor
+Route::~Route() {
+    // TODO implement this to actually do something
 }
 
 void Route::initRoute(bool useFile) {
     if(useFile){
-        //TODO read in the file
         ifstream flightPlan;
-        char input[100];
-        flightPlan.open("flightPlan.txt");
-        if(flightPlan.is_open())
-            while(!flightPlan.eof()){
-                flightPlan >> input;
-                ROS_INFO("Hi there");
-            }
+        flightPlan.open("/home/mathias/workspaces/dronemis_ws/src/dronemis/src/flightControl/flightPlan.txt");
+        char input[1000];
 
+        if(flightPlan.is_open()) {
+            ROS_INFO("is open");
+            while (!flightPlan.eof()) {
+                flightPlan >> input;
+                ROS_INFO("the input is: %s", input);
+                if(strcmp(input, "goto") == 0){
+                    flightPlan >> input;
+                    double tempX = atof(input);
+                    flightPlan >> input;
+                    double tempY = atof(input);
+                    flightPlan >> input;
+                    double tempZ = atof(input);
+                    commands.push_back(Command(tempX, tempY, tempZ));
+                } else if(strcmp(input, "turn") == 0) {
+
+                    flightPlan >> input;
+                    ROS_INFO("input = %s", input);
+                    double degrees =  atof(input);
+                    commands.push_back(Command(degrees));
+                } else if(strcmp(input, "hover") == 0) {
+                    flightPlan >> input;
+                    int time = atof(input);
+                    commands.push_back(time);
+                }
+            }
+        }
         flightPlan.close();
+
+        ROS_INFO("READ IN WAYPOINTS");
+        for(unsigned int i = 0; i < commands.size(); i++){
+            ROS_INFO("Command %d", i);
+        }
     } else{
-        waypoints.push_back(Waypoint(1.0, 0.0));
-        waypoints.push_back(Waypoint(1.0, 1.0));
-        waypoints.push_back(Waypoint(0.0, 1.0));
-        waypoints.push_back(Waypoint(0.0, 0.0));
+        commands.push_back(Command(1.0, 0.0));
+        commands.push_back(Command(1.0, 1.0));
+        commands.push_back(Command(0.0, 1.0));
+        commands.push_back(Command(0.0, 0.0));
     }
 }
 
-Waypoint Route::findNearestWaypoint(double x, double y) {
+/*Command Route::findNearestWaypoint(double x, double y) {
+    // THIS METHOD IS CURRENTLY NOT WORKING
     double nearestDistance = 0.0;
     int nearestWaypointNumber = 0;
 
 
-    for(unsigned int i = 0; i < waypoints.size(); i++){
-        double diffX = waypoints[i].x - x;
-        double diffY = waypoints[i].y - y;
+    for(unsigned int i = 0; i < commands.size(); i++){
+        double diffX = commands[i].x - x;
+        double diffY = commands[i].y - y;
         double distance = std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2));
 
         if (distance < nearestDistance)
             nearestWaypointNumber = i;
     }
 
-    currentWaypoint = nearestWaypointNumber;
-    return waypoints[nearestWaypointNumber];
-}
+    currentCommand = nearestWaypointNumber;
+    return commands[nearestWaypointNumber];
+}*/
 
-Waypoint Route::nextWaypoint() {
+Command Route::nextCommand() {
 
-    if(currentWaypoint == ((int)waypoints.size()))
-        currentWaypoint = 0;
+    if(currentCommand == ((int)commands.size()))
+        currentCommand = 0;
     else
-        currentWaypoint++;
+        currentCommand++;
 
-    ROS_INFO("check check : %d", currentWaypoint);
+    ROS_INFO("check check : %d", currentCommand);
 
-    waypoints[currentWaypoint].visited = true;
+    commands[currentCommand].visited = true;
 
-    return waypoints[currentWaypoint];
+    return commands[currentCommand];
 }
 
 bool Route::hasAllBeenVisited() {
-    for(unsigned int i = 0; i < waypoints.size(); i++){
-        if (!waypoints[i].visited)
+    for(unsigned int i = 0; i < commands.size(); i++){
+        if (!commands[i].visited)
             return false;
     }
     return true;
