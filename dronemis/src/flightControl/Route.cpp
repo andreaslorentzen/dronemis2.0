@@ -6,12 +6,28 @@
 
 
 Route::Route() {
-    waypoints.push_back(Waypoint(1.0, 0.0));
-    waypoints.push_back(Waypoint(1.0, 1.0));
-    waypoints.push_back(Waypoint(0.0, 1.0));
-    waypoints.push_back(Waypoint(0.0, 0.0));
-
     currentWaypoint = -1;
+}
+
+void Route::initRoute(bool useFile) {
+    if(useFile){
+        //TODO read in the file
+        ifstream flightPlan;
+        char input[100];
+        flightPlan.open("flightPlan.txt");
+        if(flightPlan.is_open())
+            while(!flightPlan.eof()){
+                flightPlan >> input;
+                ROS_INFO("Hi there");
+            }
+
+        flightPlan.close();
+    } else{
+        waypoints.push_back(Waypoint(1.0, 0.0));
+        waypoints.push_back(Waypoint(1.0, 1.0));
+        waypoints.push_back(Waypoint(0.0, 1.0));
+        waypoints.push_back(Waypoint(0.0, 0.0));
+    }
 }
 
 Waypoint Route::findNearestWaypoint(double x, double y) {
