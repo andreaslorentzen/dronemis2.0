@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 }
 
 
-void *controlThread(void *thread_arg) {
+void *controlThread(void *thread_arg) { 
 
     Route myRoute;
     myRoute.initRoute(true);
