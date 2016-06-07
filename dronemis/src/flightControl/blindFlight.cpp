@@ -24,16 +24,19 @@ void *controlThread(void *thread_arg);
 void *abortThread(void *thread_arg);
 
 int main(int argc, char **argv) {
-    struct thread_data td[NUM_THREADS];
 
     ros::init(argc, argv, "blindFlight");
+
+    struct thread_data td[NUM_THREADS];
+
 
     ros::NodeHandle n;
 
     FlightController controller(LOOP_RATE, n);
+    td[0].myRoute = Route();
+    td[0].myRoute.initRoute(true);
 
     td[0].controller = controller;
-    td[0].myRoute = Route();
     td[1].controller = controller;
 
     pthread_t threads[NUM_THREADS];

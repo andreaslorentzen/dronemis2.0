@@ -30,7 +30,6 @@ private:
     int LOOP_RATE;
     int takeoff_time;
     bool straightFlight;
-    ros::Rate loop_rate;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;

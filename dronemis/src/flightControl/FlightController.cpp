@@ -4,7 +4,7 @@
 
 #include "FlightController.h"
 
-FlightController::FlightController(): loop_rate(0){
+FlightController::FlightController(){
     x = 0;
     y = 0;
     z = 0;
@@ -20,7 +20,7 @@ FlightController::FlightController(): loop_rate(0){
     straightFlight = false;
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle nh): loop_rate(loopRate) {
+FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     x = 0;
     y = 0;
     z = 0;
@@ -184,7 +184,8 @@ void FlightController::publishToControl(double timeToFly){
         pub_control.publish(cmd);
 
         ros::spinOnce();
-        loop_rate.sleep();
+        ros::Rate(LOOP_RATE).sleep();
+        //loop_rate.sleep();
     }
 
     // enable auto hover
@@ -198,7 +199,7 @@ void FlightController::publishToControl(double timeToFly){
         pub_control.publish(cmd);
 
         ros::spinOnce();
-        loop_rate.sleep();
+        ros::Rate(LOOP_RATE).sleep();
     }
 }
 
@@ -226,7 +227,7 @@ void FlightController::takeOff() {
         pub_takeoff.publish(empty_msg);
 
         ros::spinOnce();
-        loop_rate.sleep();
+        ros::Rate(LOOP_RATE).sleep();
     }
 }
 
@@ -240,7 +241,7 @@ void FlightController::land() {
         pub_land.publish(empty_msg);
 
         ros::spinOnce();
-        loop_rate.sleep();
+        ros::Rate(LOOP_RATE).sleep();
     }
 }
 
