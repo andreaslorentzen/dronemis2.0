@@ -1,5 +1,4 @@
 <launch>
   <include file="$(find cvg_sim_gazebo)/launch/dronemis_world.launch"/>
-  <node pkg="dronemis" type="dronemis_gui" name="dronemis_gui" ></node>
   <node pkg="dronemis" type="blindFlight" name="blindFlight" output="screen" launch-prefix="xterm -e"></node>
 </launch>
