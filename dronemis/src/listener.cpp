@@ -70,7 +70,7 @@ void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
     double curr = (current_time()-last)/1000000000;
     last = current_time();
 
-    if(state == 2)
+    if(state != 3 && state != 7)
         return;
 
     //x += vX * curr + 0.5 * aX * curr*curr;

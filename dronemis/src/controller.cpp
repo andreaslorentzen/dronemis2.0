@@ -42,8 +42,8 @@ int main(int argc, char **argv) {
 
     ros::Publisher pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     geometry_msgs::Twist cmd;
-    cmd.linear.x = 0.5;
-    cmd.linear.y = 0.5;
+    cmd.linear.x = 1.0;
+    cmd.linear.y = 0.0;
     cmd.linear.z = 0.0;
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
