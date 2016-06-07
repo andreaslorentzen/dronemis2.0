@@ -8,8 +8,8 @@
 
 #include <string>
 #include <ros/ros.h>
-#include "GUI.h"
-#include "../OpenCv/CV_Handler.h"
+#include <sensor_msgs/Image.h>
+
 
 class VideoHandler {
 
@@ -17,15 +17,11 @@ private:
     ros::NodeHandle nodeHandle;
     ros::Subscriber video_subscriber;
     std::string video_channel;
+    void video(sensor_msgs::ImageConstPtr img);
 
 public:
-
-
     VideoHandler(void);
     virtual ~VideoHandler(void);
-
-    void video(const sensor_msgs::ImageConstPtr img);
-
 };
 
 
