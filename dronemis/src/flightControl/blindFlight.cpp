@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     myRoute.initRoute(true);
 
     FlightController controller(LOOP_RATE, n);
+    controller.setStraightFlight(true);
 
     int i = 0;
     while (ros::ok()) {

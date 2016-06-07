@@ -17,6 +17,7 @@ FlightController::FlightController(): loop_rate(0){
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
+    straightFlight = false;
 }
 
 FlightController::FlightController(int loopRate, ros::NodeHandle nh): loop_rate(loopRate) {
@@ -26,7 +27,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh): loop_rate(
     baseSpeed = 0.5;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
-
+    straightFlight = false;
     pub_land = nh.advertise<std_msgs::Empty>("/ardrone/land", 1);
     pub_takeoff = nh.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     pub_control = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
@@ -49,6 +50,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     double timeToFly;
     double diffX = newWaypoint.x - x;
     double diffY = newWaypoint.y - y;
+    double diffZ = newWaypoint.z - z;
     double absX = abs(diffX);
     double absY = abs(diffY);
     double deltaDiffs;
@@ -56,91 +58,154 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     ROS_INFO("diffX = %f", diffX);
     ROS_INFO("diffY = %f", diffY);
 
-    if(diffX != 0 && diffY != 0){
-        timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY,2)) / baseSpeed;
-        double glideSpeed = pow(baseSpeed, 2);
-        if(absX == absY){
-            double actualSpeed = sqrt(glideSpeed * 0.5);
-            if(diffX < 0)
-                cmd.linear.x = -actualSpeed;
-            else
-                cmd.linear.x = actualSpeed;
+    if (!straightFlight) {
+        if (diffX != 0 && diffY != 0) {
+            timeToFly = std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2)) / baseSpeed;
+            double glideSpeed = pow(baseSpeed, 2);
+            if (absX == absY) {
+                double actualSpeed = sqrt(glideSpeed * 0.5);
+                if (diffX < 0)
+                    cmd.linear.x = -actualSpeed;
+                else
+                    cmd.linear.x = actualSpeed;
 
-            if(diffY < 0)
-                cmd.linear.y = -actualSpeed;
-            else
-                cmd.linear.y = actualSpeed;
-        } else if (absX > absY){
-            // De her to elseifs virker måske, men er ikke ligefrem sikker.
-            deltaDiffs = absY / absX;
-            if(diffY < 0)
-                cmd.linear.y = -sqrt(glideSpeed*deltaDiffs);
-            else
-                cmd.linear.y = sqrt(glideSpeed*deltaDiffs);
+                if (diffY < 0)
+                    cmd.linear.y = -actualSpeed;
+                else
+                    cmd.linear.y = actualSpeed;
+            } else if (absX > absY) {
+                // De her to elseifs virker måske, men er ikke ligefrem sikker.
+                deltaDiffs = absY / absX;
 
-            if(diffX < 0)
-                cmd.linear.x = -sqrt(glideSpeed*(1.0-deltaDiffs));
-            else
-                cmd.linear.x = sqrt(glideSpeed*(1.0-deltaDiffs));
+                if (diffY < 0)
+                    cmd.linear.y = -sqrt(glideSpeed * deltaDiffs);
+                else
+                    cmd.linear.y = sqrt(glideSpeed * deltaDiffs);
 
-        } else if(absX < absY){
-            deltaDiffs = absX / absY;
+                if (diffX < 0)
+                    cmd.linear.x = -sqrt(glideSpeed * (1.0 - deltaDiffs));
+                else
+                    cmd.linear.x = sqrt(glideSpeed * (1.0 - deltaDiffs));
 
-            if(diffX < 0)
-                cmd.linear.x = sqrt(glideSpeed*deltaDiffs);
-            else
-                cmd.linear.x = -sqrt(glideSpeed*deltaDiffs);
+            } else if (absX < absY) {
+                deltaDiffs = absX / absY;
 
-            if(diffY < 0)
-                cmd.linear.y = -sqrt(glideSpeed*(1.0-deltaDiffs));
-            else
-                cmd.linear.y = sqrt(glideSpeed*(1.0-deltaDiffs));
-        }
-    } else{
-        if (diffX != 0) {
-            timeToFly = std::abs(diffX) / baseSpeed;
-            if (diffX < 0)
-                cmd.linear.x = -baseSpeed;
-            else
-                cmd.linear.x = baseSpeed;
+                if (diffX < 0)
+                    cmd.linear.x = sqrt(glideSpeed * deltaDiffs);
+                else
+                    cmd.linear.x = -sqrt(glideSpeed * deltaDiffs);
+
+                if (diffY < 0)
+                    cmd.linear.y = -sqrt(glideSpeed * (1.0 - deltaDiffs));
+                else
+                    cmd.linear.y = sqrt(glideSpeed * (1.0 - deltaDiffs));
+            }
         } else {
-            timeToFly = std::abs(diffY) / baseSpeed;
-            if (diffY < 0)
+            if (diffX != 0) {
+                timeToFly = absX / baseSpeed;
+                if (diffX < 0)
+                    cmd.linear.x = -baseSpeed;
+                else
+                    cmd.linear.x = baseSpeed;
+            } else {
+                timeToFly = absX / baseSpeed;
+                if (diffY < 0)
+                    cmd.linear.y = -baseSpeed;
+                else
+                    cmd.linear.y = baseSpeed;
+            }
+        }
+
+        ROS_INFO("X = %F", cmd.linear.x);
+        ROS_INFO("Y = %F", cmd.linear.y);
+
+        publishToControl(timeToFly);
+
+        x = newWaypoint.x;
+        y = newWaypoint.y;
+    } else{
+        if(diffX != 0.0){
+            timeToFly = absX / baseSpeed;
+
+            if(diffX < 0){
+                cmd.linear.x = -baseSpeed;
+            } else
+                cmd.linear.x = baseSpeed;
+
+            ROS_INFO("Time to fly = %F", timeToFly);
+            ROS_INFO("X = %F", cmd.linear.x);
+
+            publishToControl(timeToFly);
+
+            x = newWaypoint.x;
+        }
+
+        if(diffY != 0.0){
+            timeToFly = absY / baseSpeed;
+
+            if(diffY < 0)
                 cmd.linear.y = -baseSpeed;
             else
                 cmd.linear.y = baseSpeed;
+
+            ROS_INFO("Time to fly = %F", timeToFly);
+            ROS_INFO("Y = %F", cmd.linear.x);
+
+            publishToControl(timeToFly);
+
+            y = newWaypoint.y;
         }
     }
+    if (diffZ != 0.0){
+        timeToFly = abs(diffZ) / baseSpeed;
 
-    ROS_INFO("X = %F", cmd.linear.x);
-    ROS_INFO("Y = %F", cmd.linear.y);
+        if(diffZ < 0)
+            cmd.linear.z = -baseSpeed;
+        else
+            cmd.linear.z = baseSpeed;
 
+        ROS_INFO("Time to fly = %F", timeToFly);
+        ROS_INFO("Z = %F", cmd.linear.z);
+
+        publishToControl(timeToFly);
+
+        z = newWaypoint.z;
+    }
+
+
+}
+
+void FlightController::publishToControl(double timeToFly){
     for(int k = 0; k < timeToFly*LOOP_RATE; k++){
+
+        // Implement some waiting if none has subscribed
+        // while(pub_control.getNumSubscribers() == 0);
+
         pub_control.publish(cmd);
 
         ros::spinOnce();
         loop_rate.sleep();
     }
 
-    x = newWaypoint.x;
-    y = newWaypoint.y;
+    // enable auto hover
+    cmd.linear.x = 0.0;
+    cmd.linear.y = 0.0;
+    cmd.linear.z = 0.0;
+    cmd.angular.x = 0.0;
+    cmd.angular.y = 0.0;
+    cmd.angular.z = 0.0;
+    for(int k = 0; k < 0.4*LOOP_RATE; k++){
+        pub_control.publish(cmd);
 
-    hover(1);
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
 }
 
 void FlightController::turnDrone(double degrees) {
     cmd.angular.z = 0.5;
 
-    for(int k = 0; k < ((degrees/22.5))*LOOP_RATE; k++){
-
-        while(pub_control.getNumSubscribers() == 0);
-
-        pub_control.publish(cmd);
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-
-    hover(1);
+    publishToControl(((degrees/22.5)));
 }
 
 void FlightController::hover(int time){
@@ -151,11 +216,7 @@ void FlightController::hover(int time){
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
 
-    for(int k = 0; k < time*LOOP_RATE; k++){
-        pub_control.publish(cmd);
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
+    publishToControl(time);
 }
 
 void FlightController::takeOff() {
@@ -181,5 +242,9 @@ void FlightController::land() {
         ros::spinOnce();
         loop_rate.sleep();
     }
+}
+
+void FlightController::setStraightFlight(bool newState) {
+    straightFlight = newState;
 }
 

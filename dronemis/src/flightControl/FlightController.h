@@ -20,6 +20,7 @@ public:
     void hover(int time);
     void takeOff();
     void land();
+    void setStraightFlight(bool newState);
 private:
     // drone possition
     double x;
@@ -28,12 +29,14 @@ private:
     double baseSpeed;
     int LOOP_RATE;
     int takeoff_time;
+    bool straightFlight;
     ros::Rate loop_rate;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;
 
     geometry_msgs::Twist cmd;
+    void publishToControl(double timeToFly);
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H
