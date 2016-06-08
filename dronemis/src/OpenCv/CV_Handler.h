@@ -8,13 +8,34 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "cv_bridge/cv_bridge.h"
+#include "boost/thread.hpp"
+#include "cvd/thread.h"
+#include "cvd/image.h"
+#include "cvd/byte.h"
+#include <cvd/image_io.h>
+#include <cvd/rgb.h>
 
 class CV_Handler {
 
+
 private:
+    CVD::Image<CVD::Rgb <float> > storedImage;
+    CVD::Image<CVD::Rgb <float> > workImage;
+    int mimFrameTime;
+    int mimFrameTime_workingCopy;
+    unsigned int mimFrameSEQ;
+    unsigned int mimFrameSEQ_workingCopy;
+    ros::Time mimFrameTimeRos;
+    ros::Time mimFrameTimeRos_workingCopy;
+    int frameWidth, frameHeight;
+
     Cascade *cascade;
 
+    boost::condition_variable  new_frame_signal;
+    boost::mutex new_frame_signal_mutex;
+
 public:
+
     struct cascadeInfo {
        int x;
        int y;
@@ -29,6 +50,7 @@ public:
     cascadeInfo** checkColors(bool camera);
     cascadeInfo** checkCascades(bool camera);
 };
+
 
 
 #endif //PROJECT_CV_HANDLER_H
