@@ -21,14 +21,7 @@ class CV_Handler {
 private:
     CVD::Image<CVD::Rgb <float> > storedImage;
     CVD::Image<CVD::Rgb <float> > workImage;
-    int mimFrameTime;
-    int mimFrameTime_workingCopy;
-    unsigned int mimFrameSEQ;
-    unsigned int mimFrameSEQ_workingCopy;
-    ros::Time mimFrameTimeRos;
-    ros::Time mimFrameTimeRos_workingCopy;
-    int frameWidth, frameHeight;
-
+    bool frontCam;
     Cascade *cascade;
 
     boost::condition_variable  new_frame_signal;
@@ -49,6 +42,7 @@ public:
     void video(sensor_msgs::ImageConstPtr img);
     cascadeInfo** checkColors(bool camera);
     cascadeInfo** checkCascades(bool camera);
+    void swapCam();
 };
 
 
