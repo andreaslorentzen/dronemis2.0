@@ -4,23 +4,19 @@ cd ~/Sources
 
 rm Toon
 
-git clone git://github.com/edrosten/TooN.git
+rm gvars
 
-echo " TooN pulled"
+rm libcvd
+
+git clone git://github.com/edrosten/TooN.git
 
 git clone https://github.com/edrosten/libcvd.git -b c++11
 
-echo " libcvd pulled"
-
 git clone git://github.com/edrosten/gvars.git
-
-echo " gvars3 pulled"
 
 cd ~/Sources/TooN
 
 ./configure && make && sudo make install
-
-rm libcvd
 
 cd ~/Sources/libcvd
 
@@ -30,7 +26,6 @@ make
 
 sudo make install
 
-rm gvars
 
 cd ~/Sources/gvars
 
