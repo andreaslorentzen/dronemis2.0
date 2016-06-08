@@ -61,10 +61,12 @@ void *controlThread(void *thread_arg) {
 
         controller->land();
 
+        started = false;
         pthread_exit(NULL);
 
     }
 
+    started = false;
     pthread_exit(NULL);
 }
 
