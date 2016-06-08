@@ -25,22 +25,33 @@ void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg)
 
 }
 
-int main(int argc, char **argv) {
 
-    int takeoff_time = 3;
-    double fly_time = 1.0;
-    double land_time = 3.0;
-    double aaz;
+
+void takeoff(){
+
+}
+void land(){
+
+}
+
+int main(int argc, char **argv) {
 
     ros::init(argc, argv, "controller");
 
     ros::NodeHandle n;
 
+
+
+    std_msgs::Empty empty_msg;
+    ros::Rate loop_rate(LOOP_RATE);
+
+
     ros::Publisher pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     ros::Publisher pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
-    ros::Publisher pub_reset = n.advertise<std_msgs::Empty>("/ardrone/reset", 1);
+  //  ros::Publisher pub_reset = n.advertise<std_msgs::Empty>("/ardrone/reset", 1);
 
     ros::Publisher pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+
     geometry_msgs::Twist cmd;
     cmd.linear.x = 1.0;
     cmd.linear.y = 0.0;
@@ -51,92 +62,154 @@ int main(int argc, char **argv) {
 
     ros::Subscriber sub = n.subscribe("ardrone/navdata", 5000, navdataCallback);
 
+    bool direction = 0;
 
-    ros::Rate loop_rate(LOOP_RATE);
-    std_msgs::Empty empty_msg;
+    while(ros::ok()){
 
-while(ros::ok()){
-    int i = 0;
-    int j = 0;
+        printf("Enter any key to start: ");
+        getchar();
 
-    printf("Enter any key to start: ");
-    getchar();
-
-    ROS_INFO("takeoff %d", (int) takeoff_time * LOOP_RATE);
-    pub_takeoff.publish(empty_msg);
-
-    while (state != 3 && state != 7) {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-    for (int k = 0; k < LOOP_RATE * 3; ++k) {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-
-    pub_control.publish(cmd);
-    for (int k = 0; k < LOOP_RATE * 3; ++k) {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-  //  pub_reset.publish(empty_msg);
-/*
-
-
-        while (aaz<1.0 && (state == 3 || state == 7)) {
-            aaz+=0.01;
-            if(aaz> 1.0)
-                aaz = 1.0;
-            cmd.angular.z = aaz;
-            pub_control.publish(cmd);
+        // takeoff
+        pub_takeoff.publish(empty_msg);
+        while (state != 3 && state != 7) {
             ros::spinOnce();
             loop_rate.sleep();
-            printf("AAZ: %f\n", aaz);
         }
 
-        j=0;
-        while (j<LOOP_RATE*100 && (state == 3 || state == 7)) {
-            j+=LOOP_RATE;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // wait
+        for (int k = 0; k < LOOP_RATE; ++k) {
             ros::spinOnce();
             loop_rate.sleep();
-            printf("SLEEP: %d\n", j);
         }
 
-        while (aaz>0.0 && (state == 3 || state == 7)) {
-            aaz-=0.01;
-            if (aaz <= 0.0)
-                aaz = 0.0;
-            cmd.angular.z = aaz;
-            pub_control.publish(cmd);
-            ros::spinOnce();
-            loop_rate.sleep();
-            printf("AAZ: %f\n", aaz);
-        }
 
-        j=0;
-        while (j<LOOP_RATE*10 && (state == 3 || state == 7)) {
-            j+=LOOP_RATE;
-            ros::spinOnce();
-            loop_rate.sleep();
-            printf("SLEEP: %d\n", j);
-        }
-
-        aaz = 0;
-        cmd.angular.z = aaz;
+        cmd.linear.x = 1.0;
         pub_control.publish(cmd);
-        ros::spinOnce();
-*/
+        for (int k = 0; k < LOOP_RATE * 3; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
 
-    pub_land.publish(empty_msg);
-    while (state != 2) {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
 
-    for (int l = 0; l < LOOP_RATE * 2; ++l) {
-        ros::spinOnce();
-        loop_rate.sleep();
+
+
+
+
+
+
+        // land
+        cmd.linear.x = 0.0;
+        pub_control.publish(cmd);
+        for (int k = 0; k < LOOP_RATE * 0.5; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+        pub_land.publish(empty_msg);
+        while (state != 2) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // takeoff
+        pub_takeoff.publish(empty_msg);
+        while (state != 3 && state != 7) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        cmd.linear.x = -1.0;
+        pub_control.publish(cmd);
+        for (int k = 0; k < LOOP_RATE * 3; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+
+
+
+
+
+        // land
+        cmd.linear.x = 0.0;
+        pub_control.publish(cmd);
+        for (int k = 0; k < LOOP_RATE * 0.5; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+        pub_land.publish(empty_msg);
+        while (state != 2) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        for (int l = 0; l < LOOP_RATE * 2; ++l) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+        direction = !direction;
     }
-}
     return 0;
 }

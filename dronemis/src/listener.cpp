@@ -5,7 +5,7 @@
 #include "std_msgs/Empty.h"
 #include "ardrone_autonomy/Navdata.h"
 
-unsigned int state;
+unsigned int state = 0;
 
 int altd;
 float rX;
@@ -49,11 +49,15 @@ int main(int argc, char **argv)
 double current_time() {
     return ros::Time::now().toNSec();
 }
-
+unsigned int oldState;
 void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
 {
-
+    oldState = state;
     state = msg->state;
+/*    if(state != oldState){
+        printf("New State: %d\n", state);
+    }
+*/
 
 
     altd = msg->altd;
@@ -70,16 +74,14 @@ void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
     double curr = (current_time()-last)/1000000000;
     last = current_time();
 
-    if(state != 3 && state != 7)
-        return;
+    x += vX * curr + 0.5 * aX * curr*curr;
+    y += vY * curr + 0.5 * aY * curr*curr;
 
-    //x += vX * curr + 0.5 * aX * curr*curr;
-  //  y += vY * curr + 0.5 * aY * curr*curr;
-
-    x += vX * curr + 0.5 ;
-    y += vY * curr + 0.5 ;
+    //x += vX * curr + 0.5 ;
+    //y += vY * curr + 0.5 ;
 
 //    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
-    printf("%6.2f, %6.2f\n", x, y);
+    printf("s: %d\t%6.2f, %6.2f\n", state, x, y);
+
 
 }
