@@ -39,7 +39,7 @@ void *controlThread(void *thread_arg) {
 
     Route myRoute;
     myRoute.initRoute(true);
-        
+
     ros::Rate loop_rate(LOOP_RATE);
     controller->setStraightFlight(true);
 

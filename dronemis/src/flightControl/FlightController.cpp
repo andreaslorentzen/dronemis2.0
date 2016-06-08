@@ -197,9 +197,8 @@ void FlightController::publishToControl(double timeToFly){
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
 
+    pub_control.publish(cmd);
     for(int k = 0; k < LOOP_RATE; k++){
-        pub_control.publish(cmd);
-
         ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
@@ -226,10 +225,10 @@ void FlightController::hover(int time){
 
 void FlightController::takeOff() {
 
-    for(int i = 0; i < takeoff_time*LOOP_RATE; i++){
-        std_msgs::Empty empty_msg;
-        pub_takeoff.publish(empty_msg);
+    std_msgs::Empty empty_msg;
+    pub_takeoff.publish(empty_msg);
 
+    for(int i = 0; i < takeoff_time*LOOP_RATE; i++){
         ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
@@ -244,11 +243,11 @@ void FlightController::land() {
     double fly_time = 1.0;
     double land_time = 3.0;
 
+
+    std_msgs::Empty empty_msg;
+    pub_land.publish(empty_msg);
+
     for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
-
-        std_msgs::Empty empty_msg;
-        pub_land.publish(empty_msg);
-
         ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
