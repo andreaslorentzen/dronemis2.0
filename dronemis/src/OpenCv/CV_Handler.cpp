@@ -42,7 +42,7 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     size_t size = img->width * img->height;
     memcpy(storedImage.data(), cv_ptr->image.data,  size * 3);
 
-    // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit bgr 3 channel)
+    // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
     cv::Mat image(img->height, img->width,CV_8UC3, storedImage.data());
 
     // Unlock mutex
