@@ -190,7 +190,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 add_executable(blindFlight src/flightControl/blindFlight.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES} ${BLINDFLIGHT_RESOURCE_FILES_CPP} ${BLINDFLIGHT_UI_FILES_HPP} ${BLINDFLIGHT_HEADER_FILES_HPP})
-target_link_libraries(blindFlight ${QT_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(blindFlight ${QT_LIBRARIES} cvd ${catkin_LIBRARIES})
 add_dependencies(blindFlight dronemis_generate_messages_cpp)
 
 
