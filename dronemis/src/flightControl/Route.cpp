@@ -60,24 +60,29 @@ void Route::initRoute(bool useFile) {
     }
 }
 
-/*Command Route::findNearestWaypoint(double x, double y) {
+Command Route::findNearestWaypoint(double x, double y, double z) {
     // THIS METHOD IS CURRENTLY NOT WORKING
-    double nearestDistance = 0.0;
+    double nearestDistance = 1000;
     int nearestWaypointNumber = 0;
 
 
     for(unsigned int i = 0; i < commands.size(); i++){
-        double diffX = commands[i].x - x;
-        double diffY = commands[i].y - y;
-        double distance = std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2));
+        if (commands[i].commandType == commands[i].goTo) {
+            double diffX = commands[i].x - x;
+            double diffY = commands[i].y - y;
+            double diffZ = commands[i].z - z;
+            double distance = diffX + diffY + diffZ;
 
-        if (distance < nearestDistance)
-            nearestWaypointNumber = i;
+            if (distance < nearestDistance)
+                nearestWaypointNumber = i;
+        }
     }
 
     currentCommand = nearestWaypointNumber;
+    commands[nearestWaypointNumber].visited = true;
+
     return commands[nearestWaypointNumber];
-}*/
+}
 
 Command Route::nextCommand() {
 
