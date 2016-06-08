@@ -33,7 +33,7 @@ void ControlPanel::on_pushButton_Stop_clicked(void)
 void ControlPanel::on_pushButton_shutdown_clicked(void)
 {
     const char* command = "kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')";
-    blindFlight::abortProgram();
+    blindFlight::resetProgram();
     system(command);
     exit (EXIT_SUCCESS);
 }
