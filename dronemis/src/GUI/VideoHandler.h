@@ -5,26 +5,29 @@
 #ifndef PROJECT_VIDEOHANDLER_H
 #define PROJECT_VIDEOHANDLER_H
 
-
-#include <string>
+#include "std_msgs/Empty.h"
+#include "stdlib.h"
+#include "std_srvs/Empty.h"
+#include "ros/ros.h"
+#include "std_msgs/String.h"
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
-
-#include <ros/ros.h>
 
 class VideoHandler {
 
 private:
     ros::NodeHandle nodeHandle;
     ros::Subscriber video_subscriber;
-    std::string video_channel_front;
-    std::string video_channel_bottom;
+    ros::ServiceClient cam_service;
+    std::string video_channel;
+    ros::NodeHandle cam_channel;
+    std_srvs::Empty toggleCam_srv_srvs;
     void video(sensor_msgs::ImageConstPtr img);
 
 public:
     VideoHandler(void);
     virtual ~VideoHandler(void);
-    void swapCam(bool frontCam);
+    void swapCam();
 };
 
 

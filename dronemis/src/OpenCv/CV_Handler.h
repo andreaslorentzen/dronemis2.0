@@ -15,19 +15,16 @@
 #include <cvd/image_io.h>
 #include <cvd/rgb.h>
 
+
 class CV_Handler {
 
 
 private:
-    CVD::Image<CVD::Rgb <float> > storedImage;
-    CVD::Image<CVD::Rgb <float> > workImage;
-    bool frontCam;
-    Cascade *cascade;
 
-    boost::condition_variable  new_frame_signal;
-    boost::mutex new_frame_signal_mutex;
 
 public:
+    boost::condition_variable  new_frame_signal;
+    boost::mutex new_frame_signal_mutex;
 
     struct cascadeInfo {
        int x;
@@ -39,10 +36,11 @@ public:
     CV_Handler(void);
     void run(void);
     virtual ~CV_Handler(void);
+
     void video(sensor_msgs::ImageConstPtr img);
-    cascadeInfo** checkColors(bool camera);
-    cascadeInfo** checkCascades(bool camera);
-    void swapCam();
+    cascadeInfo** checkColors(void);
+    cascadeInfo** checkCascades(void);
+    void swapCam(void);
 };
 
 
