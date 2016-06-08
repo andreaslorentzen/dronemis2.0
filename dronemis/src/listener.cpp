@@ -23,8 +23,12 @@ float y = 0.0;
 
 double last;
 
+bool landed = 1;
+
+
 double current_time();
 void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg);
+void resetXY(const std_msgs::Empty::ConstPtr &msg);
 
 int main(int argc, char **argv)
 {
@@ -34,7 +38,8 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Subscriber sub = n.subscribe("ardrone/navdata", 5000, navdataCallback2);
+    ros::Subscriber sub_navdata = n.subscribe("ardrone/navdata", 5000, navdataCallback2);
+    ros::Subscriber sub_reset = n.subscribe("position/reset", 5000, resetXY);
 
 
     ros::Rate loop_rate(1);
@@ -52,6 +57,9 @@ double current_time() {
 unsigned int oldState;
 void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
 {
+    if(landed)
+        return;
+
     oldState = state;
     state = msg->state;
 /*    if(state != oldState){
@@ -83,5 +91,15 @@ void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
 //    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
     printf("s: %d\t%6.2f, %6.2f\n", state, x, y);
 
+
+}
+void resetXY(const std_msgs::Empty::ConstPtr &msg){
+    landed = !landed;
+
+    x = 0.0;
+    y = 0.0;
+
+
+    printf("landed: %d",landed);
 
 }

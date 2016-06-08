@@ -33,7 +33,6 @@ void takeoff(){
 void land(){
 
 }
-
 int main(int argc, char **argv) {
 
     ros::init(argc, argv, "controller");
@@ -49,11 +48,15 @@ int main(int argc, char **argv) {
     ros::Publisher pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     ros::Publisher pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
   //  ros::Publisher pub_reset = n.advertise<std_msgs::Empty>("/ardrone/reset", 1);
+    ros::Publisher pub_reset_pos = n.advertise<std_msgs::Empty>("position/reset", 1);
+
+
+
 
     ros::Publisher pub_control = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
     geometry_msgs::Twist cmd;
-    cmd.linear.x = 1.0;
+    cmd.linear.x = 0.5;
     cmd.linear.y = 0.0;
     cmd.linear.z = 0.0;
     cmd.angular.x = 0.0;
@@ -62,7 +65,7 @@ int main(int argc, char **argv) {
 
     ros::Subscriber sub = n.subscribe("ardrone/navdata", 5000, navdataCallback);
 
-    bool direction = 0;
+//    bool direction = 0;
 
     while(ros::ok()){
 
@@ -71,21 +74,45 @@ int main(int argc, char **argv) {
 
         // takeoff
         pub_takeoff.publish(empty_msg);
-        while (state != 3 && state != 7) {
+        for (int k = 0; k < LOOP_RATE*6; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+        pub_reset_pos.publish(empty_msg);
+        for (int k = 0; k < LOOP_RATE/10; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+        cmd.linear.x = 0.5;
+        pub_control.publish(cmd);
+        for (int k = 0; k < LOOP_RATE * 2; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+
+
+        cmd.linear.x = 0.0;
+        pub_control.publish(cmd);
+        for (int k = 0; k < LOOP_RATE * 3; ++k) {
             ros::spinOnce();
             loop_rate.sleep();
         }
 
 
 
+        pub_land.publish(empty_msg);
+        for (int k = 0; k < LOOP_RATE*3; ++k) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
+        pub_reset_pos.publish(empty_msg);
 
 
 
 
 
-
-
-
+/*
 
 
 
@@ -99,12 +126,7 @@ int main(int argc, char **argv) {
         }
 
 
-        cmd.linear.x = 1.0;
-        pub_control.publish(cmd);
-        for (int k = 0; k < LOOP_RATE * 3; ++k) {
-            ros::spinOnce();
-            loop_rate.sleep();
-        }
+
 
 
 
@@ -210,6 +232,7 @@ int main(int argc, char **argv) {
         }
 
         direction = !direction;
+        */
     }
     return 0;
 }
