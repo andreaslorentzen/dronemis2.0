@@ -15,7 +15,6 @@ CV_Handler *cvHandler;
 
 int main(int argc, char **argv) {
 
-
     td[1].argc = argc;
     td[1].argv = argv;
 
@@ -23,6 +22,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle n;
 
     controller = new FlightController(LOOP_RATE, n);
+    cvHandler = new CV_Handler();
 
     pthread_t threads[2];
     pthread_create(&threads[1], NULL, buttonThread, &td[1]);
@@ -83,7 +83,6 @@ void *buttonThread(void *thread_arg) {
 }
 
 void *cvThread(void *thread_arg) {
-    cvHandler = new CV_Handler();
     cvHandler->run();
 
     pthread_exit(NULL);
@@ -91,7 +90,7 @@ void *cvThread(void *thread_arg) {
 
 void blindFlight::abortProgram(void) {
     ROS_INFO("MANUEL ABORT!");
-    controller->reset();
+    controller->land();
 }
 
 void blindFlight::resetProgram(void) {
