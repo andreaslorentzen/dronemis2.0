@@ -13,10 +13,10 @@ CV_Handler::CV_Handler(void) {
 
 }
 
-
 void CV_Handler::run(void) {
     cascade = new Cascade();
     videohandler = new VideoHandler();
+    frontCam = false;
 }
 
 
@@ -43,15 +43,23 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     memcpy(storedImage.data(), cv_ptr->image.data,  size * 3);
 
     // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
-    cv::Mat image(img->height, img->width,CV_8UC3, storedImage.data());
+    cv::Mat image(storedImage.size().y, storedImage.size().x,CV_8UC3, storedImage.data());
 
     // Unlock mutex
     lock.unlock();
     new_frame_signal.notify_all();
 
+    // Display raw video
     cv::imshow("TEST", image);
     cv::waitKey(10);
 
+}
+
+
+void CV_Handler::swapCam() {
+
+    videohandler->swapCam(frontCam);
+    frontCam = !frontCam;
 }
 
 
