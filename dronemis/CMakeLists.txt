@@ -157,7 +157,6 @@ target_link_libraries(listener ${catkin_LIBRARIES})
 add_dependencies(listener dronemis_generate_messages_cpp)
 
 set(BLINDFLIGHT_SOURCE_FILES
-        src/flightControl/blindFlight.cpp
         src/flightControl/Route.cpp
         src/flightControl/FlightController.cpp
         src/flightControl/Route.cpp
@@ -166,11 +165,11 @@ set(BLINDFLIGHT_SOURCE_FILES
         src/OpenCv/Color.cpp
         src/OpenCv/Cascade.cpp
         src/OpenCv/CV_Handler.cpp
-        )
+        src/main.cpp)
 set(BLINDFLIGHT_HEADER_FILES
         src/flightControl/Route.h
         src/flightControl/FlightController.h src/flightControl/Command.h
-        src/flightControl/blindFlight.h src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h)
+        src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h)
 
 set(BLINDFLIGHT_UI_FILES
         src/GUI/ControlPanel/controlpanel.ui
@@ -189,7 +188,7 @@ QT4_WRAP_CPP(BLINDFLIGHT_HEADER_FILES_HPP ${BLINDFLIGHT_HEADER_FILES})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
-add_executable(blindFlight src/flightControl/blindFlight.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES} ${BLINDFLIGHT_RESOURCE_FILES_CPP} ${BLINDFLIGHT_UI_FILES_HPP} ${BLINDFLIGHT_HEADER_FILES_HPP})
+add_executable(blindFlight src/main.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES} ${BLINDFLIGHT_RESOURCE_FILES_CPP} ${BLINDFLIGHT_UI_FILES_HPP} ${BLINDFLIGHT_HEADER_FILES_HPP})
 target_link_libraries(blindFlight ${QT_LIBRARIES} cvd ${catkin_LIBRARIES})
 add_dependencies(blindFlight dronemis_generate_messages_cpp)
 
