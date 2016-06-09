@@ -295,3 +295,34 @@ MyVector FlightController::transformCoordinates(MyVector incomingVector) {
 
 }
 
+void FlightController::run(){
+
+    Route myRoute;
+    myRoute.initRoute(true);
+
+    ros::Rate loop_rate(LOOP_RATE);
+    setStraightFlight(true);
+
+    while (ros::ok()) {
+
+        takeOff();
+
+        while (!myRoute.hasAllBeenVisited()) {
+            Command currentCommand = myRoute.nextCommand();
+
+            if (currentCommand.commandType == Command::goTo) {
+                goToWaypoint(currentCommand);
+            } else if (currentCommand.commandType == Command::hover) {
+                hover(currentCommand.timeToHover);
+            } else if (currentCommand.commandType == Command::turn) {
+                turnDrone(currentCommand.degrees);
+            }
+        }
+
+        land();
+
+        break;
+    }
+    // Start this class
+    // Have loop to do stuff
+}

@@ -9,6 +9,7 @@
 #include "std_msgs/Empty.h"
 #include "geometry_msgs/Twist.h"
 #include "Command.h"
+#include "Route.h"
 
 struct MyVector{
     double x;
@@ -34,6 +35,7 @@ public:
     void land();
     void reset();
     void setStraightFlight(bool newState);
+    void run();
 private:
     // drone possition
     double x;
