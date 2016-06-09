@@ -39,12 +39,10 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::Multi
     pub_control = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pub_reset = nh->advertise<std_msgs::Empty>("/ardrone/reset", 1);
 
-    rotation = 0;
     precision = 50;
 
     cvHandler = new CV_Handler();
 
-    //myThreadData.navData = navData;
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
     myThreadData.spinner = spinner;
@@ -109,19 +107,14 @@ void FlightController::run(){
 void FlightController::goToWaypoint(Command newWaypoint) {
     double timeToFly;
 
-    ROS_INFO("This float is = %d", navData.position.z);
-
     double diffX = newWaypoint.x - navData.position.x;
     double diffY = newWaypoint.y - navData.position.y;
     double diffZ = newWaypoint.z - navData.position.z;
     double absX = abs(diffX);
     double absY = abs(diffY);
-    double deltaDiffs;
 
     if (!straightFlight) {
-
-        publishToControl(timeToFly);
-
+        // TODO decide if this should be implemented or not
     } else{
         if(diffX != 0.0){
             timeToFly = (absX / baseSpeed)/2;
@@ -202,10 +195,7 @@ void FlightController::publishToControl(double timeToFly){
 }
 
 void FlightController::turnDrone(double degrees) {
-    // Denne metode er langt fra præcis
-    cmd.angular.z = 0.5;
-    ROS_INFO("Turning %F", degrees);
-    publishToControl(((degrees/22.5)));
+    // TODO benyt marcuses implementation
 }
 
 void FlightController::hover(int time){

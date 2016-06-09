@@ -9,12 +9,13 @@ void Nav::run(ros::NodeHandle *n, ros::MultiThreadedSpinner spinner) {
     ros::Subscriber sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
     ros::Subscriber sub_init = n->subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
 
+    // start the navdata
     ros::Publisher pub_reset_pos = n->advertise<std_msgs::Empty>("nav/init", 1);
 
     std_msgs::Empty empty_msg;
     pub_reset_pos.publish(empty_msg);
 
-    
+    // Using multithreaded spinner.
     spinner.spin();
 }
 double Nav::current_time() {

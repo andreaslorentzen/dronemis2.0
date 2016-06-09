@@ -42,15 +42,12 @@ public:
     void resetProgram(void);
     void abortProgram(void);
 private:
-    // drone possition
-    double rotation;
     double baseSpeed;
     bool started;
     int LOOP_RATE;
     int takeoff_time;
     double precision;
     bool straightFlight;
-    ros::MultiThreadedSpinner spinner;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;

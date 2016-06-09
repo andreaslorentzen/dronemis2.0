@@ -32,14 +32,9 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "blindFlight");
     ros::NodeHandle *n = new ros::NodeHandle();
-
-    ROS_INFO("HELLO");
-
     ros::MultiThreadedSpinner spinner;
 
     controller = new FlightController(LOOP_RATE, n, spinner);
-
-    ROS_INFO("Hello");
 
     pthread_t thread;
     pthread_create(&thread, NULL, buttonThread, &td[0]);
