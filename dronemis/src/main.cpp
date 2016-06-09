@@ -45,7 +45,7 @@ int main(int argc, char **argv){
 
 void *controlThread(void *thread_arg){
     controller->run();
-
+    started = false;
     pthread_exit(NULL);
 }
 

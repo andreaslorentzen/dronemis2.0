@@ -10,6 +10,8 @@
 #include "geometry_msgs/Twist.h"
 #include "Command.h"
 #include "Route.h"
+#include "../navdata/Nav.h"
+#include "../OpenCv/CV_Handler.h"
 
 struct MyVector{
     double x;
@@ -35,7 +37,7 @@ public:
     void land();
     void reset();
     void setStraightFlight(bool newState);
-    void run();
+    void run(Nav, CV_Handler);
 private:
     // drone possition
     double x;
