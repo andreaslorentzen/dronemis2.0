@@ -46,7 +46,6 @@ int main(int argc, char **argv)
      * away the oldest ones.
      */
     ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
-
     /**
      * ros::spin() will enter a loop, pumping callbacks.  With this version, all
      * callbacks will be called from within this thread (the main one).  ros::spin()
