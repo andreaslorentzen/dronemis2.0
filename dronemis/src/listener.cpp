@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     ros::spin();
 */
     return 0;
-}
+}/*
 double current_time() {
     return ros::Time::now().toNSec();
 }
@@ -69,10 +69,10 @@ void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
 
     oldState = state;
     state = msg->state;
-/*    if(state != oldState){
+*//*    if(state != oldState){
         printf("New State: %d\n", state);
     }
-*/
+*//*
 
 
     altd = msg->altd;
@@ -109,4 +109,4 @@ void resetXY(const std_msgs::Empty::ConstPtr &msg){
 
     printf("landed: %d",landed);
 
-}
+}*/

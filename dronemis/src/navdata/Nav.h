@@ -14,20 +14,15 @@
 
 class Nav {
 private:
-    void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
-    void resetCallback(const std_msgs::Empty::ConstPtr &msg);
-    bool landed = 1;
+    bool landed;
     double last;
     unsigned int oldState;
     unsigned int state;
     double current_time();
 public:
-    Nav();
-    virtual ~Nav();
-    void run(ros::NodeHandle n);
     struct {
-        float x = 0.0;
-        float y = 0.0;
+        float x;
+        float y;
         int z;
 
         float rotX;
@@ -37,6 +32,11 @@ public:
         int magY;
         int magZ;
     } position;
+    void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
+    void initCallback(const std_msgs::Empty::ConstPtr &msg);
+    Nav();
+    void run(ros::NodeHandle n);
+
 };
 
 

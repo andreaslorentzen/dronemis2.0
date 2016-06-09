@@ -4,17 +4,9 @@
 
 #include "Nav.h"
 
-
-Nav::Nav() {
-
-
-
-}
 void Nav::run(ros::NodeHandle n) {
-
-    ros::Subscriber sub_navdata = n.subscribe("ardrone/navdata", 5000, navdataCallback);
-    ros::Subscriber sub_reset = n.subscribe("position/reset", 5000, resetCallback);
-
+    ros::Subscriber sub_navdata = n.subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
+    ros::Subscriber sub_init = n.subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
 
     last = current_time();
 
@@ -23,7 +15,14 @@ void Nav::run(ros::NodeHandle n) {
 double Nav::current_time() {
     return ros::Time::now().toNSec();
 }
+void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
+    landed = !landed;
 
+    position.x = 0.0;
+    position.y = 0.0;
+
+//    printf("landed: %d",landed);
+}
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     if(landed)
         return;
@@ -68,17 +67,11 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
 }
 
-void Nav::resetCallback(const std_msgs::Empty::ConstPtr &msg){
-    landed = !landed;
 
+Nav::Nav() {
+    landed = 1;
     position.x = 0.0;
     position.y = 0.0;
-
-    printf("landed: %d",landed);
-}
-
-Nav::~Nav() {
-
 }
 
 

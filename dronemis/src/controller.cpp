@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     ros::Publisher pub_takeoff = n.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     ros::Publisher pub_land = n.advertise<std_msgs::Empty>("/ardrone/land", 1);
   //  ros::Publisher pub_reset = n.advertise<std_msgs::Empty>("/ardrone/reset", 1);
-    ros::Publisher pub_reset_pos = n.advertise<std_msgs::Empty>("position/reset", 1);
+    ros::Publisher pub_reset_pos = n.advertise<std_msgs::Empty>("nav/init", 1);
 
 
 
@@ -84,9 +84,9 @@ int main(int argc, char **argv) {
             loop_rate.sleep();
         }
 
-        cmd.linear.x = 0.5;
+        cmd.linear.x = 0.1;
         pub_control.publish(cmd);
-        for (int k = 0; k < LOOP_RATE * 2; ++k) {
+        for (int k = 0; k < LOOP_RATE * 5; ++k) {
             ros::spinOnce();
             loop_rate.sleep();
         }

@@ -168,7 +168,7 @@ add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
 add_dependencies(talker dronemis_generate_messages_cpp)
 
-add_executable(listener src/listener.cpp)
+add_executable(listener src/listener.cpp src/navdata/Nav.cpp src/navdata/Nav.h)
 target_link_libraries(listener ${catkin_LIBRARIES})
 add_dependencies(listener dronemis_generate_messages_cpp)
 
@@ -184,11 +184,11 @@ set(BLINDFLIGHT_SOURCE_FILES
         src/OpenCv/Cascade.cpp
         src/OpenCv/CV_Handler.cpp
 
-        src/navdata/Nav.cpp src/navdata/Nav.h)
+        src/navdata/Nav.cpp)
 set(BLINDFLIGHT_HEADER_FILES
         src/flightControl/Route.h
         src/flightControl/FlightController.h src/flightControl/Command.h
-        src/flightControl/blindFlight.h src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h src/GUI/GUI.h src/navdata/Nav.cpp src/navdata/Nav.h)
+        src/flightControl/blindFlight.h src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h src/GUI/GUI.h src/navdata/Nav.h)
 
 set(BLINDFLIGHT_UI_FILES
         src/GUI/ControlPanel/controlpanel.ui
