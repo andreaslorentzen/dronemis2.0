@@ -16,23 +16,18 @@ double Nav::current_time() {
     return ros::Time::now().toNSec();
 }
 void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
-    landed = !landed;
+    running = !running;
 
     position.x = 0.0;
     position.y = 0.0;
 
-//    printf("landed: %d",landed);
+//    printf("running: %d",running);
 }
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
-    if(landed)
+    if(running)
         return;
 
-    oldState = state;
     state = msg->state;
-/*    if(state != oldState){
-        printf("New State: %d\n", state);
-    }
-*/
 
 
     float vX = msg->vx;
@@ -42,13 +37,13 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     float aY = msg->ay;
 //    float aZ = msg->az;
 
-    position.rotX = msg->rotX;
-    position.rotY = msg->rotY;
-    position.rotZ = msg->rotZ;
+    rotation.x = msg->rotX;
+    rotation.y = msg->rotY;
+    rotation.z = msg->rotZ;
 
-    position.magX = msg->magX;
-    position.magY = msg->magY;
-    position.magZ = msg->magZ;
+    mag.x = msg->magX;
+    mag.y = msg->magY;
+    mag.z = msg->magZ;
 
     position.z = msg->altd;
 
@@ -69,7 +64,7 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
 
 Nav::Nav() {
-    landed = 1;
+    running = 1;
     position.x = 0.0;
     position.y = 0.0;
 }

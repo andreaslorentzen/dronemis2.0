@@ -14,24 +14,29 @@
 
 class Nav {
 private:
-    bool landed;
+    bool running;
     double last;
-    unsigned int oldState;
-    unsigned int state;
+
     double current_time();
 public:
+    unsigned int state;
     struct {
         float x;
         float y;
         int z;
 
-        float rotX;
-        float rotY;
-        float rotZ;
-        int magX;
-        int magY;
-        int magZ;
     } position;
+    struct {
+        float x;
+        float y;
+        float z;
+    } rotation;
+    struct {
+        float x;
+        float y;
+        float z;
+    } mag;
+
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();

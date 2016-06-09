@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             loop_rate.sleep();
         }
 
-        cmd.linear.x = 0.1;
+        cmd.linear.x = 2.0;
         pub_control.publish(cmd);
         for (int k = 0; k < LOOP_RATE * 5; ++k) {
             ros::spinOnce();
