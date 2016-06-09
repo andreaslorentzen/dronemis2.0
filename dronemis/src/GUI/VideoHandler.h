@@ -12,6 +12,7 @@
 #include "std_msgs/String.h"
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
+#include "../OpenCv/CV_Handler.h"
 
 class VideoHandler {
 
@@ -25,7 +26,7 @@ private:
     void video(sensor_msgs::ImageConstPtr img);
 
 public:
-    VideoHandler(void);
+    VideoHandler(CV_Handler * cvHandler);
     virtual ~VideoHandler(void);
     void swapCam();
 };

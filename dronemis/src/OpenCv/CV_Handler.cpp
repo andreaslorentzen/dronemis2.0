@@ -5,8 +5,6 @@
 #include "CV_Handler.h"
 #include "../GUI/VideoHandler.h"
 
-#define LOOP_RATE (50)
-
 VideoHandler *videohandler;
 Cascade *cascade;
 
@@ -22,7 +20,7 @@ CV_Handler::CV_Handler(void) {
 void CV_Handler::run(void) {
 
     cascade = new Cascade();
-    videohandler = new VideoHandler();
+    videohandler = new VideoHandler(this);
 }
 
 
@@ -63,7 +61,6 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
 
 void *show(void *thread_arg) {
 
-
     // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
     cv::Mat image(storedImage.size().y, storedImage.size().x,CV_8UC3, storedImage.data());
     cv::imshow("TEST", image);
@@ -88,7 +85,7 @@ CV_Handler::cascadeInfo **CV_Handler::checkCascades(void) {
 
     cv::Mat image(storedImage.size().y, storedImage.size().x,CV_8UC3, storedImage.data());
 
-    //image = cascade->checkCascade(image);
+    image = cascade->checkCascade(image);
 
     // Lock with unique lock (can be closed/opened remotely)
     boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
