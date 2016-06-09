@@ -24,7 +24,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     x = 0;
     y = 0;
     z = 0;
-    baseSpeed = 0.5;
+    baseSpeed = 0.2;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
     straightFlight = false;
@@ -32,7 +32,8 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     pub_takeoff = nh.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     pub_control = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pub_reset = nh.advertise<std_msgs::Empty>("/ardrone/reset", 1);
-    rotation = 90;
+    rotation = 0;
+    precision = 50;
 
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
@@ -47,6 +48,36 @@ FlightController::~FlightController() {
     // TODO implement this to actually do something
 }
 
+void FlightController::run(){
+
+    Route myRoute;
+    myRoute.initRoute(true);
+
+    ros::Rate loop_rate(LOOP_RATE);
+    setStraightFlight(true);
+
+    while (ros::ok()) {
+
+        takeOff();
+
+        while (!myRoute.hasAllBeenVisited()) {
+            Command currentCommand = myRoute.nextCommand();
+
+            if (currentCommand.commandType == Command::goTo) {
+                goToWaypoint(currentCommand);
+            } else if (currentCommand.commandType == Command::hover) {
+                hover(currentCommand.timeToHover);
+            } else if (currentCommand.commandType == Command::turn) {
+                turnDrone(currentCommand.degrees);
+            }
+        }
+
+        land();
+
+        break;
+    }
+}
+
 void FlightController::goToWaypoint(Command newWaypoint) {
     double timeToFly;
     double diffX = newWaypoint.x - x;
@@ -55,9 +86,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     double absX = abs(diffX);
     double absY = abs(diffY);
     double deltaDiffs;
-
-    ROS_INFO("diffX = %f", diffX);
-    ROS_INFO("diffY = %f", diffY);
 
     if (!straightFlight) {
         if (diffX != 0 && diffY != 0) {
@@ -117,9 +145,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
             }
         }
 
-        ROS_INFO("X = %F", cmd.linear.x);
-        ROS_INFO("Y = %F", cmd.linear.y);
-
         publishToControl(timeToFly);
 
         x = newWaypoint.x;
@@ -178,6 +203,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
 void FlightController::publishToControl(double timeToFly){
 
+    ROS_INFO("MOVING");
     pub_control.publish(cmd);
 
     for(int k = 0; k < timeToFly*LOOP_RATE; k++){
@@ -206,6 +232,7 @@ void FlightController::publishToControl(double timeToFly){
 }
 
 void FlightController::turnDrone(double degrees) {
+    // Denne metode er langt fra præcis
     cmd.angular.z = 0.5;
     ROS_INFO("Turning %F", degrees);
     publishToControl(((degrees/22.5)));
@@ -295,34 +322,4 @@ MyVector FlightController::transformCoordinates(MyVector incomingVector) {
 
 }
 
-void FlightController::run(){
 
-    Route myRoute;
-    myRoute.initRoute(true);
-
-    ros::Rate loop_rate(LOOP_RATE);
-    setStraightFlight(true);
-
-    while (ros::ok()) {
-
-        takeOff();
-
-        while (!myRoute.hasAllBeenVisited()) {
-            Command currentCommand = myRoute.nextCommand();
-
-            if (currentCommand.commandType == Command::goTo) {
-                goToWaypoint(currentCommand);
-            } else if (currentCommand.commandType == Command::hover) {
-                hover(currentCommand.timeToHover);
-            } else if (currentCommand.commandType == Command::turn) {
-                turnDrone(currentCommand.degrees);
-            }
-        }
-
-        land();
-
-        break;
-    }
-    // Start this class
-    // Have loop to do stuff
-}
