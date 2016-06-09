@@ -175,7 +175,6 @@ set(BLINDFLIGHT_HEADER_FILES
         src/OpenCv/CV_Handler.h
         src/GUI/ControlPanel/controlpanel.h
         src/GUI/VideoHandler.h
-        src/flightControl/blindFlight.h
         src/navdata/Nav.h)
 
 set(BLINDFLIGHT_UI_FILES
