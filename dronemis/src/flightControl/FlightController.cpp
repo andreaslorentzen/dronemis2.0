@@ -32,7 +32,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     pub_takeoff = nh.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     pub_control = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pub_reset = nh.advertise<std_msgs::Empty>("/ardrone/reset", 1);
-
+    rotation = 90;
 
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
@@ -177,12 +177,13 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 }
 
 void FlightController::publishToControl(double timeToFly){
+
+    pub_control.publish(cmd);
+
     for(int k = 0; k < timeToFly*LOOP_RATE; k++){
 
         // Implement some waiting if none has subscribed
         // while(pub_control.getNumSubscribers() == 0);
-
-        pub_control.publish(cmd);
 
         ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
@@ -261,5 +262,36 @@ void FlightController::reset(){
 
 void FlightController::setStraightFlight(bool newState) {
     straightFlight = newState;
+}
+
+MyVector FlightController::transformCoordinates(MyVector incomingVector) {
+    MyVector rotationMatrix[3];
+    rotationMatrix[0] = MyVector(cos(rotation), -sin(rotation), 0);
+    rotationMatrix[1] = MyVector(sin(rotation), cos(rotation), 0);
+    rotationMatrix[2] = MyVector(0, 0, 1);
+
+    MyVector tempVector(incomingVector.x-x, incomingVector.y-y, incomingVector.z-z);
+
+    MyVector resultVector(rotationMatrix[0].x*tempVector.x+rotationMatrix[0].y*tempVector.y+rotationMatrix[0].z*tempVector.z,
+                        rotationMatrix[1].x*tempVector.x+rotationMatrix[1].y*tempVector.y+rotationMatrix[1].z*tempVector.z,
+                        rotationMatrix[2].x*tempVector.x+rotationMatrix[2].y*tempVector.y+rotationMatrix[2].z*tempVector.z);
+
+
+    resultVector.x += x;
+    resultVector.y += y;
+    resultVector.z += z;
+
+    ROS_INFO("Incoming vector;");
+    ROS_INFO("X = %F", incomingVector.x);
+    ROS_INFO("Y = %F", incomingVector.y);
+    ROS_INFO("Z = %F", incomingVector.z);
+
+    ROS_INFO("Outgoing vector");
+    ROS_INFO("X = %F", resultVector.x);
+    ROS_INFO("Y = %F", resultVector.y);
+    ROS_INFO("Z = %F", resultVector.z);
+
+    return resultVector;
+
 }
 
