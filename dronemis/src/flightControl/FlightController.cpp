@@ -8,9 +8,6 @@ void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
 void* startController(void *thread_arg);
 
-
-CV_Handler *cvHandlerTwo;
-
 struct thread_data{
     Nav *navData;
     CV_Handler *cvHandler;
@@ -49,6 +46,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     precision = 50;
 
     navData = new Nav(nh);
+    cvHandler = new CV_Handler();
 
     ROS_INFO("INSIDE CONSTRUCTOR");
 
@@ -56,7 +54,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     myThreadData.cvHandler = cvHandler;
 
     pthread_t threads[2];
-   // pthread_create(&threads[0], NULL, startCV, NULL);
+    pthread_create(&threads[0], NULL, startCV, &myThreadData);
     pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
 
 
@@ -71,7 +69,8 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
 
 // Destructor
 FlightController::~FlightController() {
-    // TODO implement this to actually do something
+    delete(navData);
+    delete(cvHandler);
 }
 
 void FlightController::run(){
@@ -385,10 +384,10 @@ void* startNavdata(void *thread_arg){
 }
 
 void* startCV(void *thread_arg) {
-    /*struct thread_data *thread_data;
+    struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
-*/
-    cvHandlerTwo->run();
+
+    thread_data->cvHandler->run();
     pthread_exit(NULL);
 }
 
