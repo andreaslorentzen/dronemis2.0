@@ -6,6 +6,7 @@
 #include "OpenCv/CV_Handler.h"
 #include "flightControl/FlightController.h"
 #include "GUI/ControlPanel/controlpanel.h"
+#include "ros/callback_queue.h"
 
 #define NUM_THREADS 4
 #define LOOP_RATE (50)
@@ -30,17 +31,18 @@ int main(int argc, char **argv){
     td[0].argv = argv;
 
     ros::init(argc, argv, "blindFlight");
-    ros::NodeHandle n;
+    ros::NodeHandle *n = new ros::NodeHandle();
 
     ROS_INFO("HELLO");
 
-    controller = new FlightController(LOOP_RATE, n);
+    ros::MultiThreadedSpinner spinner;
 
+    controller = new FlightController(LOOP_RATE, n, spinner);
+
+    ROS_INFO("Hello");
 
     pthread_t thread;
     pthread_create(&thread, NULL, buttonThread, &td[0]);
-
-    ros::spin();
 
     pthread_exit(NULL);
 }

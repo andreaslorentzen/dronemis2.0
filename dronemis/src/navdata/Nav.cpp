@@ -4,10 +4,18 @@
 
 #include "Nav.h"
 
-void Nav::run() {
+void Nav::run(ros::NodeHandle *n, ros::MultiThreadedSpinner spinner) {
     last = current_time();
+    ros::Subscriber sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
+    ros::Subscriber sub_init = n->subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
 
-    //ros::spin();
+    ros::Publisher pub_reset_pos = n->advertise<std_msgs::Empty>("nav/init", 1);
+
+    std_msgs::Empty empty_msg;
+    pub_reset_pos.publish(empty_msg);
+
+    
+    spinner.spin();
 }
 double Nav::current_time() {
     return ros::Time::now().toNSec();
@@ -50,6 +58,8 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     position.x += vX * curr + 0.5 * aX * curr*curr;
     position.y += vY * curr + 0.5 * aY * curr*curr;
 
+    ROS_INFO("the z value = %d", position.z);
+
     //x += vX * curr + 0.5 ;
     //y += vY * curr + 0.5 ;
 
@@ -65,14 +75,4 @@ Nav::Nav() {
     position.x = 0.0;
     position.y = 0.0;
 }
-
-Nav::Nav(ros::NodeHandle n){
-    running = 1;
-    position.x = 0.0;
-    position.y = 0.0;
-    ros::Subscriber sub_navdata = n.subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
-    ros::Subscriber sub_init = n.subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
-
-}
-
 
