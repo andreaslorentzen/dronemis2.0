@@ -2,8 +2,10 @@
 // Created by mathias on 6/9/16.
 //
 
-#include "flightControl/blindFlight.h"
+#include <QApplication>
 #include "OpenCv/CV_Handler.h"
+#include "flightControl/FlightController.h"
+#include "GUI/ControlPanel/controlpanel.h"
 
 #define NUM_THREADS 4
 #define LOOP_RATE (50)
