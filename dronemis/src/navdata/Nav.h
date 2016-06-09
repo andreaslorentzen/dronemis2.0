@@ -7,6 +7,7 @@
 
 #include "ros/ros.h"
 #include <ardrone_autonomy/Navdata.h>
+#include <ardrone_autonomy/navdata_magneto.h>
 #include <std_msgs/Empty.h>
 #include <ros/node_handle.h>
 #include <geometry_msgs/Twist.h>
@@ -24,20 +25,11 @@ public:
         float x;
         float y;
         int z;
-
     } position;
-    struct {
-        float x;
-        float y;
-        float z;
-    } rotation;
-    struct {
-        float x;
-        float y;
-        float z;
-    } mag;
+    float rotation;
 
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
+    void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
     Nav(ros::NodeHandle n);
