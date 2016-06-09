@@ -45,6 +45,7 @@ private:
     double baseSpeed;
     int LOOP_RATE;
     int takeoff_time;
+    double precision;
     bool straightFlight;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;

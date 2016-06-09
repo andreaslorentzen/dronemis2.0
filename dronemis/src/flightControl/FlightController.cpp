@@ -33,6 +33,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     pub_control = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pub_reset = nh.advertise<std_msgs::Empty>("/ardrone/reset", 1);
     rotation = 0;
+    precision = 50;
 
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
