@@ -5,7 +5,7 @@
 #include "flightControl/blindFlight.h"
 #include "OpenCv/CV_Handler.h"
 
-#define NUM_THREADS 3
+#define NUM_THREADS 4
 #define LOOP_RATE (50)
 
 void *controlThread(void *thread_arg);
@@ -16,6 +16,7 @@ void *navdataThread(void *thread_Arg);
 bool started = false;
 FlightController *controller;
 CV_Handler *cvHandler;
+Nav *navdata;
 
 struct thread_data {
     int argc;
@@ -33,10 +34,12 @@ int main(int argc, char **argv){
 
     controller = new FlightController(LOOP_RATE, n);
     cvHandler = new CV_Handler();
+    navdata = new Nav(n);
 
-    pthread_t threads[2];
+    pthread_t threads[NUM_THREADS];
     pthread_create(&threads[0], NULL, buttonThread, &td[0]);
     pthread_create(&threads[1], NULL, cvThread, &td[1]);
+    pthread_create(&threads[2], NULL, navdataThread, &td[2]);
 
     ros::spin();
 
@@ -44,13 +47,14 @@ int main(int argc, char **argv){
 }
 
 void *controlThread(void *thread_arg){
-    controller->run();
+    controller->run(navdata, cvHandler);
     started = false;
     pthread_exit(NULL);
 }
 
 void *navdataThread(void *thread_arg){
-
+    navdata->run();
+    pthread_exit(NULL);
 }
 
 void *buttonThread(void *thread_arg) {

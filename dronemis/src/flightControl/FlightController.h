@@ -37,7 +37,7 @@ public:
     void land();
     void reset();
     void setStraightFlight(bool newState);
-    void run(Nav, CV_Handler);
+    void run(Nav *navdata, CV_Handler *cv_handler);
 private:
     // drone possition
     double x;
