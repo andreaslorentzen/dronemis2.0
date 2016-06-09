@@ -4,6 +4,7 @@
 
 #include "CV_Handler.h"
 #include "../GUI/VideoHandler.h"
+#include "ros/callback_queue.h"
 
 VideoHandler *videohandler;
 Cascade *cascade;
@@ -55,7 +56,8 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
 
     pthread_create(&thread, NULL, show, NULL);
 
-    ros::spin();
+    while(ros::ok())
+        ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
 
     pthread_exit(NULL);
 }
