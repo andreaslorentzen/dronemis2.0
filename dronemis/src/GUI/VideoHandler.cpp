@@ -4,25 +4,21 @@
 
 #include <std_msgs/String.h>
 #include "VideoHandler.h"
-#include "../OpenCv/CV_Handler.h"
-
 
 CV_Handler *cv_handler;
 
+VideoHandler::VideoHandler(CV_Handler* cvHandler){
 
-VideoHandler::VideoHandler(void){
-
-    cv_handler = new CV_Handler();
+    cv_handler = cvHandler;
 
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
 
     video_subscriber = nodeHandle.subscribe(video_channel,10, &VideoHandler::video, this);
-
 }
 
 
 VideoHandler::~VideoHandler(void){
-    delete(cv_handler);
+
 }
 
 

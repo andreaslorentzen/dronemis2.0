@@ -48,8 +48,8 @@ cv::Mat Cascade::checkCascade(cv::Mat image) {
     std::vector<Rect> cubes;
     Mat frame_modified;
 
-    cvtColor( image, frame_modified, CV_BGR2GRAY );
-    /*equalizeHist( frame_modified, frame_modified );
+    //cvtColor( image, frame_modified, CV_BGR2GRAY );
+    equalizeHist( frame_modified, frame_modified );
 
     //-- Detect cubes
     cascade_classifier.detectMultiScale( frame_modified, cubes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(20, 20) );
@@ -59,7 +59,7 @@ cv::Mat Cascade::checkCascade(cv::Mat image) {
         Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
         ellipse( frame_modified, center, Size( cubes[i].width*0.5, cubes[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
     }
-    cout << cubes.size() << endl;*/
+    cout << cubes.size() << endl;
 
     return frame_modified;
 }

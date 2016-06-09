@@ -26,6 +26,7 @@ public:
     boost::condition_variable  new_frame_signal;
     boost::mutex new_frame_signal_mutex;
 
+
     struct cascadeInfo {
        int x;
        int y;
