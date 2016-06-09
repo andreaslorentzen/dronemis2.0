@@ -2,7 +2,8 @@
 #define CONTROLPANEL_H
 
 #include <QMainWindow>
-#include "../../flightControl/blindFlight.h"
+#include "../../flightControl/FlightController.h"
+
 namespace Ui {
 class ControlPanel;
 }
@@ -13,6 +14,7 @@ class ControlPanel : public QMainWindow
 
 public:
     explicit ControlPanel(QWidget *parent = 0);
+    void setController(FlightController *newController);
     ~ControlPanel(void);
 
 
@@ -27,6 +29,7 @@ private slots:
 
 private:
     Ui::ControlPanel *ui;
+    FlightController *controller;
 };
 
 #endif // CONTROLPANEL_H

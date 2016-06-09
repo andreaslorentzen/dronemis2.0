@@ -17,8 +17,6 @@ void *navdataThread(void *thread_Arg);
 
 bool started = false;
 FlightController *controller;
-CV_Handler *cvHandler;
-Nav *navdata;
 
 struct thread_data {
     int argc;
@@ -34,28 +32,16 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "blindFlight");
     ros::NodeHandle n;
 
-    controller = new FlightController(LOOP_RATE, n);
-    cvHandler = new CV_Handler();
-    navdata = new Nav(n);
+    ROS_INFO("HELLO");
 
-    pthread_t threads[NUM_THREADS];
-    pthread_create(&threads[0], NULL, buttonThread, &td[0]);
-    pthread_create(&threads[1], NULL, cvThread, &td[1]);
-    pthread_create(&threads[2], NULL, navdataThread, &td[2]);
+    controller = new FlightController(LOOP_RATE, n);
+
+
+    pthread_t thread;
+    pthread_create(&thread, NULL, buttonThread, &td[0]);
 
     ros::spin();
 
-    pthread_exit(NULL);
-}
-
-void *controlThread(void *thread_arg){
-    controller->run(navdata, cvHandler);
-    started = false;
-    pthread_exit(NULL);
-}
-
-void *navdataThread(void *thread_arg){
-    navdata->run();
     pthread_exit(NULL);
 }
 
@@ -67,33 +53,9 @@ void *buttonThread(void *thread_arg) {
     // Creating Control panel
     QApplication a(thread_data->argc, thread_data->argv);
     ControlPanel w;
+    w.setController(controller);
     w.show();
     a.exec();
 
     pthread_exit(NULL);
-}
-
-void *cvThread(void *thread_arg) {
-    cvHandler->run();
-
-    pthread_exit(NULL);
-}
-
-void blindFlight::abortProgram(void) {
-    ROS_INFO("MANUEL ABORT!");
-    controller->land();
-}
-
-void blindFlight::resetProgram(void) {
-    ROS_INFO("MANUEL RESET!");
-    controller->reset();
-}
-
-void blindFlight::startProgram(void) {
-    if (!started) {
-        ROS_INFO("STARTING!");
-        pthread_t thread;
-        pthread_create(&thread, NULL, controlThread, &td[0]);
-        started = true;
-    }
 }

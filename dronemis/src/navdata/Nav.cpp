@@ -7,7 +7,7 @@
 void Nav::run() {
     last = current_time();
 
-    ros::spin();
+    //ros::spin();
 }
 double Nav::current_time() {
     return ros::Time::now().toNSec();

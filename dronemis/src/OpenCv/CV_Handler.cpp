@@ -20,6 +20,7 @@ CV_Handler::CV_Handler(void) {
 void CV_Handler::run(void) {
 
     cascade = new Cascade();
+    ROS_INFO("THIS IS THE NEW HI");
     videohandler = new VideoHandler(this);
 }
 

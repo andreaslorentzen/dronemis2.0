@@ -4,8 +4,6 @@
 
 #include "Cascade.h"
 
-#include "../flightControl/blindFlight.h"
-
 using namespace cv;
 
 Cascade::Cascade(void) {
@@ -59,7 +57,7 @@ cv::Mat Cascade::checkCascade(cv::Mat image) {
         Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
         ellipse( frame_modified, center, Size( cubes[i].width*0.5, cubes[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
     }
-    cout << cubes.size() << endl;
+    std::cout << cubes.size() << std::endl;
 
     return frame_modified;
 }

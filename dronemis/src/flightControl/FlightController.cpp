@@ -4,6 +4,19 @@
 
 #include "FlightController.h"
 
+void* startNavdata(void *thread_args);
+void* startCV(void *thread_args);
+void* startController(void *thread_arg);
+
+
+CV_Handler *cvHandlerTwo;
+
+struct thread_data{
+    Nav *navData;
+    CV_Handler *cvHandler;
+    FlightController *controller;
+} myThreadData;
+
 FlightController::FlightController(){
     x = 0;
     y = 0;
@@ -35,12 +48,25 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
     rotation = 0;
     precision = 50;
 
+    navData = new Nav(nh);
+
+    ROS_INFO("INSIDE CONSTRUCTOR");
+
+    myThreadData.navData = navData;
+    myThreadData.cvHandler = cvHandler;
+
+    pthread_t threads[2];
+   // pthread_create(&threads[0], NULL, startCV, NULL);
+    pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
+
+
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
     cmd.linear.z = 0.0;
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
+
 }
 
 // Destructor
@@ -48,19 +74,23 @@ FlightController::~FlightController() {
     // TODO implement this to actually do something
 }
 
-void FlightController::run(Nav *navdata, CV_Handler *cv_handler){
-
+void FlightController::run(){
     Route myRoute;
     myRoute.initRoute(true);
+
 
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
+    ROS_INFO("SOMESTUFF");
+
+
     while (ros::ok()) {
 
         takeOff();
-
+        ROS_INFO("BEFORE TAKEOFF");
         while (!myRoute.hasAllBeenVisited()) {
+            ROS_INFO("HI THERE");
             Command currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
@@ -76,6 +106,10 @@ void FlightController::run(Nav *navdata, CV_Handler *cv_handler){
 
         break;
     }
+
+
+
+    return;
 }
 
 void FlightController::goToWaypoint(Command newWaypoint) {
@@ -211,7 +245,7 @@ void FlightController::publishToControl(double timeToFly){
         // Implement some waiting if none has subscribed
         // while(pub_control.getNumSubscribers() == 0);
 
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
         //loop_rate.sleep();
     }
@@ -226,7 +260,7 @@ void FlightController::publishToControl(double timeToFly){
 
     pub_control.publish(cmd);
     for(int k = 0; k < LOOP_RATE; k++){
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 }
@@ -257,7 +291,7 @@ void FlightController::takeOff() {
     pub_takeoff.publish(empty_msg);
 
     for(int i = 0; i < takeoff_time*LOOP_RATE; i++){
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 
@@ -276,7 +310,7 @@ void FlightController::land() {
     pub_land.publish(empty_msg);
 
     for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 }
@@ -284,7 +318,7 @@ void FlightController::land() {
 void FlightController::reset(){
     std_msgs::Empty empty_msg;
     pub_reset.publish(empty_msg);
-    ros::spinOnce();
+    //ros::spinOnce();
 }
 
 void FlightController::setStraightFlight(bool newState) {
@@ -322,4 +356,46 @@ MyVector FlightController::transformCoordinates(MyVector incomingVector) {
 
 }
 
+void FlightController::startProgram() {
+    if (!started) {
+        ROS_INFO("STARTING!");
+        pthread_t thread;
+        myThreadData.controller = this;
+        pthread_create(&thread, NULL, startController, &myThreadData);
+        started = true;
+    }
+}
 
+void FlightController::resetProgram(){
+    ROS_INFO("MANUEL RESET!");
+    reset();
+}
+
+void FlightController::abortProgram(){
+    ROS_INFO("MANUEL ABORT!");
+    land();
+}
+
+void* startNavdata(void *thread_arg){
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+
+    thread_data->navData->run();
+    pthread_exit(NULL);
+}
+
+void* startCV(void *thread_arg) {
+    /*struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+*/
+    cvHandlerTwo->run();
+    pthread_exit(NULL);
+}
+
+void* startController(void *thread_arg){
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+
+    thread_data->controller->run();
+    pthread_exit(NULL);
+}
