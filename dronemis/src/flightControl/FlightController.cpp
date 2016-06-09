@@ -48,7 +48,7 @@ FlightController::~FlightController() {
     // TODO implement this to actually do something
 }
 
-void FlightController::run(Nav navdata, CV_Handler cv_handler){
+void FlightController::run(Nav *navdata, CV_Handler *cv_handler){
 
     Route myRoute;
     myRoute.initRoute(true);

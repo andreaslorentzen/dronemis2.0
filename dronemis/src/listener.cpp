@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     Nav nav;
-    nav.run(n);
+    //nav.run(n);
 
 /*
     ros::NodeHandle n;

@@ -4,10 +4,7 @@
 
 #include "Nav.h"
 
-void Nav::run(ros::NodeHandle n) {
-    ros::Subscriber sub_navdata = n.subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
-    ros::Subscriber sub_init = n.subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
-
+void Nav::run() {
     last = current_time();
 
     ros::spin();
@@ -67,6 +64,15 @@ Nav::Nav() {
     running = 1;
     position.x = 0.0;
     position.y = 0.0;
+}
+
+Nav::Nav(ros::NodeHandle n){
+    running = 1;
+    position.x = 0.0;
+    position.y = 0.0;
+    ros::Subscriber sub_navdata = n.subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
+    ros::Subscriber sub_init = n.subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
+
 }
 
 
