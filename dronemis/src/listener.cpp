@@ -4,6 +4,8 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Empty.h"
 #include "ardrone_autonomy/Navdata.h"
+#include "navdata/Nav.h"
+
 
 unsigned int state = 0;
 
@@ -35,7 +37,12 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "listener");
     ROS_INFO("start");
+    ros::NodeHandle n;
 
+    Nav nav;
+    nav.run(n);
+
+/*
     ros::NodeHandle n;
 
     ros::Subscriber sub_navdata = n.subscribe("ardrone/navdata", 5000, navdataCallback2);
@@ -48,7 +55,7 @@ int main(int argc, char **argv)
 
 
     ros::spin();
-
+*/
     return 0;
 }
 double current_time() {
