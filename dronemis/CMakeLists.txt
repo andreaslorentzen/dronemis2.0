@@ -131,22 +131,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-set(GUI_SOURCE_FILES
-        src/GUI/main_gui.cpp
-        src/GUI/GUI.cpp
-        src/GUI/VideoHandler.cpp)
-set(GUI_HEADER_FILES
-        src/GUI/GUI.h
-        src/GUI/VideoHandler.h
-        )
-
-add_executable(dronemis_gui src/GUI/main_gui.cpp ${GUI_SOURCE_FILES} ${GUI_HEADER_FILES})
-set_target_properties(dronemis_gui PROPERTIES COMPILE_FLAGS "-D_LINUX -D_REENTRANT -Wall  -O3 -march=nocona -msse3")
-target_link_libraries(dronemis_gui ${catkin_LIBRARIES} ${OpenCV_LIBS})
-target_include_directories(dronemis_gui PUBLIC ${OPENCV_INCLUDE_DIRS})
-
-add_dependencies(dronemis_gui ${PROJECT_NAME}_gencpp)
-
 ## Declare a C++ library
 # add_library(dronemis
 #   src/${PROJECT_NAME}/dronemis.cpp
@@ -173,22 +157,22 @@ target_link_libraries(listener ${catkin_LIBRARIES})
 add_dependencies(listener dronemis_generate_messages_cpp)
 
 set(BLINDFLIGHT_SOURCE_FILES
-        src/flightControl/blindFlight.cpp
         src/flightControl/Route.cpp
         src/flightControl/FlightController.cpp
         src/flightControl/Route.cpp
         src/GUI/ControlPanel/controlpanel.cpp
         src/GUI/VideoHandler.cpp
-        src/GUI/GUI.cpp
         src/OpenCv/Color.cpp
         src/OpenCv/Cascade.cpp
         src/OpenCv/CV_Handler.cpp
+        src/main.cpp)
 
         src/navdata/Nav.cpp)
 set(BLINDFLIGHT_HEADER_FILES
         src/flightControl/Route.h
         src/flightControl/FlightController.h src/flightControl/Command.h
-        src/flightControl/blindFlight.h src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h src/GUI/GUI.h src/navdata/Nav.h)
+        src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h)
+        src/flightControl/blindFlight.h src/flightControl/Route.h src/OpenCv/Color.h src/OpenCv/Cascade.h src/OpenCv/CV_Handler.h src/GUI/ControlPanel/controlpanel.h src/GUI/VideoHandler.h src/navdata/Nav.h)
 
 set(BLINDFLIGHT_UI_FILES
         src/GUI/ControlPanel/controlpanel.ui
@@ -207,7 +191,7 @@ QT4_WRAP_CPP(BLINDFLIGHT_HEADER_FILES_HPP ${BLINDFLIGHT_HEADER_FILES})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
-add_executable(blindFlight src/flightControl/blindFlight.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES} ${BLINDFLIGHT_RESOURCE_FILES_CPP} ${BLINDFLIGHT_UI_FILES_HPP} ${BLINDFLIGHT_HEADER_FILES_HPP})
+add_executable(blindFlight src/main.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGHT_HEADER_FILES} ${BLINDFLIGHT_RESOURCE_FILES_CPP} ${BLINDFLIGHT_UI_FILES_HPP} ${BLINDFLIGHT_HEADER_FILES_HPP})
 target_link_libraries(blindFlight ${QT_LIBRARIES} cvd ${catkin_LIBRARIES})
 add_dependencies(blindFlight dronemis_generate_messages_cpp)
 

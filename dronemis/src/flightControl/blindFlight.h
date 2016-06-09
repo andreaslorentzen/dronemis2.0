@@ -14,7 +14,7 @@
 #include <QApplication>
 #include "FlightController.h"
 
-#define NUM_THREADS 2
+#define NUM_THREADS 3
 #define LOOP_RATE (50)
 
 class blindFlight {

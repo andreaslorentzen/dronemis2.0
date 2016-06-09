@@ -3,15 +3,15 @@
 //
 
 #include "blindFlight.h"
-
-#define NUM_THREADS 2
-#define LOOP_RATE (50)
+#include "../OpenCv/CV_Handler.h"
 
 void *controlThread(void *thread_arg);
 void *buttonThread(void *thread_arg);
+void *cvThread(void *thread_arg);
 struct blindFlight::thread_data td[NUM_THREADS];
 bool started = false;
 FlightController *controller;
+CV_Handler *cvHandler;
 
 int main(int argc, char **argv) {
 
@@ -22,9 +22,12 @@ int main(int argc, char **argv) {
     ros::NodeHandle n;
 
     controller = new FlightController(LOOP_RATE, n);
+    cvHandler = new CV_Handler();
 
-    pthread_t threads[NUM_THREADS];
+    pthread_t threads[2];
     pthread_create(&threads[1], NULL, buttonThread, &td[1]);
+    pthread_create(&threads[1], NULL, cvThread, &td[2]);
+
 
     ros::spin();
 
@@ -32,7 +35,7 @@ int main(int argc, char **argv) {
 }
 
 
-void *controlThread(void *thread_arg) { 
+void *controlThread(void *thread_arg) {
 
     Route myRoute;
     myRoute.initRoute(true);
@@ -41,9 +44,6 @@ void *controlThread(void *thread_arg) {
     controller->setStraightFlight(true);
 
     while (ros::ok()) {
-
-        printf("Enter a key to start: ");
-        getchar();
 
         controller->takeOff();
 
@@ -61,14 +61,17 @@ void *controlThread(void *thread_arg) {
 
         controller->land();
 
+        started = false;
         pthread_exit(NULL);
 
     }
 
+    started = false;
     pthread_exit(NULL);
 }
 
 void *buttonThread(void *thread_arg) {
+
     struct blindFlight::thread_data *thread_data;
     thread_data = (struct blindFlight::thread_data *) thread_arg;
 
@@ -77,6 +80,12 @@ void *buttonThread(void *thread_arg) {
     ControlPanel w;
     w.show();
     a.exec();
+
+    pthread_exit(NULL);
+}
+
+void *cvThread(void *thread_arg) {
+    cvHandler->run();
 
     pthread_exit(NULL);
 }
@@ -94,8 +103,8 @@ void blindFlight::resetProgram(void) {
 void blindFlight::startProgram(void) {
     if (!started) {
         ROS_INFO("STARTING!");
-        pthread_t threads[NUM_THREADS];
-        pthread_create(&threads[0], NULL, controlThread, &td[0]);
+        pthread_t thread;
+        pthread_create(&thread, NULL, controlThread, &td[0]);
         started = true;
     }
 }
