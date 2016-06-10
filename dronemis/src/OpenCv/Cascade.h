@@ -33,7 +33,9 @@ public:
     Cascade(void);
     virtual ~Cascade(void);
     bool setCascade(const int cascadeNumber);
-    cv::Mat checkCascade(cv::Mat image);
+
+    Cascade::foundCascade checkCascade(cv::Mat image);
+
 };
 
 #endif //PROJECT_CASCADE_H

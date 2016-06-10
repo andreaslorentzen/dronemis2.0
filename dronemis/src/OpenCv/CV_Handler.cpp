@@ -137,7 +137,7 @@ CV_Handler::cascadeInfo **CV_Handler::checkCascades(void) {
 
     int i = 0;
     while (ros::ok()) {
-        processedImage = cascade->checkCascade(imageBW);
+        cascade->checkCascade(imageBW);
         if (i++ == 4)
             break;
         r.sleep();
