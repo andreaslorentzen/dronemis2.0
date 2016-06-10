@@ -38,10 +38,13 @@ int main(int argc, char **argv){
 
     controller = new FlightController(LOOP_RATE, n, spinner);
 
+    td[0].n = n;
+
     pthread_t thread;
     pthread_create(&thread, NULL, buttonThread, &td[0]);
 
     pthread_exit(NULL);
+
 }
 
 void *buttonThread(void *thread_arg) {
