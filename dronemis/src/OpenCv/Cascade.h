@@ -12,6 +12,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
+#include "../OpenCv/CV_Handler.h"
 
 class Cascade {
 
@@ -32,7 +33,7 @@ public:
     Cascade(void);
     virtual ~Cascade(void);
     bool setCascade(const int cascadeNumber);
-    int checkCascade( sensor_msgs::ImageConstPtr img );
+    cv::Mat checkCascade(cv::Mat image);
 };
 
 #endif //PROJECT_CASCADE_H

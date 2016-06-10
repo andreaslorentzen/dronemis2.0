@@ -5,29 +5,30 @@
 #ifndef PROJECT_VIDEOHANDLER_H
 #define PROJECT_VIDEOHANDLER_H
 
-
-#include <string>
+#include "std_msgs/Empty.h"
+#include "stdlib.h"
+#include "std_srvs/Empty.h"
+#include "ros/ros.h"
+#include "std_msgs/String.h"
 #include <ros/ros.h>
-#include "GUI.h"
-#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/Image.h>
+#include "../OpenCv/CV_Handler.h"
 
 class VideoHandler {
-private:
-    GUI *gui;
 
+private:
     ros::NodeHandle nodeHandle;
     ros::Subscriber video_subscriber;
+    ros::ServiceClient cam_service;
     std::string video_channel;
+    ros::NodeHandle cam_channel;
+    std_srvs::Empty toggleCam_srv_srvs;
+    void video(sensor_msgs::ImageConstPtr img);
 
 public:
-    VideoHandler(void);
+    VideoHandler(CV_Handler * cvHandler);
     virtual ~VideoHandler(void);
-
-    void video(const sensor_msgs::ImageConstPtr img);
-    void runGUI();
-    const ros::Subscriber &getVideo_subscriber() const {
-        return video_subscriber;
-    }
+    void swapCam();
 };
 
 

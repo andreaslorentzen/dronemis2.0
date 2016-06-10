@@ -21,7 +21,7 @@ public:
     Route();
     ~Route();
     void initRoute(bool useFile);
-    //Command findNearestWaypoint(double x, double y);
+    Command findNearestWaypoint(double x, double y, double z);
     Command nextCommand();
     bool hasAllBeenVisited();
 private:

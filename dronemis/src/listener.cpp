@@ -39,8 +39,9 @@ int main(int argc, char **argv)
     ROS_INFO("start");
     ros::NodeHandle n;
 
-    Nav nav;
-    nav.run(n);
+    Nav nav(n);
+    nav.run();
+
 
 /*
     ros::NodeHandle n;
