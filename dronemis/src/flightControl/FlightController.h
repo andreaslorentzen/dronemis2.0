@@ -48,13 +48,14 @@ private:
     int takeoff_time;
     double precision;
     bool straightFlight;
+    double maxSpeed;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;
     ros::Publisher pub_reset;
-    Nav navData;
+    Nav *navData;
     CV_Handler *cvHandler;
-
+    double getSpeed(double distance);
     geometry_msgs::Twist cmd;
     void publishToControl(double timeToFly);
     MyVector transformCoordinates(MyVector incomingVector);

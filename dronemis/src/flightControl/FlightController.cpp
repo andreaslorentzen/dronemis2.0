@@ -4,14 +4,14 @@
 
 #include "FlightController.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
 void* startController(void *thread_arg);
 
 struct thread_data{
-    Nav navData;
+    Nav *navData;
     CV_Handler *cvHandler;
     FlightController *controller;
     ros::MultiThreadedSpinner spinner;
@@ -19,7 +19,7 @@ struct thread_data{
 } myThreadData;
 
 FlightController::FlightController(){
-    baseSpeed = 0.5;
+    baseSpeed = 0.1;
     LOOP_RATE = 0;
     takeoff_time = 3;
     cmd.linear.x = 0.0;
@@ -32,7 +32,7 @@ FlightController::FlightController(){
 }
 
 FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::MultiThreadedSpinner spinner) {
-    baseSpeed = 0.2;
+    baseSpeed = 0.1;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
     straightFlight = false;
@@ -42,10 +42,12 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::Multi
     pub_reset = nh->advertise<std_msgs::Empty>("/ardrone/reset", 1);
 
     precision = 50;
+    maxSpeed = 0.5;
 
     cvHandler = new CV_Handler();
 
     myThreadData.cvHandler = cvHandler;
+    navData = new Nav();
     myThreadData.navData = navData;
     myThreadData.spinner = spinner;
     myThreadData.n = nh;
@@ -104,64 +106,79 @@ void FlightController::run(){
 }
 
 void FlightController::goToWaypoint(Command newWaypoint) {
-    double timeToFly;
+    double dx = newWaypoint.x - navData->position.x;
+    double dy = newWaypoint.y - navData->position.y;
+    double dz = newWaypoint.z - navData->position.z;
 
-    double dx = newWaypoint.x - navData.position.x;
-    double dy = newWaypoint.y - navData.position.y;
-    double dz = newWaypoint.z - navData.position.z;
+    bool moved = false;
 
 
+    while(abs(dz) > precision){
+        cmd.linear.z = getSpeed(dz);
+
+        pub_control.publish(cmd);
+        dz = newWaypoint.z - navData->position.z;
+
+#ifdef DEBUG
+        ROS_INFO("dz = %F", dz);
+#endif
+        ros::Rate(LOOP_RATE).sleep();
+        moved = true;
+    }
+
+    if(moved)
+        hover(1);
+
+    moved = false;
     if (!straightFlight) {
         // TODO decide if this should be implemented or not
     } else{
-
-        /*timeToFly = (absX / baseSpeed)/2;
-
-        if(diffX < 0){
-            cmd.linear.x = -baseSpeed;
-        } else
-            cmd.linear.x = baseSpeed;
-
-#ifdef DEBUG
-            ROS_INFO("Time to fly = %F", timeToFly);
-            ROS_INFO("X = %F", cmd.linear.x);
-#endif
-
-        publishToControl(timeToFly/2);*/
-
-
         while(abs(dx) > precision){
-            cmd.linear.x = 0.5;
+            cmd.linear.x = getSpeed(dx);
+
             pub_control.publish(cmd);
-            dx = newWaypoint.x - navData.position.x;
-            usleep(10);
+            dx = newWaypoint.x - navData->position.x;
+
+        #ifdef DEBUG
+
+            ROS_INFO("newpoint = %F", newWaypoint.x);
+            ROS_INFO("navData = %F", navData->position.x);
+            ROS_INFO("dx = %F", dx);
+            ROS_INFO("Speed = %F", cmd.linear.x);
+        #endif
+            ros::Rate(LOOP_RATE).sleep();
+            moved = true;
         }
 
-        hover(1);
+        if(moved)
+            hover(1);
 
+        moved = false;
         while(abs(dy) > precision){
-            cmd.linear.y = 0.5;
-            pub_control.publish(cmd);
-            dy = newWaypoint.y - navData.position.y;
 
-            usleep(10);
+            cmd.linear.y = getSpeed(dy);
+
+            pub_control.publish(cmd);
+            dy = newWaypoint.y - navData->position.y;
+
+        #ifdef DEBUG
+            ROS_INFO("dy = %F", dy);
+        #endif
+            ros::Rate(LOOP_RATE).sleep();
+            moved = true;
         }
 
-        hover(1);
-
-        while(abs(dz) > precision){
-            cmd.linear.z = 0.5;
-            pub_control.publish(cmd);
-            dz = newWaypoint.z - navData.position.z;
-            usleep(10);
-        }
-
-        hover(1);
-
-
+        if(moved)
+            hover(1);
     }
+}
 
+double FlightController::getSpeed(double distance) {
+    double speed = baseSpeed*(distance/150);
+    if(speed > maxSpeed)
+        speed = maxSpeed;
 
+    return speed;
 }
 
 void FlightController::publishToControl(double timeToFly){
@@ -222,9 +239,6 @@ void FlightController::takeOff() {
     }
 
     hover(1);
-
-    cmd.linear.z = 0.5;
-    publishToControl(2);
 }
 
 void FlightController::land() {
@@ -307,7 +321,7 @@ void* startNavdata(void *thread_arg){
     thread_data = (struct thread_data *) thread_arg;
 
 
-    thread_data->navData.run(thread_data->n, thread_data->spinner);
+    thread_data->navData->run(thread_data->n, thread_data->spinner);
     pthread_exit(NULL);
 }
 
