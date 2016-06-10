@@ -65,7 +65,7 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     threadData.cvHandler = this;
     pthread_create(&thread, NULL, show, &threadData);
 
-    // spinning this way instead of ros::spin.
+    // spinning this way instead of ros::spin.'
     while(ros::ok())
         ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
 
