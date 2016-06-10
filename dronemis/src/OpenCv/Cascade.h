@@ -24,10 +24,8 @@ public:
         int x;
         int y;
         int z;
-        int min_x;
-        int max_x;
-        int min_y;
-        int max_y;
+        int width;
+        int height;
     };
 
     Cascade(void);

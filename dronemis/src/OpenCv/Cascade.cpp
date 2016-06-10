@@ -57,8 +57,12 @@ Cascade::foundCascade Cascade::checkCascade(cv::Mat image) {
 
     for( size_t i = 0; i < cubes.size(); i++ )
     {
-        Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
-        ellipse( frame_modified, center, Size( cubes[i].width*0.5, cubes[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+        cubes[i].x = cascade.x;
+        cubes[i].y = cascade.y;
+        cubes[i].width = cascade.width;
+        cubes[i].height = cascade.height;
+        /*Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
+        ellipse( frame_modified, center, Size( cubes[i].width*0.5, cubes[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );*/
     }
     std::cout << cubes.size() << std::endl;
 

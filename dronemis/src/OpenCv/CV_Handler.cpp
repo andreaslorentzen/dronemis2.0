@@ -14,7 +14,6 @@ struct thread_data{
 } threadData;
 
 void *show(void *thread_arg);
-void *cascadeHandler(void *thread_arg);
 
 CV_Handler::CV_Handler(void) {
 
@@ -119,31 +118,34 @@ CV_Handler::cascadeInfo **CV_Handler::checkColors(void) {
 
 
 CV_Handler::cascadeInfo **CV_Handler::checkCascades(void) {
-    swapCam();
+
     greySelected = true;
 
     ros::Rate r(10); // 10 hz
 
     cv::Mat processedImage;
 
+    int i = 0;
     boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
-    cv::Mat imageBW(storedImageBW.size().y,
+    lock.unlock();
+
+    while (ros::ok()) {
+
+        lock.lock();
+
+        cv::Mat imageBW(storedImageBW.size().y,
                     storedImageBW.size().x,
                     CV_8UC1,
                     storedImageBW.data());
 
-    lock.unlock();
-    new_frame_signal.notify_all();
+        lock.unlock();
+        new_frame_signal.notify_all();
 
-    int i = 0;
-    while (ros::ok()) {
-        cascade->checkCascade(imageBW);
+        foundCascade = cascade->checkCascade(imageBW);
         if (i++ == 4)
             break;
         r.sleep();
     }
-
-
 
     storedImageBW.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
 
