@@ -197,7 +197,7 @@ add_executable(blindFlight src/main.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGH
 target_link_libraries(blindFlight ${QT_LIBRARIES} cvd ${catkin_LIBRARIES})
 add_dependencies(blindFlight dronemis_generate_messages_cpp)
 
-
+target_compile_features(blindFlight PRIVATE cxx_range_for)
 #############
 ## Install ##
 #############
