@@ -3,6 +3,7 @@
 //
 
 #include "FlightController.h"
+#include "../navdata/Nav.h"
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
@@ -107,57 +108,56 @@ void FlightController::run(){
 void FlightController::goToWaypoint(Command newWaypoint) {
     double timeToFly;
 
-    double diffX = newWaypoint.x - navData.position.x;
-    double diffY = newWaypoint.y - navData.position.y;
-    double diffZ = newWaypoint.z - navData.position.z;
-    double absX = abs(diffX);
-    double absY = abs(diffY);
+    double dx = newWaypoint.x - navData.position.x;
+    double dy = newWaypoint.y - navData.position.y;
+    double dz = newWaypoint.z - navData.position.z;
+
 
     if (!straightFlight) {
         // TODO decide if this should be implemented or not
     } else{
-        if(diffX != 0.0){
-            timeToFly = (absX / baseSpeed)/2;
 
-            if(diffX < 0){
-                cmd.linear.x = -baseSpeed;
-            } else
-                cmd.linear.x = baseSpeed;
+        /*timeToFly = (absX / baseSpeed)/2;
 
-            ROS_INFO("Time to fly = %F", timeToFly);
-            ROS_INFO("X = %F", cmd.linear.x);
-
-            publishToControl(timeToFly/2);
-
-        }
-
-        if(diffY != 0.0){
-            timeToFly = (absY / baseSpeed)/2;
-
-            if(diffY < 0)
-                cmd.linear.y = -baseSpeed;
-            else
-                cmd.linear.y = baseSpeed;
-
-            ROS_INFO("Time to fly = %F", timeToFly);
-            ROS_INFO("Y = %F", cmd.linear.x);
-
-            publishToControl(timeToFly/2);
-
-        }
-    }
-    if (diffZ != 0.0){
-        timeToFly = (abs(diffZ) / baseSpeed)/2;
-
-        if(diffZ < 0)
-            cmd.linear.z = -baseSpeed;
-        else
-            cmd.linear.z = baseSpeed;
+        if(diffX < 0){
+            cmd.linear.x = -baseSpeed;
+        } else
+            cmd.linear.x = baseSpeed;
 
         ROS_INFO("Time to fly = %F", timeToFly);
-        ROS_INFO("Z = %F", cmd.linear.z);
+        ROS_INFO("X = %F", cmd.linear.x);
 
-        publishToControl(timeToFly);
+        publishToControl(timeToFly/2);*/
+
+
+        while(abs(dx) > precision){
+            cmd.linear.x = 0.5;
+            pub_control.publish(cmd);
+            dx = newWaypoint.x - navData.position.x;
+            usleep(10);
+        }
+
+        hover(1);
+
+        while(abs(dy) > precision){
+            cmd.linear.y = 0.5;
+            pub_control.publish(cmd);
+            dy = newWaypoint.y - navData.position.y;
+
+            usleep(10);
+        }
+
+        hover(1);
+
+        while(abs(dz) > precision){
+            cmd.linear.z = 0.5;
+            pub_control.publish(cmd);
+            dz = newWaypoint.z - navData.position.z;
+            usleep(10);
+        }
+
+        hover(1);
+
 
     }
 
