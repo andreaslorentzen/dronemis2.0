@@ -12,6 +12,7 @@
 #include <ros/node_handle.h>
 #include <geometry_msgs/Twist.h>
 #include "std_msgs/String.h"
+#include "ros/callback_queue.h"
 
 class Nav {
 private:
@@ -25,6 +26,7 @@ public:
         float x;
         float y;
         int z;
+
     } position;
     float rotation;
 
@@ -32,8 +34,7 @@ public:
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
-    Nav(ros::NodeHandle n);
-    void run();
+    void run(ros::NodeHandle *n, ros::MultiThreadedSpinner spinner);
 
 };
 

@@ -21,10 +21,18 @@ class CV_Handler {
 
 private:
 
-
 public:
+
+    bool cascade_image_ready;
+    bool greySelected;
     boost::condition_variable  new_frame_signal;
     boost::mutex new_frame_signal_mutex;
+    boost::condition_variable  new_cascade_signal;
+    boost::mutex new_cascade_signal_mutex;
+    CVD::Image<CVD::byte> storedImageBW;
+    CVD::Image<CVD::byte> workImageBW;
+    CVD::Image<CVD::Rgb <float> > storedImage;
+    CVD::Image<CVD::Rgb <float> > workImage;
 
 
     struct cascadeInfo {

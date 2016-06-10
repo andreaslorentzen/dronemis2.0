@@ -2,7 +2,6 @@
 #include "ui_controlpanel.h"
 
 
-
 ControlPanel::ControlPanel(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ControlPanel)
@@ -15,25 +14,29 @@ ControlPanel::~ControlPanel(void)
     delete ui;
 }
 
+void ControlPanel::setController(FlightController *newController){
+    controller = newController;
+}
+
 void ControlPanel::on_pushButton_Start_clicked(void)
 {
-    blindFlight::startProgram();
+    controller->startProgram();
 }
 
 void ControlPanel::on_pushButton_Reset_clicked(void)
 {
-    blindFlight::resetProgram();
+    controller->resetProgram();
 }
 
 void ControlPanel::on_pushButton_Stop_clicked(void)
 {
-    blindFlight::abortProgram();
+    controller->abortProgram();
 }
 
 void ControlPanel::on_pushButton_shutdown_clicked(void)
 {
     const char* command = "kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')";
-    blindFlight::resetProgram();
+    controller->resetProgram();
     system(command);
     exit (EXIT_SUCCESS);
 }

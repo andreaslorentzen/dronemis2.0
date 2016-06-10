@@ -28,7 +28,7 @@ struct MyVector{
 class FlightController{
 public:
     FlightController();
-    FlightController(int loopRate, ros::NodeHandle nh);
+    FlightController(int loopRate, ros::NodeHandle *nh, ros::MultiThreadedSpinner spinner);
     ~FlightController();
     void goToWaypoint(Command newWaypoint);
     void turnDrone(double degrees);
@@ -37,14 +37,13 @@ public:
     void land();
     void reset();
     void setStraightFlight(bool newState);
-    void run(Nav *navdata, CV_Handler *cv_handler);
+    void run();
+    void startProgram(void);
+    void resetProgram(void);
+    void abortProgram(void);
 private:
-    // drone possition
-    double x;
-    double y;
-    double z;
-    double rotation;
     double baseSpeed;
+    bool started;
     int LOOP_RATE;
     int takeoff_time;
     double precision;
@@ -53,6 +52,8 @@ private:
     ros::Publisher pub_land;
     ros::Publisher pub_control;
     ros::Publisher pub_reset;
+    Nav navData;
+    CV_Handler *cvHandler;
 
     geometry_msgs::Twist cmd;
     void publishToControl(double timeToFly);

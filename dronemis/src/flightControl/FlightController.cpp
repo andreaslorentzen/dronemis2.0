@@ -4,10 +4,19 @@
 
 #include "FlightController.h"
 
+void* startNavdata(void *thread_args);
+void* startCV(void *thread_args);
+void* startController(void *thread_arg);
+
+struct thread_data{
+    Nav navData;
+    CV_Handler *cvHandler;
+    FlightController *controller;
+    ros::MultiThreadedSpinner spinner;
+    ros::NodeHandle *n;
+} myThreadData;
+
 FlightController::FlightController(){
-    x = 0;
-    y = 0;
-    z = 0;
     baseSpeed = 0.5;
     LOOP_RATE = 0;
     takeoff_time = 3;
@@ -20,20 +29,29 @@ FlightController::FlightController(){
     straightFlight = false;
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
-    x = 0;
-    y = 0;
-    z = 0;
+FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::MultiThreadedSpinner spinner) {
     baseSpeed = 0.2;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
     straightFlight = false;
-    pub_land = nh.advertise<std_msgs::Empty>("/ardrone/land", 1);
-    pub_takeoff = nh.advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
-    pub_control = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
-    pub_reset = nh.advertise<std_msgs::Empty>("/ardrone/reset", 1);
-    rotation = 0;
+    pub_land = nh->advertise<std_msgs::Empty>("/ardrone/land", 1);
+    pub_takeoff = nh->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
+    pub_control = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    pub_reset = nh->advertise<std_msgs::Empty>("/ardrone/reset", 1);
+
     precision = 50;
+
+    cvHandler = new CV_Handler();
+
+    myThreadData.cvHandler = cvHandler;
+    myThreadData.navData = navData;
+    myThreadData.spinner = spinner;
+    myThreadData.n = nh;
+
+    pthread_t threads[2];
+    pthread_create(&threads[0], NULL, startCV, &myThreadData);
+    pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
+
 
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
@@ -45,22 +63,26 @@ FlightController::FlightController(int loopRate, ros::NodeHandle nh) {
 
 // Destructor
 FlightController::~FlightController() {
-    // TODO implement this to actually do something
+    delete(cvHandler);
 }
 
-void FlightController::run(Nav *navdata, CV_Handler *cv_handler){
-
+void FlightController::run(){
     Route myRoute;
     myRoute.initRoute(true);
+
 
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
+    ROS_INFO("SOMESTUFF");
+
+
     while (ros::ok()) {
 
         takeOff();
-
+        ROS_INFO("BEFORE TAKEOFF");
         while (!myRoute.hasAllBeenVisited()) {
+            ROS_INFO("HI THERE");
             Command currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
@@ -76,79 +98,23 @@ void FlightController::run(Nav *navdata, CV_Handler *cv_handler){
 
         break;
     }
+
+
+
+    return;
 }
 
 void FlightController::goToWaypoint(Command newWaypoint) {
     double timeToFly;
-    double diffX = newWaypoint.x - x;
-    double diffY = newWaypoint.y - y;
-    double diffZ = newWaypoint.z - z;
+
+    double diffX = newWaypoint.x - navData.position.x;
+    double diffY = newWaypoint.y - navData.position.y;
+    double diffZ = newWaypoint.z - navData.position.z;
     double absX = abs(diffX);
     double absY = abs(diffY);
-    double deltaDiffs;
 
     if (!straightFlight) {
-        if (diffX != 0 && diffY != 0) {
-            timeToFly = (std::sqrt(std::pow(diffX, 2) + std::pow(diffY, 2)) / baseSpeed)/2;
-            double glideSpeed = pow(baseSpeed, 2);
-            if (absX == absY) {
-                double actualSpeed = sqrt(glideSpeed * 0.5);
-                if (diffX < 0)
-                    cmd.linear.x = -actualSpeed;
-                else
-                    cmd.linear.x = actualSpeed;
-
-                if (diffY < 0)
-                    cmd.linear.y = -actualSpeed;
-                else
-                    cmd.linear.y = actualSpeed;
-            } else if (absX > absY) {
-                // De her to elseifs virker måske, men er ikke ligefrem sikker.
-                deltaDiffs = absY / absX;
-
-                if (diffY < 0)
-                    cmd.linear.y = -sqrt(glideSpeed * deltaDiffs);
-                else
-                    cmd.linear.y = sqrt(glideSpeed * deltaDiffs);
-
-                if (diffX < 0)
-                    cmd.linear.x = -sqrt(glideSpeed * (1.0 - deltaDiffs));
-                else
-                    cmd.linear.x = sqrt(glideSpeed * (1.0 - deltaDiffs));
-
-            } else if (absX < absY) {
-                deltaDiffs = absX / absY;
-
-                if (diffX < 0)
-                    cmd.linear.x = sqrt(glideSpeed * deltaDiffs);
-                else
-                    cmd.linear.x = -sqrt(glideSpeed * deltaDiffs);
-
-                if (diffY < 0)
-                    cmd.linear.y = -sqrt(glideSpeed * (1.0 - deltaDiffs));
-                else
-                    cmd.linear.y = sqrt(glideSpeed * (1.0 - deltaDiffs));
-            }
-        } else {
-            if (diffX != 0) {
-                timeToFly = (absX / baseSpeed)/2;
-                if (diffX < 0)
-                    cmd.linear.x = -baseSpeed;
-                else
-                    cmd.linear.x = baseSpeed;
-            } else {
-                timeToFly = (absX / baseSpeed)/2;
-                if (diffY < 0)
-                    cmd.linear.y = -baseSpeed;
-                else
-                    cmd.linear.y = baseSpeed;
-            }
-        }
-
-        publishToControl(timeToFly);
-
-        x = newWaypoint.x;
-        y = newWaypoint.y;
+        // TODO decide if this should be implemented or not
     } else{
         if(diffX != 0.0){
             timeToFly = (absX / baseSpeed)/2;
@@ -163,7 +129,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
             publishToControl(timeToFly/2);
 
-            x = newWaypoint.x;
         }
 
         if(diffY != 0.0){
@@ -179,7 +144,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
             publishToControl(timeToFly/2);
 
-            y = newWaypoint.y;
         }
     }
     if (diffZ != 0.0){
@@ -195,7 +159,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
         publishToControl(timeToFly);
 
-        z = newWaypoint.z;
     }
 
 
@@ -211,7 +174,7 @@ void FlightController::publishToControl(double timeToFly){
         // Implement some waiting if none has subscribed
         // while(pub_control.getNumSubscribers() == 0);
 
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
         //loop_rate.sleep();
     }
@@ -226,16 +189,13 @@ void FlightController::publishToControl(double timeToFly){
 
     pub_control.publish(cmd);
     for(int k = 0; k < LOOP_RATE; k++){
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 }
 
 void FlightController::turnDrone(double degrees) {
-    // Denne metode er langt fra præcis
-    cmd.angular.z = 0.5;
-    ROS_INFO("Turning %F", degrees);
-    publishToControl(((degrees/22.5)));
+    // TODO benyt marcuses implementation
 }
 
 void FlightController::hover(int time){
@@ -257,7 +217,7 @@ void FlightController::takeOff() {
     pub_takeoff.publish(empty_msg);
 
     for(int i = 0; i < takeoff_time*LOOP_RATE; i++){
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 
@@ -276,7 +236,7 @@ void FlightController::land() {
     pub_land.publish(empty_msg);
 
     for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
-        ros::spinOnce();
+        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 }
@@ -284,7 +244,7 @@ void FlightController::land() {
 void FlightController::reset(){
     std_msgs::Empty empty_msg;
     pub_reset.publish(empty_msg);
-    ros::spinOnce();
+    //ros::spinOnce();
 }
 
 void FlightController::setStraightFlight(bool newState) {
@@ -292,21 +252,21 @@ void FlightController::setStraightFlight(bool newState) {
 }
 
 MyVector FlightController::transformCoordinates(MyVector incomingVector) {
-    MyVector rotationMatrix[3];
+   /* MyVector rotationMatrix[3];
     rotationMatrix[0] = MyVector(cos(rotation), -sin(rotation), 0);
     rotationMatrix[1] = MyVector(sin(rotation), cos(rotation), 0);
     rotationMatrix[2] = MyVector(0, 0, 1);
 
-    MyVector tempVector(incomingVector.x-x, incomingVector.y-y, incomingVector.z-z);
+    MyVector tempVector(incomingVector.x-navData->position.x, incomingVector.y-navData->position.y, incomingVector.z-navData->position.z);
 
     MyVector resultVector(rotationMatrix[0].x*tempVector.x+rotationMatrix[0].y*tempVector.y+rotationMatrix[0].z*tempVector.z,
                         rotationMatrix[1].x*tempVector.x+rotationMatrix[1].y*tempVector.y+rotationMatrix[1].z*tempVector.z,
                         rotationMatrix[2].x*tempVector.x+rotationMatrix[2].y*tempVector.y+rotationMatrix[2].z*tempVector.z);
 
 
-    resultVector.x += x;
-    resultVector.y += y;
-    resultVector.z += z;
+    resultVector.x += navData->position.x;
+    resultVector.y += navData->position.y;
+    resultVector.z += navData->position.z;
 
     ROS_INFO("Incoming vector;");
     ROS_INFO("X = %F", incomingVector.x);
@@ -317,9 +277,52 @@ MyVector FlightController::transformCoordinates(MyVector incomingVector) {
     ROS_INFO("X = %F", resultVector.x);
     ROS_INFO("Y = %F", resultVector.y);
     ROS_INFO("Z = %F", resultVector.z);
-
-    return resultVector;
+*/
+    return incomingVector;
 
 }
 
+void FlightController::startProgram() {
+    if (!started) {
+        ROS_INFO("STARTING!");
+        pthread_t thread;
+        myThreadData.controller = this;
+        pthread_create(&thread, NULL, startController, &myThreadData);
+        started = true;
+    }
+}
 
+void FlightController::resetProgram(){
+    ROS_INFO("MANUEL RESET!");
+    reset();
+}
+
+void FlightController::abortProgram(){
+    ROS_INFO("MANUEL ABORT!");
+    land();
+}
+
+void* startNavdata(void *thread_arg){
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+
+
+    thread_data->navData.run(thread_data->n, thread_data->spinner);
+    pthread_exit(NULL);
+}
+
+void* startCV(void *thread_arg) {
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+
+    thread_data->cvHandler->run();
+    pthread_exit(NULL);
+}
+
+void* startController(void *thread_arg){
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+
+    thread_data->controller->run();
+    pthread_exit(NULL);
+}

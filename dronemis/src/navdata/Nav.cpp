@@ -4,14 +4,26 @@
 
 #include "Nav.h"
 
-void Nav::run() {
+void Nav::run(ros::NodeHandle *n, ros::MultiThreadedSpinner spinner) {
     last = current_time();
+    ros::Subscriber sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
+    ros::Subscriber sub_magneto = n->subscribe<ardrone_autonomy::navdata_magneto>("ardrone/navdata_magneto", 5000, &Nav::magnetoCallback, this);
+    ros::Subscriber sub_init = n->subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
 
+    // start the navdata
+    ros::Publisher pub_reset_pos = n->advertise<std_msgs::Empty>("nav/init", 1);
+
+    std_msgs::Empty empty_msg;
+    pub_reset_pos.publish(empty_msg);
+
+    // Using multithreaded spinner.
+    spinner.spin();
 }
 double Nav::current_time() {
     return ros::Time::now().toNSec();
 }
 void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
+    running = !running;
 
     position.x = 0.0;
     position.y = 0.0;
@@ -19,8 +31,11 @@ void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
 //    printf("running: %d",running);
 }
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
+    if(running)
+        return;
 
     state = msg->state;
+
 
     float vX = msg->vx;
     float vY = msg->vy;
@@ -56,20 +71,4 @@ Nav::Nav() {
     position.x = 0.0;
     position.y = 0.0;
 }
-
-Nav::Nav(ros::NodeHandle n){
-    running = 1;
-    position.x = 0.0;
-    position.y = 0.0;
-    ros::Subscriber sub_navdata = n.subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
-    ros::Subscriber sub_magneto = n.subscribe<ardrone_autonomy::navdata_magneto>("ardrone/navdata_magneto", 5000, &Nav::magnetoCallback, this);
-    ros::Subscriber sub_init = n.subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
-    ros::spin();
-
-}
-
-
-
-
-
 
