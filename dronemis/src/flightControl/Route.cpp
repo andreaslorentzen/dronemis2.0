@@ -17,7 +17,7 @@ Route::~Route() {
 void Route::initRoute(bool useFile) {
     if(useFile){
         ifstream flightPlan;
-        flightPlan.open("/home/mathias/workspaces/dronemis_ws/src/dronemis/src/flightControl/flightPlan.txt");
+        flightPlan.open("../workspaces/dronemis_ws/src/dronemis/src/flightControl/flightPlan.txt");
         char input[1000];
 
         if(flightPlan.is_open()) {
