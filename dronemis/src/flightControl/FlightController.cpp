@@ -3,7 +3,8 @@
 //
 
 #include "FlightController.h"
-#include "../navdata/Nav.h"
+
+#define DEBUG 0
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
@@ -75,9 +76,6 @@ void FlightController::run(){
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
-    ROS_INFO("SOMESTUFF");
-
-
     while (ros::ok()) {
 
         takeOff();
@@ -124,8 +122,10 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         } else
             cmd.linear.x = baseSpeed;
 
-        ROS_INFO("Time to fly = %F", timeToFly);
-        ROS_INFO("X = %F", cmd.linear.x);
+#ifdef DEBUG
+            ROS_INFO("Time to fly = %F", timeToFly);
+            ROS_INFO("X = %F", cmd.linear.x);
+#endif
 
         publishToControl(timeToFly/2);*/
 

@@ -56,9 +56,12 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     //y += vY * curr + 0.5 ;
 
 //    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
+
+#ifdef DEBUG
     printf("state: %d\t"
                    "postition: %6.2f, %6.2f, %d\t"
             "rotation: %6.2f\n", state, position.x, position.y, position.z, rotation);
+#endif
 }
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
     rotation = msg->heading_fusion_unwrapped;
