@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find dronemis)/launch/ardrone.launch"/>
+  <node pkg="dronemis" type="listener" name="listener" output="screen" launch-prefix="xterm -e"></node>
+</launch>
