@@ -306,10 +306,14 @@ void FlightController::abortProgram(){
     land();
 }
 
+void FlightController::testProgram(){
+    ROS_INFO("TESTING!");
+
+}
+
 void* startNavdata(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
-
 
     thread_data->navData.run(thread_data->n, thread_data->spinner);
     pthread_exit(NULL);

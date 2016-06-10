@@ -41,6 +41,8 @@ public:
     void startProgram(void);
     void resetProgram(void);
     void abortProgram(void);
+    void testProgram(void);
+
 private:
     double baseSpeed;
     bool started;
