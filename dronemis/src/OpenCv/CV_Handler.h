@@ -34,6 +34,7 @@ public:
     CVD::Image<CVD::Rgb <float> > storedImage;
     CVD::Image<CVD::Rgb <float> > workImage;
 
+
     struct cascadeInfo {
        int x;
        int y;
