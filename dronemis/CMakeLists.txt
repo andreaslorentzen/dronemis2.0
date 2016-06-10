@@ -1,5 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dronemis)
+
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
+project(dronemis CXX)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -197,7 +209,6 @@ add_executable(blindFlight src/main.cpp ${BLINDFLIGHT_SOURCE_FILES} ${BLINDFLIGH
 target_link_libraries(blindFlight ${QT_LIBRARIES} cvd ${catkin_LIBRARIES})
 add_dependencies(blindFlight dronemis_generate_messages_cpp)
 
-target_compile_features(blindFlight PRIVATE cxx_range_for)
 #############
 ## Install ##
 #############
