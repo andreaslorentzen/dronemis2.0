@@ -2,6 +2,7 @@
 // Created by mathias on 6/9/16.
 //
 
+#include <QtCore>
 #include <QApplication>
 #include "OpenCv/CV_Handler.h"
 #include "flightControl/FlightController.h"
@@ -22,6 +23,7 @@ FlightController *controller;
 struct thread_data {
     int argc;
     char **argv;
+    ros::NodeHandle *n;
 };
 
 struct thread_data td[NUM_THREADS];
@@ -50,7 +52,7 @@ void *buttonThread(void *thread_arg) {
     // Creating Control panel
     QApplication a(thread_data->argc, thread_data->argv);
     ControlPanel w;
-    w.setController(controller);
+    w.setController(controller, thread_data->n, 300);
     w.show();
     a.exec();
 
