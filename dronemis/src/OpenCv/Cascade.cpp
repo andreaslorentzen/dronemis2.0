@@ -3,6 +3,7 @@
 //
 
 #include "Cascade.h"
+#include "CV_Handler.h"
 
 using namespace cv;
 
@@ -42,29 +43,24 @@ bool Cascade::setCascade(const int cascadeNumber) {
 }
 
 
-Cascade::foundCascade Cascade::checkCascade(cv::Mat image) {
+std::vector<Cascade::cubeInfo> Cascade::checkCascade(cv::Mat image) {
     std::vector<Rect> cubes;
+    std::vector<cubeInfo> cascades;
     Mat frame_modified;
-    foundCascade cascade;
-    cascade.x = 0;
-    cascade.y = 0;
 
-    //cvtColor( image, frame_modified, CV_BGR2GRAY );
     equalizeHist(image, frame_modified);
 
-    //-- Detect cubes
     cascade_classifier.detectMultiScale( frame_modified, cubes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(20, 20) );
 
     for( size_t i = 0; i < cubes.size(); i++ )
     {
-        cubes[i].x = cascade.x;
-        cubes[i].y = cascade.y;
-        cubes[i].width = cascade.width;
-        cubes[i].height = cascade.height;
-        /*Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
-        ellipse( frame_modified, center, Size( cubes[i].width*0.5, cubes[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );*/
+        Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
+        cascades[i].x = center.x;
+        cascades[i].y = center.y;
+        cascades[i].width = cubes[i].width;
+        cascades[i].height = cubes[i].height;
     }
     std::cout << cubes.size() << std::endl;
 
-    return cascade;
+    return cascades;
 }

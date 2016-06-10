@@ -20,7 +20,7 @@ CV_Handler::CV_Handler(void) {
 }
 
 void CV_Handler::run(void) {
-    greySelected = false;
+    greySelected = true;
     cascade = new Cascade();
     videohandler = new VideoHandler(this);
 }
@@ -112,20 +112,20 @@ void CV_Handler::swapCam() {
 }
 
 
-CV_Handler::cascadeInfo **CV_Handler::checkColors(void) {
+void* CV_Handler::checkColors(void) {
     return NULL;
 }
 
 
-CV_Handler::cascadeInfo **CV_Handler::checkCascades(void) {
-
+void* CV_Handler::checkCascades(void) {
+    int frameCount = 0;
     greySelected = true;
+    std::vector<Cascade::cubeInfo> cascades;
 
     ros::Rate r(10); // 10 hz
 
     cv::Mat processedImage;
 
-    int i = 0;
     boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
     lock.unlock();
 
@@ -141,9 +141,11 @@ CV_Handler::cascadeInfo **CV_Handler::checkCascades(void) {
         lock.unlock();
         new_frame_signal.notify_all();
 
-        foundCascade = cascade->checkCascade(imageBW);
-        if (i++ == 4)
+        cascades = cascade->checkCascade(imageBW);
+
+        if (++frameCount == 4)
             break;
+
         r.sleep();
     }
 

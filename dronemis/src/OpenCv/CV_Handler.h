@@ -22,7 +22,6 @@ class CV_Handler {
 private:
 
 public:
-
     bool cascade_image_ready;
     bool greySelected;
     boost::condition_variable  new_frame_signal;
@@ -34,21 +33,13 @@ public:
     CVD::Image<CVD::Rgb <float> > storedImage;
     CVD::Image<CVD::Rgb <float> > workImage;
 
-
-    struct cascadeInfo {
-       int x;
-       int y;
-       int z;
-       unsigned char color;
-    };
-
     CV_Handler(void);
     void run(void);
     virtual ~CV_Handler(void);
 
     void video(sensor_msgs::ImageConstPtr img);
-    cascadeInfo** checkColors(void);
-    cascadeInfo** checkCascades(void);
+    void* checkColors(void);
+    void* checkCascades(void);
     void swapCam(void);
 };
 

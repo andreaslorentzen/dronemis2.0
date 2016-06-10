@@ -20,20 +20,19 @@ private:
     cv::CascadeClassifier cascade_classifier;
 
 public:
-    struct foundCascade{
+    struct cubeInfo{
         int x;
         int y;
-        int z;
         int width;
         int height;
+        unsigned char color;
     };
 
     Cascade(void);
     virtual ~Cascade(void);
     bool setCascade(const int cascadeNumber);
 
-    Cascade::foundCascade checkCascade(cv::Mat image);
-
+    std::vector<Cascade::cubeInfo> checkCascade(cv::Mat image);
 };
 
 #endif //PROJECT_CASCADE_H
