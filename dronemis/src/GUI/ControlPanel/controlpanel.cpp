@@ -28,7 +28,7 @@ ControlPanel::~ControlPanel(void)
 }
 
 
-void ControlPanel::setController(FlightController *newController, ros::NodeHandle *n,  int countdownSeconds){
+void ControlPanel::setValues(FlightController *newController, ros::NodeHandle *n, int countdownSeconds){
     node = n;
     secondsLeft = countdownSeconds;
     controller = newController;

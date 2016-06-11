@@ -55,7 +55,7 @@ void *buttonThread(void *thread_arg) {
     // Creating Control panel
     QApplication a(thread_data->argc, thread_data->argv);
     ControlPanel w;
-    w.setController(controller, thread_data->n, 300);
+    w.setValues(controller, thread_data->n, 300);
     w.show();
     a.exec();
 

@@ -16,7 +16,7 @@ class ControlPanel : public QMainWindow
 
 public:
     explicit ControlPanel(QWidget *parent = 0);
-    void setController(FlightController *newController, ros::NodeHandle *n, int countdownSeconds);
+    void setValues(FlightController *newController, ros::NodeHandle *n, int countdownSeconds);
     ~ControlPanel(void);
 
 private slots:
