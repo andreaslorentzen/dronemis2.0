@@ -66,10 +66,10 @@ void ControlPanel::on_pushButton_Test_clicked(void)
 
 void ControlPanel::updatePanel(void) {
 
-    if (started) {
+    if (started && --secondsLeft > -600) {
         string timeStr;
 
-        int mins = --secondsLeft / 60;
+        int mins = secondsLeft / 60;
         int secs = secondsLeft % 60;
 
         if (mins != 0) {
