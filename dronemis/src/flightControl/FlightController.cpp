@@ -14,7 +14,6 @@ struct thread_data{
     Nav navData;
     CV_Handler *cvHandler;
     FlightController *controller;
-    ros::MultiThreadedSpinner spinner;
     ros::NodeHandle *n;
 } myThreadData;
 
@@ -31,7 +30,7 @@ FlightController::FlightController(){
     straightFlight = false;
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::MultiThreadedSpinner spinner) {
+FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
     baseSpeed = 0.2;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
@@ -47,7 +46,6 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::Multi
 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
-    myThreadData.spinner = spinner;
     myThreadData.n = nh;
 
     pthread_t threads[2];
@@ -315,7 +313,7 @@ void* startNavdata(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-    thread_data->navData.run(thread_data->n, thread_data->spinner);
+    thread_data->navData.run(thread_data->n);
     pthread_exit(NULL);
 }
 
