@@ -30,7 +30,7 @@ ControlPanel::~ControlPanel(void)
 
 void ControlPanel::setValues(FlightController *newController, ros::NodeHandle *n, int countdownSeconds){
     node = n;
-    secondsLeft = countdownSeconds;
+    secondsLeft = secondsleftConst = countdownSeconds;
     controller = newController;
     sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 1000, &ControlPanel::callback, this);
 }
@@ -47,11 +47,15 @@ void ControlPanel::on_pushButton_Start_clicked(void)
 
 void ControlPanel::on_pushButton_Reset_clicked(void)
 {
+    started = false;
+    secondsLeft = secondsleftConst;
     controller->resetProgram();
 }
 
 void ControlPanel::on_pushButton_Stop_clicked(void)
 {
+    started = false;
+    secondsLeft = secondsleftConst;
     controller->abortProgram();
 }
 
@@ -64,13 +68,17 @@ void ControlPanel::updatePanel(void) {
 
     if (started) {
         string timeStr;
+
         int mins = --secondsLeft / 60;
         int secs = secondsLeft % 60;
 
-        if (mins > 0) {
+        if (mins != 0) {
             timeStr = to_string(mins);
             timeStr.append(":");
         }
+
+        if (secondsLeft < 0 && mins != 0)
+            secs = -secs;
 
         timeStr.append(to_string(secs));
 

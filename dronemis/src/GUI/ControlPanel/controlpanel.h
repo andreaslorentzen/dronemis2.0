@@ -34,6 +34,7 @@ private:
     float battery;
     ros::Subscriber sub_navdata;
     int secondsLeft;
+    int secondsleftConst;
     Ui::ControlPanel *ui;
     FlightController *controller;
     QPalette paletteRed;
