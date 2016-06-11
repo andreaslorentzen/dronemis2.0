@@ -32,6 +32,7 @@ int main(int argc, char **argv){
     td[0].argc = argc;
     td[0].argv = argv;
 
+
     ros::init(argc, argv, "blindFlight");
     ros::NodeHandle *n = new ros::NodeHandle();
     ros::MultiThreadedSpinner spinner;
@@ -43,8 +44,9 @@ int main(int argc, char **argv){
     pthread_t thread;
     pthread_create(&thread, NULL, buttonThread, &td[0]);
 
-    pthread_exit(NULL);
+    ros::spin();
 
+    pthread_exit(NULL);
 }
 
 void *buttonThread(void *thread_arg) {
@@ -52,7 +54,7 @@ void *buttonThread(void *thread_arg) {
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-    // Creating Control panel
+    //Creating Control panel;
     QApplication a(thread_data->argc, thread_data->argv);
     ControlPanel w;
     w.setValues(controller, thread_data->n, 300);
