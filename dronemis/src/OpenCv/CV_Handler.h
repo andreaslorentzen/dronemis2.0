@@ -20,6 +20,7 @@ class CV_Handler {
 
 
 private:
+    void show(void);
 
 public:
     bool cascade_image_ready;

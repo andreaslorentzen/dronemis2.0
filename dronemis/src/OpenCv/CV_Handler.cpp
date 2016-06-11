@@ -9,12 +9,6 @@
 VideoHandler *videohandler;
 Cascade *cascade;
 
-struct thread_data{
-    CV_Handler *cvHandler;
-} threadData;
-
-void *show(void *thread_arg);
-
 CV_Handler::CV_Handler(void) {
 
 }
@@ -60,50 +54,36 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     lock.unlock();
     new_frame_signal.notify_all();
 
-    pthread_t thread;
-    threadData.cvHandler = this;
-    pthread_create(&thread, NULL, show, &threadData);
-
     // spinning this way instead of ros::spin.'
-    while(ros::ok())
-        ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
+    //while(ros::ok())
+      //  ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
 
-    pthread_exit(NULL);
-
+     show();
 }
 
 
-void *show(void *thread_arg) {
-    struct thread_data *thread_data;
-    thread_data = (struct thread_data *) thread_arg;
+void CV_Handler::show(void) {
+
     cv::Mat image;
 
-    if (thread_data->cvHandler->greySelected) {
+    if (greySelected) {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC1 format - unsigned 8 bit MONO)
-        cv::Mat imageBW(thread_data->cvHandler->storedImageBW.size().y,
-                        thread_data->cvHandler->storedImageBW.size().x,
+        cv::Mat imageBW(storedImageBW.size().y,
+                        storedImageBW.size().x,
                         CV_8UC1,
-                        thread_data->cvHandler->storedImageBW.data());
+                        storedImageBW.data());
         image = imageBW;
     } else {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
-        cv::Mat imageBGR(thread_data->cvHandler->storedImage.size().y,
-                         thread_data->cvHandler->storedImage.size().x,
+        cv::Mat imageBGR(storedImage.size().y,
+                         storedImage.size().x,
                          CV_8UC3,
-                 thread_data->cvHandler->storedImage.data());
+                 storedImage.data());
         image = imageBGR;
     }
 
     cv::imshow("VideoMis", image);
     cv::waitKey(10);
-
-    pthread_exit(NULL);
-}
-
-
-void *cascadeHandler(void *thread_arg) {
-
-    pthread_exit(NULL);
 }
 
 
