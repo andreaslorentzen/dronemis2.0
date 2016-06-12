@@ -25,6 +25,7 @@ private:
 public:
     bool cascade_image_ready;
     bool greySelected;
+    bool frontCamSelected;
     boost::condition_variable  new_frame_signal;
     boost::mutex new_frame_signal_mutex;
     boost::condition_variable  new_cascade_signal;
@@ -39,9 +40,8 @@ public:
     virtual ~CV_Handler(void);
 
     void video(sensor_msgs::ImageConstPtr img);
-    void* checkColors(void);
-    void* checkCascades(void);
-    void swapCam(void);
+    std::vector<Cascade::cubeInfo> checkCubes(void);
+    void swapCam(bool frontCam);
 };
 
 

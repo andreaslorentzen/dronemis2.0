@@ -3,7 +3,6 @@
 //
 
 #include "Cascade.h"
-#include "CV_Handler.h"
 
 using namespace cv;
 
@@ -45,12 +44,14 @@ bool Cascade::setCascade(const int cascadeNumber) {
 
 std::vector<Cascade::cubeInfo> Cascade::checkCascade(cv::Mat image) {
     std::vector<Rect> cubes;
-    std::vector<cubeInfo> cascades;
+
     Mat frame_modified;
 
     equalizeHist(image, frame_modified);
 
     cascade_classifier.detectMultiScale( frame_modified, cubes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(20, 20) );
+
+    std::vector<cubeInfo> cascades(cubes.size());
 
     for( size_t i = 0; i < cubes.size(); i++ )
     {
