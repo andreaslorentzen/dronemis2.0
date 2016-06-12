@@ -44,22 +44,22 @@ bool Cascade::setCascade(const int cascadeNumber) {
 
 std::vector<Cascade::cubeInfo> Cascade::checkCascade(cv::Mat image) {
     std::vector<Rect> cubes;
-
+    std::vector<cubeInfo> cascades;
     Mat frame_modified;
 
     equalizeHist(image, frame_modified);
 
     cascade_classifier.detectMultiScale( frame_modified, cubes, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(20, 20) );
 
-    std::vector<cubeInfo> cascades(cubes.size());
-
     for( size_t i = 0; i < cubes.size(); i++ )
     {
+        cubeInfo cube;
         Point center( cubes[i].x + cubes[i].width*0.5, cubes[i].y + cubes[i].height*0.5 );
-        cascades[i].x = center.x;
-        cascades[i].y = center.y;
-        cascades[i].width = cubes[i].width;
-        cascades[i].height = cubes[i].height;
+        cube.x = center.x;
+        cube.y = center.y;
+        cube.width = cubes[i].width;
+        cube.height = cubes[i].height;
+        cascades.push_back(cube);
     }
     std::cout << cubes.size() << std::endl;
 
