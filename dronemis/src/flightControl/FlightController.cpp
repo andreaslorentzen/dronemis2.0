@@ -296,11 +296,13 @@ void FlightController::startProgram() {
 
 void FlightController::resetProgram(){
     ROS_INFO("MANUEL RESET!");
+    started = false;
     reset();
 }
 
 void FlightController::abortProgram(){
     ROS_INFO("MANUEL ABORT!");
+    started = false;
     land();
 }
 
