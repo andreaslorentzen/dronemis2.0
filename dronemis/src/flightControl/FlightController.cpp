@@ -192,7 +192,7 @@ void FlightController::hover(int time){
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
     ROS_INFO("HOVER");
-    
+
     for(int i = 0; i < 3; i++)
         pub_control.publish(cmd);
 }
@@ -219,7 +219,6 @@ void FlightController::land() {
     pub_land.publish(empty_msg);
 
     for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
-        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 }
@@ -227,7 +226,6 @@ void FlightController::land() {
 void FlightController::reset(){
     std_msgs::Empty empty_msg;
     pub_reset.publish(empty_msg);
-    //ros::spinOnce();
 }
 
 void FlightController::setStraightFlight(bool newState) {
