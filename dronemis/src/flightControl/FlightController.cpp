@@ -191,9 +191,10 @@ void FlightController::hover(int time){
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
-
     ROS_INFO("HOVER");
-    pub_control.publish(cmd);
+    
+    for(int i = 0; i < 3; i++)
+        pub_control.publish(cmd);
 }
 
 void FlightController::takeOff() {
