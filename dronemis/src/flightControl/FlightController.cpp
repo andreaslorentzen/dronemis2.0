@@ -91,7 +91,7 @@ void FlightController::run(){
             } else if (currentCommand.commandType == Command::hover) {
                 hover(currentCommand.timeToHover);
             } else if (currentCommand.commandType == Command::turn) {
-                turnDrone(currentCommand.degrees);
+               //   urnDrone(currentCommand.degrees);
             }
         }
 
@@ -109,6 +109,8 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     double dx = newWaypoint.x - navData->position.x;
     double dy = newWaypoint.y - navData->position.y;
     double dz = newWaypoint.z - navData->position.z;
+
+
 
     bool moved = false;
 
@@ -139,11 +141,11 @@ void FlightController::goToWaypoint(Command newWaypoint) {
             dx = newWaypoint.x - navData->position.x;
 
         #ifdef DEBUG
-
             ROS_INFO("newpoint = %F", newWaypoint.x);
             ROS_INFO("navData = %F", navData->position.x);
             ROS_INFO("dx = %F", dx);
             ROS_INFO("Speed = %F", cmd.linear.x);
+            ROS_INFO("rotation = %F", navData->rotation);
         #endif
             ros::Rate(LOOP_RATE).sleep();
             moved = true;
@@ -180,8 +182,54 @@ double FlightController::getSpeed(double distance) {
     return speed;
 }
 
-void FlightController::turnDrone(double degrees) {
-    // TODO benyt marcuses implementation
+void FlightController::turnTowardsPoint(Command waypoint) {
+
+    double target_angle = atan2(waypoint.y, waypoint.x); // angle towards waypoint position
+    double target_deg = target_angle * 180 / M_PI;
+
+    double ori_deg;
+
+    float offset = 0.5;
+    do{
+        ori_deg = navData->rotation;
+        if(ori_deg < 0)
+            ori_deg = 360 + ori_deg;
+
+    } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
+}
+
+double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
+    double dir; // direction
+    double rot_speed; // calculated rotational speed
+
+
+
+
+    double diff_deg = target_deg - ori_deg;
+
+    if ( diff_deg < 0 )
+        diff_deg = 360 + diff_deg;
+
+    printf("target_deg:\t%6.2f deg\n", diff_deg);
+
+
+    if (diff_deg < 180){
+        dir = -1;
+        printf("Turn left");
+    } else{
+        dir = 1;
+        diff_deg = 360 -diff_deg;
+        printf("Turn right");
+    }
+
+    rot_speed = (diff_deg*diff_deg)/200; // speed to rotate with
+
+    if(rot_speed > 0.5)
+        rot_speed = 0.5;
+
+    rot_speed *= dir;
+
+    return rot_speed;
 }
 
 void FlightController::hover(int time){

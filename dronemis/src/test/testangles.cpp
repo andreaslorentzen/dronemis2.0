@@ -1,24 +1,30 @@
 #include <iostream>
-#include <cstdlib>
-#include <climits>
 #include <stdio.h>
 #include <math.h>
+
 /* demo.c:  My first C program on a Linux */
 
 float radiansBetweenTwoPoints(float x0, float y0, float x1, float y1);
-float getRotaionalSpeed(float x, float y, float ori_deg);
+double getRotaionalSpeed(double target_deg, double ori_deg);
 
 int main(void) {
-    float x = -3.0; // waypoint x
-    float y = 100.0; // waypoint y
-    float ori_deg = 90; // drone Z orientation
-    float rot_speed = getRotaionalSpeed(x,y,ori_deg);
-    printf("Rotational speed:\t%6.2f deg\n", rot_speed);
+    float x = 0; // waypoint x
+    float y = -1; // waypoint y
+    double ori_deg = 90; // drone Z orientation
+    double target_deg = 95;
+
+    double target_angle = atan2(y, x); // angle towards waypoint position
+    target_deg = target_angle * 180 / M_PI;
+
+    printf("Target deg: \t %6.5f\n", target_deg);
+
+    float rot_speed = getRotaionalSpeed(target_deg, ori_deg);
+    printf("Rotational speed:\t%6.5f deg\n", rot_speed);
     return 0;
 }
 
-float getRotaionalSpeed(float x, float y, float ori_deg) {
-    float dir; // direction
+double getRotaionalSpeed(double target_deg, double ori_deg) {
+    /*float dir; // direction
     float rot_speed; // calculated rotational speed
     float target_angle = atan2(y, x); // angle towards waypoint position
     float target_deg = target_angle * 180 / M_PI; // radians to degrees
@@ -41,7 +47,39 @@ float getRotaionalSpeed(float x, float y, float ori_deg) {
     if (rot_speed > 0.5) rot_speed = 0.5;
     rot_speed = rot_speed * dir;
     //printf("Rotational speed:\t%6.2f deg\n", rot_speed);
+    return rot_speed;*/
+
+    double dir; // direction
+    double rot_speed; // calculated rotational speed
+    /*double target_angle = atan2(y, x); // angle towards waypoint position
+    double target_deg = target_angle * 180 / M_PI;*/
+
+    double diff_deg = target_deg - ori_deg;
+
+    if ( diff_deg < 0 )
+        diff_deg = 360 + diff_deg;
+
+    printf("target_deg:\t%6.2f deg\n", diff_deg);
+
+
+    if (diff_deg < 180){
+        dir = -1;
+        printf("Turn left");
+    } else{
+        dir = 1;
+        diff_deg = 360 -diff_deg;
+        printf("Turn right");
+    }
+
+    rot_speed = (diff_deg*diff_deg)/200; // speed to rotate with
+
+    if(rot_speed > 0.5)
+        rot_speed = 0.5;
+
+    rot_speed *= dir;
+
     return rot_speed;
+
 }
 
 
