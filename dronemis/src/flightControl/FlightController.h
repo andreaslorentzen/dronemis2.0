@@ -31,7 +31,7 @@ public:
     FlightController(int loopRate, ros::NodeHandle *nh);
     ~FlightController();
     void goToWaypoint(Command newWaypoint);
-    void turnDrone(double degrees);
+    void turnTowardsPoint(Command waypoint);
     void hover(int time);
     void takeOff();
     void land();
@@ -50,16 +50,17 @@ private:
     int takeoff_time;
     double precision;
     bool straightFlight;
+    double maxSpeed;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;
     ros::Publisher pub_reset;
-    Nav navData;
+    Nav *navData;
     CV_Handler *cvHandler;
-
+    double getSpeed(double distance);
     geometry_msgs::Twist cmd;
-    void publishToControl(double timeToFly);
     MyVector transformCoordinates(MyVector incomingVector);
+    double getRotationalSpeed(double target_deg, double ori_deg);
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H
