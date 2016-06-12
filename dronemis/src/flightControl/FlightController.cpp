@@ -112,7 +112,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     bool moved = false;
 
-
     while(abs(dz) > precision){
         cmd.linear.z = getSpeed(dz);
 
@@ -181,36 +180,6 @@ double FlightController::getSpeed(double distance) {
     return speed;
 }
 
-void FlightController::publishToControl(double timeToFly){
-
-    ROS_INFO("MOVING");
-    pub_control.publish(cmd);
-
-    for(int k = 0; k < timeToFly*LOOP_RATE; k++){
-
-        // Implement some waiting if none has subscribed
-        // while(pub_control.getNumSubscribers() == 0);
-
-        //ros::spinOnce();
-        ros::Rate(LOOP_RATE).sleep();
-        //loop_rate.sleep();
-    }
-
-    // enable auto hover
-    cmd.linear.x = 0.0;
-    cmd.linear.y = 0.0;
-    cmd.linear.z = 0.0;
-    cmd.angular.x = 0.0;
-    cmd.angular.y = 0.0;
-    cmd.angular.z = 0.0;
-
-    pub_control.publish(cmd);
-    for(int k = 0; k < LOOP_RATE; k++){
-        //ros::spinOnce();
-        ros::Rate(LOOP_RATE).sleep();
-    }
-}
-
 void FlightController::turnDrone(double degrees) {
     // TODO benyt marcuses implementation
 }
@@ -224,8 +193,7 @@ void FlightController::hover(int time){
     cmd.angular.z = 0.0;
 
     ROS_INFO("HOVER");
-    publishToControl(time);
-
+    pub_control.publish(cmd);
 }
 
 void FlightController::takeOff() {
