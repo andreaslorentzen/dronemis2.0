@@ -32,7 +32,7 @@ void ControlPanel::setValues(FlightController *newController, ros::NodeHandle *n
     node = n;
     secondsLeft = secondsleftConst = countdownSeconds;
     controller = newController;
-    sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 1000, &ControlPanel::callback, this);
+    sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 10, &ControlPanel::callback, this);
 }
 
 void ControlPanel::callback(const ardrone_autonomy::NavdataConstPtr &msg) {
