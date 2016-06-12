@@ -4,8 +4,6 @@
 
 #include "FlightController.h"
 
-#define DEBUG 0
-
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
 void* startController(void *thread_arg);
@@ -31,6 +29,7 @@ FlightController::FlightController(){
 }
 
 FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
+    baseSpeed = 0.1;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
     straightFlight = false;
@@ -60,6 +59,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
+
 }
 
 // Destructor

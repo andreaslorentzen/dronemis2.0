@@ -15,6 +15,7 @@ void Nav::run(ros::NodeHandle *n) {
 
     std_msgs::Empty empty_msg;
     pub_reset_pos.publish(empty_msg);
+
 }
 double Nav::current_time() {
     return ros::Time::now().toNSec();
