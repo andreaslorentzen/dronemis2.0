@@ -337,7 +337,7 @@ void* startNavdata(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-    thread_data->navData.run(thread_data->n);
+    thread_data->navData->run(thread_data->n);
     pthread_exit(NULL);
 }
 
