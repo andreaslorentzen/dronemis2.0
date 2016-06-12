@@ -14,32 +14,48 @@
 class Color {
 
 private:
-    struct redFilter {
-        int iLowH = 102;
-        int iHighH = 206;
 
-        int iLowS = 129;
-        int iHighS = 225;
+    struct {
+        int iLowH = 173;
+        int iHighH = 196;
 
-        int iLowV = 108;
+        int iLowS = 83;
+        int iHighS = 140;
+
+        int iLowV = 44;
+        int iHighV = 93;
+    }redFilter;
+
+    struct {
+        int iLowH = 32;
+        int iHighH = 50;
+
+        int iLowS = 21;
+        int iHighS = 63;
+
+        int iLowV = 31;
+        int iHighV = 67;
+    }greenFilter;
+
+    struct {
+        int iLowH = 0;
+        int iHighH = 255;
+
+        int iLowS = 0;
+        int iHighS = 255;
+
+        int iLowV = 0;
         int iHighV = 255;
-    };
+    }allFilter;
 
-    struct greenFilter {
-        int iLowHg = 25;
-        int iHighHg = 56;
 
-        int iLowSg = 26;
-        int iHighSg = 181;
-
-        int iLowVg = 21;
-        int iHighVg = 160;
-    };
 
 public:
-    Color();
-    virtual ~Color();
-    cv::Mat  checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
+    Color(void);
+    virtual ~Color(void);
+
+    std::vector<Cascade::cubeInfo> checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
+    cv::Mat checkColorsTest(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
 };
 
 
