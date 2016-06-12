@@ -81,9 +81,8 @@ void FlightController::run(){
     while (ros::ok()) {
 
         takeOff();
-        ROS_INFO("BEFORE TAKEOFF");
+        
         while (!myRoute.hasAllBeenVisited()) {
-            ROS_INFO("HI THERE");
             Command currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
@@ -185,7 +184,7 @@ double FlightController::getSpeed(double distance) {
 void FlightController::turnTowardsPoint(Command waypoint) {
 
     double target_angle = atan2(waypoint.y, waypoint.x); // angle towards waypoint position
-    double target_deg = target_angle * 180 / M_PI;
+    double target_deg = target_angle * 180 / M_PI; // conversion to degrees
 
     double ori_deg;
 
@@ -207,15 +206,20 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
     if ( diff_deg < 0 )
         diff_deg = 360 + diff_deg;
 
-    printf("target_deg:\t%6.2f deg\n", diff_deg);
-    
+    #ifdef DEBUG
+        ROS_INFO("target_deg:\t%6.2f deg\n", diff_deg);
+    #endif
     if (diff_deg < 180){
         dir = -1;
+    #ifdef DEBUG
         printf("Turn left");
+    #endif
     } else{
         dir = 1;
         diff_deg = 360 -diff_deg;
+    #ifdef DEBUG
         printf("Turn right");
+    #endif
     }
 
     rot_speed = (diff_deg*diff_deg)/200; // speed to rotate with
@@ -235,7 +239,10 @@ void FlightController::hover(int time){
     cmd.angular.x = 0.0;
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
-    ROS_INFO("HOVER");
+
+    #ifdef DEBUG
+        ROS_INFO("HOVER");
+    #endif
 
     for(int i = 0; i < 3; i++)
         pub_control.publish(cmd);

@@ -24,7 +24,7 @@ int main(void) {
 }
 
 double getRotaionalSpeed(double target_deg, double ori_deg) {
-    /*float dir; // direction
+    float dir; // direction
     float rot_speed; // calculated rotational speed
     float target_angle = atan2(y, x); // angle towards waypoint position
     float target_deg = target_angle * 180 / M_PI; // radians to degrees
@@ -47,37 +47,6 @@ double getRotaionalSpeed(double target_deg, double ori_deg) {
     if (rot_speed > 0.5) rot_speed = 0.5;
     rot_speed = rot_speed * dir;
     //printf("Rotational speed:\t%6.2f deg\n", rot_speed);
-    return rot_speed;*/
-
-    double dir; // direction
-    double rot_speed; // calculated rotational speed
-    /*double target_angle = atan2(y, x); // angle towards waypoint position
-    double target_deg = target_angle * 180 / M_PI;*/
-
-    double diff_deg = target_deg - ori_deg;
-
-    if ( diff_deg < 0 )
-        diff_deg = 360 + diff_deg;
-
-    printf("target_deg:\t%6.2f deg\n", diff_deg);
-
-
-    if (diff_deg < 180){
-        dir = -1;
-        printf("Turn left");
-    } else{
-        dir = 1;
-        diff_deg = 360 -diff_deg;
-        printf("Turn right");
-    }
-
-    rot_speed = (diff_deg*diff_deg)/200; // speed to rotate with
-
-    if(rot_speed > 0.5)
-        rot_speed = 0.5;
-
-    rot_speed *= dir;
-
     return rot_speed;
 
 }
