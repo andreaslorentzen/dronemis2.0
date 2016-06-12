@@ -202,17 +202,13 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
     double dir; // direction
     double rot_speed; // calculated rotational speed
 
-
-
-
-    double diff_deg = target_deg - ori_deg;
+    double diff_deg = target_deg - ori_deg; // calculate difference
 
     if ( diff_deg < 0 )
         diff_deg = 360 + diff_deg;
 
     printf("target_deg:\t%6.2f deg\n", diff_deg);
-
-
+    
     if (diff_deg < 180){
         dir = -1;
         printf("Turn left");
@@ -227,7 +223,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
     if(rot_speed > 0.5)
         rot_speed = 0.5;
 
-    rot_speed *= dir;
+    rot_speed *= dir; // make sure to rotate the correct way
 
     return rot_speed;
 }
