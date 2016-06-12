@@ -203,7 +203,6 @@ void FlightController::takeOff() {
     pub_takeoff.publish(empty_msg);
 
     for(int i = 0; i < takeoff_time*LOOP_RATE; i++){
-        //ros::spinOnce();
         ros::Rate(LOOP_RATE).sleep();
     }
 
@@ -211,14 +210,10 @@ void FlightController::takeOff() {
 }
 
 void FlightController::land() {
-    double fly_time = 1.0;
-    double land_time = 3.0;
-
-
     std_msgs::Empty empty_msg;
     pub_land.publish(empty_msg);
 
-    for (int j = 0; j < (takeoff_time + fly_time + land_time) * LOOP_RATE; j++) {
+    for (int j = 0; j < LOOP_RATE; j++) {
         ros::Rate(LOOP_RATE).sleep();
     }
 }
