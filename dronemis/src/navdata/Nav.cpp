@@ -2,6 +2,7 @@
 // Created by andreas on 6/9/16.
 //
 
+#include <fstream>
 #include "Nav.h"
 
 void Nav::run(ros::NodeHandle *n) {
@@ -33,6 +34,17 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
     state = msg->state;
 
+    std::ofstream file;
+     file.open ("../workspaces/dronemis_ws/src/dronemis/src/navdata/log.txt", std::ios::app);
+     file << msg->ax;
+     file << ";";
+     file << msg->ay;
+     file << ";";
+     file << msg->vx;
+     file << ";";
+     file << msg->vy;
+     file << "\n";
+     file.close();
 
     float vX = msg->vx;
     float vY = msg->vy;
