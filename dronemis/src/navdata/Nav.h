@@ -34,7 +34,7 @@ public:
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
-    void run(ros::NodeHandle *n, ros::MultiThreadedSpinner spinner);
+    void run(ros::NodeHandle *n);
 
 };
 

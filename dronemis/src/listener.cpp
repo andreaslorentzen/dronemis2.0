@@ -38,11 +38,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "listener");
     ROS_INFO("start");
     ros::NodeHandle *n = new ros::NodeHandle();
-    ros::MultiThreadedSpinner spinner;
 
     Nav nav;
-    nav.run(n, spinner);
-
+    nav.run(n);
+    ros::spin();
 /*
     ros::NodeHandle n;
 

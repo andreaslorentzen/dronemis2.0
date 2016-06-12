@@ -3,3 +3,120 @@
 //
 
 #include "Color.h"
+
+using namespace cv;
+using namespace std;
+
+struct {
+    int state;
+    int kernel;
+} data;
+
+int kernel;
+int kernelState = 0;
+
+void setKernel(int state, void* userdata);
+
+Color::Color() {
+    kernel = 0;
+    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    cvCreateTrackbar("LowH", "Control", &(allFilter).iLowH, 255); //Hue (0 - 255)
+    cvCreateTrackbar("HighH", "Control", &(allFilter).iHighH, 255);
+
+    cvCreateTrackbar("LowS", "Control", &(allFilter).iLowS, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS", "Control", &(allFilter).iHighS, 255);
+
+    cvCreateTrackbar("LowV", "Control", &(allFilter).iLowV, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV", "Control", &(allFilter).iHighV, 255);
+
+    cvCreateButton("Kernel",setKernel, &data,CV_PUSH_BUTTON,0);
+}
+
+Color::~Color() {
+
+}
+
+void setKernel(int state, void* userdata) {
+    cv::Mat kernel;
+
+    switch (kernelState++) {
+        case 0 :
+            kernel = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
+            cout << "kernel changed to ELLIPSE" << endl;
+            break;
+        case 1:
+            kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+            cout << "kernel changed to RECT" << endl;
+            break;
+        case 2:
+            kernel = getStructuringElement(MORPH_CROSS, Size(5, 5));
+            cout << "kernel changed to CROSS" << endl;
+            kernelState = 0;
+            break;
+    }
+}
+
+std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+
+    Mat imgHSV;
+    Mat nonZeros;
+    Mat imgThresholded;
+    Mat imgThresholdedGreen;
+
+    //Convert from BGR to HSV
+    cvtColor(image, imgHSV, COLOR_BGR2HSV);
+
+    //morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Threshold the image to match filter-values
+    inRange(imgHSV, Scalar(allFilter.iLowH, allFilter.iLowS, allFilter.iLowV), Scalar(allFilter.iHighH, allFilter.iHighS, allFilter.iHighV), imgThresholded);
+
+    //morphological closing (fill small holes in the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
+
+  /*  findNonZero(imgThresholded, nonZeros);
+
+    for (unsigned int i = 0; i < nonZeros.total(); i++ ) {
+        cout << "Zero#" << i << ": " << nonZeros.at<Point>(i).x << ", " << nonZeros.at<Point>(i).y << endl;
+    }
+*/
+    
+    //erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)));
+    //dilate(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)));
+
+    return cubes;
+}
+
+
+
+cv::Mat Color::checkColorsTest(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+
+    Mat imgHSV;
+    Mat nonZeros;
+    Mat imgThresholded;
+    Mat imgThresholdedGreen;
+
+    //Convert from BGR to HSV
+    cvtColor(image, imgHSV, COLOR_BGR2HSV);
+
+    //morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Threshold the image to match filter-values
+    inRange(imgHSV, Scalar(allFilter.iLowH, allFilter.iLowS, allFilter.iLowV), Scalar(allFilter.iHighH, allFilter.iHighS, allFilter.iHighV), imgThresholded);
+
+    //morphological closing (fill small holes in the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
+
+   /* findNonZero(imgThresholded, nonZeros);
+
+    for (unsigned int i = 0; i < nonZeros.total(); i++ ) {
+        cout << "Zero#" << i << ": " << nonZeros.at<Point>(i).x << ", " << nonZeros.at<Point>(i).y << endl;
+    }
+*/
+
+
+
+    return imgThresholded;
+}

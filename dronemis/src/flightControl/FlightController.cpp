@@ -3,7 +3,8 @@
 //
 
 #include "FlightController.h"
-#include "../navdata/Nav.h"
+
+#define DEBUG 0
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
@@ -13,7 +14,6 @@ struct thread_data{
     Nav navData;
     CV_Handler *cvHandler;
     FlightController *controller;
-    ros::MultiThreadedSpinner spinner;
     ros::NodeHandle *n;
 } myThreadData;
 
@@ -30,7 +30,7 @@ FlightController::FlightController(){
     straightFlight = false;
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::MultiThreadedSpinner spinner) {
+FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
     baseSpeed = 0.2;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
@@ -46,7 +46,6 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, ros::Multi
 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
-    myThreadData.spinner = spinner;
     myThreadData.n = nh;
 
     pthread_t threads[2];
@@ -74,9 +73,6 @@ void FlightController::run(){
 
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
-
-    ROS_INFO("SOMESTUFF");
-
 
     while (ros::ok()) {
 
@@ -108,56 +104,62 @@ void FlightController::run(){
 void FlightController::goToWaypoint(Command newWaypoint) {
     double timeToFly;
 
-    double dx = newWaypoint.x - navData.position.x;
-    double dy = newWaypoint.y - navData.position.y;
-    double dz = newWaypoint.z - navData.position.z;
-
+    double diffX = newWaypoint.x - navData.position.x;
+    double diffY = newWaypoint.y - navData.position.y;
+    double diffZ = newWaypoint.z - navData.position.z;
+    double absX = abs(diffX);
+    double absY = abs(diffY);
 
     if (!straightFlight) {
         // TODO decide if this should be implemented or not
     } else{
+        if(diffX != 0.0){
+            timeToFly = (absX / baseSpeed)/2;
 
-        /*timeToFly = (absX / baseSpeed)/2;
+            if(diffX < 0){
+                cmd.linear.x = -baseSpeed;
+            } else
+                cmd.linear.x = baseSpeed;
 
-        if(diffX < 0){
-            cmd.linear.x = -baseSpeed;
-        } else
-            cmd.linear.x = baseSpeed;
+#ifdef DEBUG
+            ROS_INFO("Time to fly = %F", timeToFly);
+            ROS_INFO("X = %F", cmd.linear.x);
+#endif
 
+            publishToControl(timeToFly/2);
+
+        }
+
+        if(diffY != 0.0){
+            timeToFly = (absY / baseSpeed)/2;
+
+            if(diffY < 0)
+                cmd.linear.y = -baseSpeed;
+            else
+                cmd.linear.y = baseSpeed;
+
+#ifdef DEBUG
+            ROS_INFO("Time to fly = %F", timeToFly);
+            ROS_INFO("Y = %F", cmd.linear.x);
+#endif
+
+            publishToControl(timeToFly/2);
+
+        }
+    }
+    if (diffZ != 0.0){
+        timeToFly = (abs(diffZ) / baseSpeed)/2;
+
+        if(diffZ < 0)
+            cmd.linear.z = -baseSpeed;
+        else
+            cmd.linear.z = baseSpeed;
+
+#ifdef DEBUG
         ROS_INFO("Time to fly = %F", timeToFly);
-        ROS_INFO("X = %F", cmd.linear.x);
-
-        publishToControl(timeToFly/2);*/
-
-
-        while(abs(dx) > precision){
-            cmd.linear.x = 0.5;
-            pub_control.publish(cmd);
-            dx = newWaypoint.x - navData.position.x;
-            usleep(10);
-        }
-
-        hover(1);
-
-        while(abs(dy) > precision){
-            cmd.linear.y = 0.5;
-            pub_control.publish(cmd);
-            dy = newWaypoint.y - navData.position.y;
-
-            usleep(10);
-        }
-
-        hover(1);
-
-        while(abs(dz) > precision){
-            cmd.linear.z = 0.5;
-            pub_control.publish(cmd);
-            dz = newWaypoint.z - navData.position.z;
-            usleep(10);
-        }
-
-        hover(1);
-
+        ROS_INFO("Z = %F", cmd.linear.z);
+#endif
+        publishToControl(timeToFly);
 
     }
 
@@ -294,20 +296,26 @@ void FlightController::startProgram() {
 
 void FlightController::resetProgram(){
     ROS_INFO("MANUEL RESET!");
+    started = false;
     reset();
 }
 
 void FlightController::abortProgram(){
     ROS_INFO("MANUEL ABORT!");
+    started = false;
     land();
+}
+
+void FlightController::testProgram(){
+    ROS_INFO("TESTING!");
+
 }
 
 void* startNavdata(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-
-    thread_data->navData.run(thread_data->n, thread_data->spinner);
+    thread_data->navData.run(thread_data->n);
     pthread_exit(NULL);
 }
 
