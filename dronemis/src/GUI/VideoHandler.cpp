@@ -13,7 +13,13 @@ VideoHandler::VideoHandler(CV_Handler* cvHandler){
 
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
 
-    video_subscriber = nodeHandle.subscribe(video_channel,5, &VideoHandler::video, this);
+    video_subscriber = nodeHandle.subscribe(video_channel,10, &VideoHandler::video, this);
+
+    ros::Rate r(25);
+    while(ros::ok()) {
+        ros::spinOnce();
+        r.sleep();
+    }
 }
 
 
