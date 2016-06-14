@@ -12,13 +12,11 @@ struct {
     int kernel;
 } data;
 
-int kernel;
 int kernelState = 0;
-
+cv::Mat kernel;
 void setKernel(int state, void* userdata);
 
 Color::Color() {
-    kernel = 0;
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
     cvCreateTrackbar("LowH", "Control", &(allFilter).iLowH, 255); //Hue (0 - 255)
     cvCreateTrackbar("HighH", "Control", &(allFilter).iHighH, 255);
@@ -37,7 +35,6 @@ Color::~Color() {
 }
 
 void setKernel(int state, void* userdata) {
-    cv::Mat kernel;
 
     switch (kernelState++) {
         case 0 :
