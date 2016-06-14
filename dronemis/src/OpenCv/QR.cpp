@@ -1,70 +1,31 @@
 #include "QR.h"
-CV_Handler *cvHandler;
 
 using namespace cv;
 using namespace std;
 using namespace zbar;
 
-struct QRCodes {
-    int x;
-    int y;
-    String name;
-} ;
-
-double calculateDistance(int pixel);
-void initializeQR();
-
-struct QRCodes QRWallCode[21];
-float distanceToQR[200];
-
-
-
-//g++ main.cpp /usr/local/include/ /usr/local/lib/ -lopencv_highgui.2.4.8 -lopencv_core.2.4.8
-QR::QR(CV_Handler cv)
-{
+QR::QR(CV_Handler *cv) {
     initializeQR();
     cvHandler = cv;
 }
 
-int QR::checkQR(void)
-{
-/*
-    VideoCapture cap(0); // open the video camera no. 0
-    // cap.set(CV_CAP_PROP_FRAME_WIDTH,800);
-    // cap.set(CV_CAP_PROP_FRAME_HEIGHT,640);
-    if (!cap.isOpened()) // if not success, exit program
-    {
-        cout << "Cannot open the video cam" << endl;
-        return -1;
-    }*/
-    cv::Mat image(cvHandler->storedImageBW.size().y,
+int QR::checkQR(void) {
+
+    cv::Mat img(cvHandler->storedImageBW.size().y,
                   cvHandler->storedImageBW.size().x,
                     CV_8UC1,
                   cvHandler->storedImageBW.data());
 
     ImageScanner scanner;
     scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
-    //double dWidth = cap.get(CV_CAP_PROP_FRAME_WIDTH); //get the width of frames of the video
-    //double dHeight = cap.get(CV_CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
-    //cout << "Frame size : " << dWidth << " x " << dHeight << endl;
-    namedWindow("MyVideo",CV_WINDOW_AUTOSIZE); //create a window called "MyVideo"
-    while (1)
-    {
 
-        //Mat frame;
-        /*
-        bool bSuccess = cap.read(frame); // read a new frame from video
-        if (!bSuccess) //if not success, break loop
-        {
-            cout << "Cannot read a frame from video stream" << endl;
-            break;
-        }*/
+    {
         Mat grey;
 
-        cvtColor(frame,grey,CV_BGR2GRAY);
-        int width = frame.cols;
-        int height = frame.rows;
-        uchar *raw = (uchar *)grey.data;
+        cvtColor(img,grey,CV_BGR2GRAY);
+        int width = img.cols;
+        int height = img.rows;
+        uchar *raw = grey.data;
 
         // wrap image data
         Image image(width, height, "Y800", raw, width * height);
@@ -136,16 +97,15 @@ int QR::checkQR(void)
             break;
         }*/
     }
-    return 0;
 }
 
-double calculateDistance(int pixel){
+double QR::calculateDistance(int pixel){
     if(pixel < 38) return -1;       // If distance is more than 2,9m
     else if (pixel > 130) return -2;    // If distance is less than 1m.
     else return distanceToQR[pixel]; // Returns distance in cm.
 }
 
-void initializeQR() {
+void QR::initializeQR() {
 
     QRWallCode[0].x = 188;  // 1.88m
     QRWallCode[0].y = 1055; // 10.55m
@@ -321,7 +281,6 @@ void initializeQR() {
     distanceToQR[128] = 90;
     distanceToQR[129] = 89;
     distanceToQR[130] = 88;
-
 }
 
 

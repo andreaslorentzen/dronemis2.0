@@ -13,7 +13,6 @@
 VideoHandler *videohandler;
 Cascade *cascade;
 Color *color;
-QR *qr;
 
 CV_Handler::CV_Handler(void) {
 
@@ -25,7 +24,6 @@ void CV_Handler::run(void) {
     cascade = new Cascade();
     color = new Color();
     videohandler = new VideoHandler(this);
-    qr = new QR();
 }
 
 
@@ -33,7 +31,6 @@ CV_Handler::~CV_Handler(void) {
     delete(cascade);
     delete(videohandler);
     delete(color);
-    delete(qr);
 }
 
 
