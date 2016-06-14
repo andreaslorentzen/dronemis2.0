@@ -4,6 +4,8 @@
 
 #include "Nav.h"
 
+#define DEBUG
+
 void Nav::run(ros::NodeHandle *n) {
     last = current_time();
     ros::Subscriber sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
@@ -34,6 +36,7 @@ void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
 
 //    printf("running: %d",running);
 }
+float tempX, tempY;
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     if(running)
         return;
@@ -41,23 +44,43 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     state = msg->state;
 
 
-    float vX = msg->vx;
-    float vY = msg->vy;
+    float vx = msg->vx;
+    float vy = msg->vy;
 //    float vZ = msg->vz;
-    float aX = msg->ax;
-    float aY = msg->ay;
+    float ax = msg->ax;
+    float ay = msg->ay;
 //    float aZ = msg->az;
 
     position.z = msg->altd;
 
-    double curr = (current_time()-last)/1000000000;
-    last = current_time();
+//    double curr = (current_time()-last)/1000000000;
+//    last = current_time();
 
-    position.x += vX * curr + 0.5 * aX * curr*curr;
-    position.y += vY * curr + 0.5 * aY * curr*curr;
+    // position.x += vX * curr + 0.5 * aX * curr*curr;
+    // position.y += vY * curr + 0.5 * aY * curr*curr;
 
-    //x += vX * curr + 0.5 ;
-    //y += vY * curr + 0.5 ;
+
+    buffer.vx += vx;
+    buffer.vy += vy;
+
+    buffer.ax += ax;
+    buffer.ay += ay;
+
+    if(++buffer.count == 200){
+        position.x += buffer.vx/200;
+        position.y += buffer.vy/200;
+
+    //    position.x += buffer.vx/200 + 0.5 * (buffer.ax/200);
+    //    position.y += buffer.vy/200 + 0.5 * (buffer.ay/200);
+
+
+        buffer.vx = 0;
+        buffer.vy = 0;
+        buffer.ax = 0;
+        buffer.ay = 0;
+        buffer.count = 0;
+
+    }
 
 //    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
 
@@ -77,5 +100,10 @@ Nav::Nav() {
     running = 1;
     position.x = 0.0;
     position.y = 0.0;
+    buffer.vx = 0;
+    buffer.vy = 0;
+    buffer.ax = 0;
+    buffer.ay = 0;
+    buffer.count = 0;
 }
 

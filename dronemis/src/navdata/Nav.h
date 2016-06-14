@@ -23,10 +23,16 @@ private:
 public:
     unsigned int state;
     struct {
+        float vx;
+        float vy;
+        float ax;
+        float ay;
+        int count;
+    } buffer;
+    struct {
         float x;
         float y;
         int z;
-
     } position;
     float rotation;
 
