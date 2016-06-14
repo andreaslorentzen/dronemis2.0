@@ -12,6 +12,7 @@
 #include "Route.h"
 #include "../navdata/Nav.h"
 #include "../OpenCv/CV_Handler.h"
+#include "../OpenCv/QR.h"
 
 struct MyVector{
     double x;
@@ -57,6 +58,7 @@ private:
     ros::Publisher pub_reset;
     Nav *navData;
     CV_Handler *cvHandler;
+    QR *qr;
     double getSpeed(double distance);
     geometry_msgs::Twist cmd;
     MyVector transformCoordinates(MyVector incomingVector);

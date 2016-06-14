@@ -7,6 +7,7 @@
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
 void* startController(void *thread_arg);
+void* start(void *thread_arg);
 
 struct thread_data{
     Nav *navData;
@@ -48,10 +49,10 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
     myThreadData.navData = navData;
     myThreadData.n = nh;
 
-    pthread_t threads[2];
+    pthread_t threads[3];
     pthread_create(&threads[0], NULL, startCV, &myThreadData);
     pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
-
+    pthread_create(&threads[2], NULL, startQR, &myThreadData);
 
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
@@ -346,6 +347,14 @@ void* startCV(void *thread_arg) {
     thread_data = (struct thread_data *) thread_arg;
 
     thread_data->cvHandler->run();
+    pthread_exit(NULL);
+}
+
+void* startQR(void *thread_arg) {
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+
+    qr->run(thread_data->cvHandler);
     pthread_exit(NULL);
 }
 
