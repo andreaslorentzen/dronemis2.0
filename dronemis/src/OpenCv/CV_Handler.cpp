@@ -99,7 +99,6 @@ void CV_Handler::swapCam(bool frontCam) {
 
 std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     int frameCount = 0;
-    greySelected = true;
 
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
     std::vector<cascadeArray> cascades;
@@ -125,6 +124,8 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
                           storedImage.size().x,
                           CV_8UC3,
                           storedImage.data());
+                          
+            cascade_image_ready = false;
 
             lock.unlock();
             new_frame_signal.notify_all();

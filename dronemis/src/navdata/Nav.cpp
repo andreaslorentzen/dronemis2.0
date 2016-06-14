@@ -18,7 +18,7 @@ void Nav::run(ros::NodeHandle *n) {
 
     ros::Rate r(10);
 
-    while(ros::ok()) {
+    while(n->ok()) {
         ros::spinOnce();
         r.sleep();
     }

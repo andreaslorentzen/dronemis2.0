@@ -61,5 +61,11 @@ void *buttonThread(void *thread_arg) {
     w.show();
     a.exec();
 
+    ros::Rate r(10);
+    while(thread_data->n->ok()) {
+        ros::spinOnce();
+        r.sleep();
+    }
+
     pthread_exit(NULL);
 }
