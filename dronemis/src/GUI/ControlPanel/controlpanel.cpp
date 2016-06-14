@@ -2,8 +2,11 @@
 #include <QtCore>
 #include <QApplication>
 #include <QtGui/qevent.h>
+#include <QtGui/QtGui>
 #include "controlpanel.h"
 #include "ui_controlpanel.h"
+#include <QLCDNumber>
+#include <QtGui/QStyleOption>
 
 ControlPanel::ControlPanel(QWidget *parent) :
     QMainWindow(parent),
@@ -13,6 +16,10 @@ ControlPanel::ControlPanel(QWidget *parent) :
     paletteOrg.setColor(paletteOrg.WindowText, Qt::black);
     paletteRed.setColor(paletteRed.WindowText, Qt::red);
     ui->lcdNumber_Right->setPalette(paletteOrg);
+
+
+    ui->lcdNumber_Right->setSegmentStyle(QLCDNumber::SegmentStyle(QLCDNumber::Flat));
+
     ui->lcdNumber_Left->setPalette(paletteOrg);
     ui->lcdNumber_Right->display("00");
     ui->lcdNumber_Left->display("00:00");
