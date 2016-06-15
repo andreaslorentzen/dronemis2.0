@@ -27,8 +27,10 @@ void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
 
 //    printf("running: %d",running);
 }
+int counter = 0;
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
-
+    int counter_c = ++counter;
+    printf("%d\n",counter_c);
     state = msg->state;
 
 
@@ -55,6 +57,8 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
     std::ofstream file;
     file.open (filename, std::ios::app);
+    file << state;
+    file << ";";
     file << position.x;
     file << ";";
     file << position.y;
@@ -80,6 +84,8 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
                    "postition: %6.2f, %6.2f, %d\t"
             "rotation: %6.2f\n", state, position.x, position.y, position.z, rotation);
 #endif
+    printf("%d\n",counter_c);
+
 }
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
     rotation = msg->heading_fusion_unwrapped;
