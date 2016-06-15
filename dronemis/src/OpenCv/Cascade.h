@@ -23,6 +23,9 @@ public:
     struct cubeInfo{
         int x;
         int y;
+        double xDist;
+        double yDist;
+        int realY;
         int width;
         int height;
         unsigned char color;
