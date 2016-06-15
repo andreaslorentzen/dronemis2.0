@@ -13,16 +13,38 @@
 
 class QR {
 private:
+    int averageCount = 0;
+    int direction;
+    double yRatioTemp;
+    double yRatioAverage;
+    double y1Diversion;
+    double y2Diversion;
+    double yDiversionAngle;
+
+
+
     CV_Handler *cvHandler;
     struct QRCodes {
         int x;
         int y;
         cv::String name;
     };
+
+    struct DronePos {
+        int x;
+        int y;
+        int heading;
+    };
+
+
     struct QRCodes QRWallCode[25];
+    struct DronePos DronePosition;
+    struct DronePos FinalDronePosition;
     float distanceToQR[200];
-    double calculateDistance(int pixel);
+
     void initializeQR(void);
+    void calculateFinalDronePostition(std::string QRname);
+    double calculateDistanceToQR(int pixel);
 
 public:
     QR(CV_Handler *cv);

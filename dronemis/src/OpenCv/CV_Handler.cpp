@@ -60,7 +60,8 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     lock.unlock();
     new_frame_signal.notify_all();
 
-    show();
+
+    //show();
 }
 
 

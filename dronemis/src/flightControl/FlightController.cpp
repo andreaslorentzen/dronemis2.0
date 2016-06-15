@@ -330,7 +330,7 @@ void FlightController::abortProgram(){
 
 void FlightController::testProgram(){
     ROS_INFO("TESTING!");
-
+    qr->checkQR();
 }
 
 void* startNavdata(void *thread_arg){

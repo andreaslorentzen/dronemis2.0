@@ -11,96 +11,276 @@ QR::QR(CV_Handler *cv) {
 
 int QR::checkQR(void) {
 
-    cv::Mat img(cvHandler->storedImageBW.size().y,
-                  cvHandler->storedImageBW.size().x,
-                    CV_8UC1,
-                  cvHandler->storedImageBW.data());
 
-    ImageScanner scanner;
-    scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
-
+    while (1)
     {
-        Mat grey;
-
-        cvtColor(img,grey,CV_BGR2GRAY);
-        int width = img.cols;
-        int height = img.rows;
-        uchar *raw = grey.data;
-
-        // wrap image data
-        Image image(width, height, "Y800", raw, width * height);
+        ImageScanner scanner;
+        scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
 
 
-        // scan the image for barcodes
-        int n = scanner.scan(image);                    // Returns number of codes in the image.
-        //cout << "Number of QR codes in the image is " << n << endl;
-        int x0[5], x1[5], x2[5], x3[5], y0[5], y1[5], y2[5], y3[5], xsize[5], ysize[5], xmidt[5], ymidt[5], QRsize[5];
-        int QRcount = 0;    // Used to seperate the found QR codes
-        double QRdistance[5];
+        namedWindow("MyVideo",CV_WINDOW_AUTOSIZE); //create a window called "MyVideo"
+
+            cv::Mat img(cvHandler->storedImage.size().y,
+                        cvHandler->storedImage.size().x,
+                        CV_8UC3,
+                        cvHandler->storedImage.data());
+            Mat grey;
+
+            cvtColor(img,grey,CV_BGR2GRAY);
+            int width = img.cols;
+            int height = img.rows;
+            uchar *raw = (uchar *)grey.data;
+
+            // wrap image data
+            Image image(width, height, "Y800", raw, width * height);
 
 
-        // extract results
-        for(Image::SymbolIterator symbol = image.symbol_begin()    ; symbol != image.symbol_end()     ; ++symbol) {
-            vector<Point> vp;
+            // scan the image for barcodes
+            int numberQR = scanner.scan(image);                    // Returns number of codes in the image.
+            if(numberQR == 1){
+                if (averageCount == 10)  averageCount = 1;
+                else                   averageCount++;
+            }
+            // cout << "Number of QR codes in the image is " << n << endl;
+            int x0, x1, x2, x3, y0, y1, y2, y3, xsize, ysize, xmidt, ymidt, QRsize;
+            //double QRdistance;
 
-            // do something useful with results
-            //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
-            int n = symbol->get_location_size();        // Returns 4 if QR code is scanned
-            for (int i = 0; i < n; i++) {
-                vp.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));      //Update VP
-                //cout << "symbol->get_location_x = " << symbol->get_location_x(i) << endl;
-                //cout << "symbol->get_location_y = " << symbol->get_location_y(i) << endl;
+
+            // extract results
+            for(Image::SymbolIterator symbol = image.symbol_begin()    ; symbol != image.symbol_end()     ; ++symbol) {
+                vector<Point> vp;
+
+                // do something useful with results
+                //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
+                int n = symbol->get_location_size();        // Returns 4 if QR code is scanned
+                for (int i = 0; i < n; i++) {
+                    vp.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));      //Update VP
+                    //cout << "symbol->get_location_x = " << symbol->get_location_x(i) << endl;
+                    //cout << "symbol->get_location_y = " << symbol->get_location_y(i) << endl;
+                }
+
+                x0 = symbol->get_location_x(0);    //
+                x1 = symbol->get_location_x(1);    //
+                x2 = symbol->get_location_x(2);    //
+                x3 = symbol->get_location_x(3);    //  Saves the size of the QR code being detected
+                y0 = symbol->get_location_y(0);    //
+                y1 = symbol->get_location_y(1);    //
+                y2 = symbol->get_location_y(2);    //
+                y3 = symbol->get_location_y(3);    //
+                xsize = (abs((x0 - x2))+abs((x1-x3)))/2;      // Vertical size of the QR
+                ysize = (abs((y0 - y2))+abs((y3-y1)))/2;      // Horizontal size of the QR
+                xmidt = (x0+x1+x2+x3)/4;           // The horizontal middle of the QR
+
+                QRsize = (xsize+ysize)/2;            // The size of the QR
+                int distancetoQR = calculateDistanceToQR(QRsize);
+
+                double yleft, yright, ytemp;
+                double yratio;
+
+                yleft = y1 - y0;
+                yright = y2 - y3;
+
+                if(yleft > yright){
+                    direction = 1;                                                      // If direction is 1 - Drone is left of the QR code
+                }
+                else if(yleft == yright){
+                    direction = 0;                                                      // If direction is 0 - Drone is in front of QR code
+                }
+                else{
+                    direction = -1;                                                     // If direction is -1, Drone is right of the QR code.
+                    ytemp = yleft;
+                    yleft = yright; // Swap
+                    yright = ytemp;
+                }
+
+                yratio = yleft / yright;
+                yRatioTemp = yRatioTemp + yratio;
+                //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
+
+
+
+
+
+                if(averageCount == 10){
+                    yRatioAverage = yRatioTemp/10;
+                    //cout << "yRatioTemp = " << yRatioTemp << endl;
+                    yRatioTemp = 0;
+                    y1Diversion = (yRatioAverage*360.0395)-359.2821;
+                    y2Diversion = (yRatioAverage*637.3656)-642.2072;
+                    cout << "Distance = " << calculateDistanceToQR(QRsize) << "cm, with the text: " << symbol->get_data() << endl << endl;
+                    double xDistanceStatic = 4.208955224; //
+                    int xDistance = ((xmidt-320)*0.7/xDistanceStatic*distancetoQR/100);   //
+                    cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
+                    //cout << "y1Diversion (Parallel) = " << y1Diversion << endl;
+                    //cout << "y2Diversion (Kig på QR)= " << y2Diversion << endl;
+                    cout << "yRatioAverage = "<< yRatioAverage << endl;
+
+                    if(yRatioAverage < 1.06){
+                        yDiversionAngle = (y1Diversion+y2Diversion)/2*direction;
+                    }
+                    else{
+                        yDiversionAngle = y2Diversion*direction;
+                    }
+
+                    DronePosition.x = ((distancetoQR*0.8*std::sin(yDiversionAngle*(M_PI/180)))+xDistance); // xDistance (Forskydning)
+                    DronePosition.y = (distancetoQR*std::cos(yDiversionAngle*(M_PI/180)));
+
+
+
+                    cout << "Droneposition(x,y) = " << DronePosition.x << "," << DronePosition.y << endl;
+
+                    //**************************************
+                    //**** Match up with QR coordinates ****
+                    //**************************************
+
+                    calculateFinalDronePostition(symbol->get_data());
+                    //cout << symbol->get_data() << endl;
+
+
+                    cout << "FinalDroneposition(x,y) = " << FinalDronePosition.x << "," << FinalDronePosition.y << endl;
+                    cout << "DroneHeading = " << FinalDronePosition.heading << endl;
+
+                }
+
+                RotatedRect r = minAreaRect(vp);
+                Point2f pts[4];
+                r.points(pts);
+                for(int i=0;i<4;i++){
+                    line(img,pts[i],pts[(i+1)%4],Scalar(255,0,0),3);
+                }
+                //cout<<"Angle: "<<r.angle<<endl;
             }
 
-            //cout << "vp = " << vp.at(1) << endl;
-            //cout << "myvector contains:";
-            //½cout << "VectorPoint contains " << vp << endl;
-            //std::cout << '\n';
-            x0[QRcount] = symbol->get_location_x(0);    //
-            x1[QRcount] = symbol->get_location_x(1);    //
-            x2[QRcount] = symbol->get_location_x(2);    //
-            x3[QRcount] = symbol->get_location_x(3);    //  Saves the size of the QR code being detected
-            y0[QRcount] = symbol->get_location_y(0);    //
-            y1[QRcount] = symbol->get_location_y(1);    //
-            y2[QRcount] = symbol->get_location_y(2);    //
-            y3[QRcount] = symbol->get_location_y(3);    //
 
-            xsize[QRcount] = (abs((x0[QRcount] - x2[QRcount]))+abs((x1[QRcount]-x3[QRcount])))/2;      // Vertical size of the QR
-            ysize[QRcount] = (abs((y0[QRcount] - y2[QRcount]))+abs((y3[QRcount]-y1[QRcount])))/2;      // Horizontal size of the QR
-
-            xmidt[QRcount] = (x0[QRcount]+x1[QRcount]+x2[QRcount]+x3[QRcount])/4;           // The horizontal middle of the QR
-            ymidt[QRcount] = (y0[QRcount]+y1[QRcount]+y2[QRcount]+y3[QRcount])/4;           // The vertical middle of the QR
-
-            QRsize[QRcount] = (xsize[QRcount]+ysize[QRcount])/2;                    // The size of the QR
-            QRdistance[QRcount] = (-0.000003055555555555479*(QRsize[QRcount]^3))+(0.0009988095238095032*(QRsize[QRcount]^2))-(0.120253968253967*QRsize[QRcount])+6.30;
-
-            cout << "QR[" << QRcount << "], Placering (x,y) = " << xmidt[QRcount] << "," << ymidt[QRcount] << ". Distance = " << calculateDistance(QRsize[QRcount])
-            << "cm, with the text: " << symbol->get_data() << endl << endl;
-
-            int yleft[5], yright[5];
-            yleft[QRcount] = y1[QRcount] - y0[QRcount];
-            yright[QRcount] = y2[QRcount] - y3[QRcount];
-
-            //int displacementAngle[5];
-            //displacementAngle[QRcount] =
-
-            cout << "Yleft = " << yleft[QRcount] << ", Yright = " << yright[QRcount] << endl;
-
-            //cout<<"Angle: "<<r.angle<<endl;
-            QRcount++;
+            imshow("MyVideo", img); //show the frame in "MyVideo" window
+            if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
+            {
+                cout << "esc key is pressed by user" << endl;
+                break;
+            }
         }
-        return 0;
-        /*imshow("MyVideo", frame); //show the frame in "MyVideo" window
-        if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-        {
-            cout << "esc key is pressed by user" << endl;
-            break;
-        }*/
-    }
+    return 0;
 }
 
-double QR::calculateDistance(int pixel){
-    if(pixel < 38) return -1;       // If distance is more than 2,9m
+
+void QR::calculateFinalDronePostition(std::string QRname){
+    if(QRname.find("W00")== 0){       // Wall 0 has been found
+        if(QRname.find("W00.00") == 0){     // Code W00.00
+            FinalDronePosition.x = (QRWallCode[0].x - DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[0].y - DronePosition.y);
+            FinalDronePosition.heading = yDiversionAngle;
+
+        }
+        else if(QRname.find("W00.01") == 0){     // Code W00.01
+            FinalDronePosition.x = (QRWallCode[1].x - DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[1].y - DronePosition.y);
+            FinalDronePosition.heading = yDiversionAngle;
+        }
+        else if(QRname.find("W00.02") == 0){     // Code W00.02
+            FinalDronePosition.x = (QRWallCode[2].x - DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[2].y - DronePosition.y);
+            FinalDronePosition.heading = yDiversionAngle;
+        }
+        else if(QRname.find("W00.03") == 0){     // Code W00.03
+            FinalDronePosition.x = (QRWallCode[3].x - DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[3].y - DronePosition.y);
+            FinalDronePosition.heading = yDiversionAngle;
+        }
+        else if(QRname.find("W00.04") == 0){     // Code W00.04
+            FinalDronePosition.x = (QRWallCode[4].x - DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[4].y - DronePosition.y);
+            FinalDronePosition.heading = yDiversionAngle;
+        }
+    }
+
+    else if(QRname.find("W01.")== 0){       // Wall 1 has been found
+        if(QRname.find("W01.00") == 0){     // Code W01.00
+            FinalDronePosition.x = (QRWallCode[5].x - DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[5].y + DronePosition.x);
+            FinalDronePosition.heading = 90 + yDiversionAngle;
+        }
+        else if(QRname.find("W01.01") == 0){     // Code W01.01
+            FinalDronePosition.x = (QRWallCode[6].x - DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[6].y + DronePosition.x);
+            FinalDronePosition.heading = 90 + yDiversionAngle;
+        }
+        else if(QRname.find("W01.02") == 0){     // Code W01.02
+            FinalDronePosition.x = (QRWallCode[7].x - DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[7].y + DronePosition.x);
+            FinalDronePosition.heading = 90 + yDiversionAngle;
+        }
+        else if(QRname.find("W01.03") == 0){     // Code W01.03
+            FinalDronePosition.x = (QRWallCode[8].x - DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[8].y + DronePosition.x);
+            FinalDronePosition.heading = 90 + yDiversionAngle;
+        }
+        else if(QRname.find("W01.04") == 0){     // Code W01.04
+            FinalDronePosition.x = (QRWallCode[9].x - DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[9].y + DronePosition.x);
+            FinalDronePosition.heading = 90 + yDiversionAngle;
+        }
+    }
+
+    else if(QRname.find("W02.")== 0){       // Wall 2 has been found
+        if(QRname.find("W02.00") == 0){     // Code W02.00
+            FinalDronePosition.x = (QRWallCode[10].x + DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[10].y + DronePosition.y);
+            FinalDronePosition.heading = 180 + yDiversionAngle;
+        }
+        else if(QRname.find("W02.01") == 0){     // Code W02.01
+            FinalDronePosition.x = (QRWallCode[11].x + DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[11].y + DronePosition.y);
+            FinalDronePosition.heading = 180 + yDiversionAngle;
+        }
+        else if(QRname.find("W02.02") == 0){     // Code W02.02
+            FinalDronePosition.x = (QRWallCode[12].x + DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[12].y + DronePosition.y);
+            FinalDronePosition.heading = 180 + yDiversionAngle;
+        }
+        else if(QRname.find("W02.03") == 0){     // Code W02.03
+            FinalDronePosition.x = (QRWallCode[13].x + DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[13].y + DronePosition.y);
+            FinalDronePosition.heading = 180 + yDiversionAngle;
+        }
+        else if(QRname.find("W02.04") == 0){     // Code W02.04
+            FinalDronePosition.x = (QRWallCode[14].x + DronePosition.x);
+            FinalDronePosition.y = (QRWallCode[14].y + DronePosition.y);
+            FinalDronePosition.heading = 180 + yDiversionAngle;
+        }
+    }
+
+    else if(QRname.find("W03.")== 0){       // Wall 3 has been found
+        if(QRname.find("W03.00") == 0){     // Code W03.00
+            FinalDronePosition.x = (QRWallCode[15].x + DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[15].y - DronePosition.x);
+            FinalDronePosition.heading = 270 + yDiversionAngle;
+        }
+        else if(QRname.find("W03.01") == 0){     // Code W03.01
+            FinalDronePosition.x = (QRWallCode[16].x + DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[16].y - DronePosition.x);
+            FinalDronePosition.heading = 270 + yDiversionAngle;
+        }
+        else if(QRname.find("W03.02") == 0){     // Code W03.02
+            FinalDronePosition.x = (QRWallCode[17].x + DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[17].y - DronePosition.x);
+            FinalDronePosition.heading = 270 + yDiversionAngle;
+        }
+        else if(QRname.find("W03.03") == 0){     // Code W03.03
+            FinalDronePosition.x = (QRWallCode[18].x + DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[18].y - DronePosition.x);
+            FinalDronePosition.heading = 270 + yDiversionAngle;
+        }
+        else if(QRname.find("W03.04") == 0){     // Code W03.04
+            FinalDronePosition.x = (QRWallCode[19].x + DronePosition.y);
+            FinalDronePosition.y = (QRWallCode[19].y - DronePosition.x);
+            FinalDronePosition.heading = 270 + yDiversionAngle;
+        }
+    }
+
+}
+
+double QR::calculateDistanceToQR(int pixel) {
+    if (pixel < 38) return -1;       // If distance is more than 2,9m
     else if (pixel > 130) return -2;    // If distance is less than 1m.
     else return distanceToQR[pixel]; // Returns distance in cm.
 }
@@ -108,17 +288,17 @@ double QR::calculateDistance(int pixel){
 void QR::initializeQR() {
     string value;
     int i = 0;
-    ifstream file ( "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv" );
+    ifstream file("../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv");
     if (!file.good())
         cout << "Unable to read QR csv file" << endl;
     getline(file, value);
 
     while (!file.eof()) {
-        getline ( file, value, ';' );
+        getline(file, value, ';');
         QRWallCode[i].name = value;
-        getline ( file, value, ';' );
+        getline(file, value, ';');
         QRWallCode[i].x = std::atoi(value.c_str());
-        getline ( file, value );
+        getline(file, value);
         QRWallCode[i].y = std::atoi(value.c_str());
         i++;
     }
