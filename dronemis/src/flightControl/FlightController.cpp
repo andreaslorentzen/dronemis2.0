@@ -65,6 +65,8 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
 // Destructor
 FlightController::~FlightController() {
     delete(cvHandler);
+    delete(qr);
+    delete(navData);
 }
 
 void FlightController::run(){
@@ -330,7 +332,6 @@ void FlightController::abortProgram(){
 
 void FlightController::testProgram(){
     ROS_INFO("TESTING!");
-
 }
 
 void* startNavdata(void *thread_arg){
@@ -345,14 +346,7 @@ void* startCV(void *thread_arg) {
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-    thread_data->cvHandler->run();
-    pthread_exit(NULL);
-}
-
-void* startQR(void *thread_arg) {
-    struct thread_data *thread_data;
-    thread_data = (struct thread_data *) thread_arg;
-
+    thread_data->cvHandler->run(thread_data->navData);
     pthread_exit(NULL);
 }
 
