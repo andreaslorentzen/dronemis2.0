@@ -7,7 +7,6 @@
 #include "OpenCv/CV_Handler.h"
 #include "flightControl/FlightController.h"
 #include "GUI/ControlPanel/controlpanel.h"
-#include "ros/callback_queue.h"
 
 #define NUM_THREADS 4
 #define LOOP_RATE (50)
@@ -35,6 +34,9 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "blindFlight");
     ros::NodeHandle *n = new ros::NodeHandle();
+
+
+
 
     controller = new FlightController(LOOP_RATE, n);
 
