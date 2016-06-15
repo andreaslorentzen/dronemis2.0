@@ -106,87 +106,22 @@ double QR::calculateDistance(int pixel){
 }
 
 void QR::initializeQR() {
+    ifstream file ( "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv" );
+    string value;
+    int i = 0;
+    getline(file, value);
 
-    QRWallCode[0].x = 188;  // 1.88m
-    QRWallCode[0].y = 1055; // 10.55m
-    QRWallCode[0].name = "W00.00";
-
-    QRWallCode[1].x = 338;  // 3.38m
-    QRWallCode[1].y = 1060; // 10.60m
-    QRWallCode[1].name = "W00.01";
-
-    QRWallCode[2].x = 515;  // 5.15m
-    QRWallCode[2].y = 1055; // 10.55m
-    QRWallCode[2].name = "W00.02";
-
-    QRWallCode[3].x = 694;  // 6.94m
-    QRWallCode[3].y = 1060; // 10.60m
-    QRWallCode[3].name = "W00.03";
-
-    QRWallCode[4].x = 840;  // 8.40m
-    QRWallCode[4].y = 1055; // 10.55m
-    QRWallCode[4].name = "W00.04";
-
-    QRWallCode[5].x = 926;  // 9.26m
-    QRWallCode[5].y = 904;  // 9.04m
-    QRWallCode[5].name = "W01.00";
-
-    QRWallCode[6].x = 926;  // 9.26m
-    QRWallCode[6].y = 721;  // 7.21m
-    QRWallCode[6].name = "W01.01";
-
-    QRWallCode[7].x = 926;  // 9.26m
-    QRWallCode[7].y = 566;  // 5.56m
-    QRWallCode[7].name = "W01.02";
-
-    QRWallCode[8].x = 926;  // 9.26m
-    QRWallCode[8].y = 324;  // 3.24m
-    QRWallCode[8].name = "W01.03";
-
-    QRWallCode[9].x = 926;  // 9.26m
-    QRWallCode[9].y = 115;  // 1.15m
-    QRWallCode[9].name = "W01.04";
-
-    QRWallCode[10].x = 847;  // 8.47m
-    QRWallCode[10].y = -10;  // -0.10m
-    QRWallCode[10].name = "W02.00";
-
-    QRWallCode[11].x = 656;  // 6.56m
-    QRWallCode[11].y = -77;  // -0.77m
-    QRWallCode[11].name = "W02.01";
-
-    QRWallCode[12].x = 514;  // 5.14m
-    QRWallCode[12].y = 0;    // 0m
-    QRWallCode[12].name = "W02.02";
-
-    QRWallCode[13].x = 328;  // 3.28m
-    QRWallCode[13].y = 0;    // 0m
-    QRWallCode[14].name = "W02.03";
-
-    QRWallCode[15].x = 143;  // 1.43m
-    QRWallCode[15].y = 0;    // 0m
-    QRWallCode[15].name = "W02.04";
-
-    QRWallCode[16].x = 0;    // 0m
-    QRWallCode[16].y = 108;  // 1.08m
-    QRWallCode[16].name = "W03.00";
-
-    QRWallCode[17].x = 0;    // 0m
-    QRWallCode[17].y = 357;  // 3.57m
-    QRWallCode[17].name = "W03.01";
-
-    QRWallCode[18].x = 0;   // 0m
-    QRWallCode[18].y = 561; // 5.61m
-    QRWallCode[18].name = "W03.02";
-
-    QRWallCode[19].x = 0;   // 0m
-    QRWallCode[19].y = 740; // 7.40m
-    QRWallCode[19].name = "W03.03";
-
-    QRWallCode[20].x = 0;   // 0m
-    QRWallCode[20].y = 997; // 9.97m
-    QRWallCode[20].name = "W03.04";
-
+    while (!file.eof()) {
+        getline ( file, value, ';' );
+        QRWallCode[i].name = value;
+        getline ( file, value, ';' );
+        QRWallCode[i].x = std::atoi(value.c_str());
+        getline ( file, value );
+        QRWallCode[i].y = std::atoi(value.c_str());
+        cout << "Name: " << QRWallCode[i].name << endl;
+        cout << "x: " << QRWallCode[i].x << endl;
+        cout << "y: " << QRWallCode[i].y << endl;
+        i++; }
 
     distanceToQR[38] = 310;
     distanceToQR[39] = 298;

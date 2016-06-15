@@ -19,7 +19,7 @@ private:
         int y;
         cv::String name;
     };
-    struct QRCodes QRWallCode[21];
+    struct QRCodes QRWallCode[25];
     float distanceToQR[200];
     double calculateDistance(int pixel);
     void initializeQR(void);
