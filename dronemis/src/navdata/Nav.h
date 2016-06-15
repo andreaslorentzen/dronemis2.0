@@ -22,7 +22,7 @@ private:
     double current_time();
 public:
     unsigned int state;
-    struct {
+    struct positionStruct{
         float x;
         float y;
         int z;
@@ -35,7 +35,7 @@ public:
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
     void run(ros::NodeHandle *n);
-
+    int getHeight(){return position.z;}
 };
 
 
