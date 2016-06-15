@@ -102,7 +102,8 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     int frameCount = 0;
     int biggestArray = 0;
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
-    std::vector<cascadeArray> cascades(1);
+    std::vector<cascadeArray> cascades;
+    std::vector<Cascade::cubeInfo> cubes;
 
     while (true) {
         cascadeMutex.lock();
@@ -129,13 +130,15 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
+
+       // cubes = calculatePosition(cascades[biggestArray]);
+
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
         std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
         std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
         std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
 
-        return calculatePosition(cascades[biggestArray]);
     } return std::vector<Cascade::cubeInfo>();
 }
 
