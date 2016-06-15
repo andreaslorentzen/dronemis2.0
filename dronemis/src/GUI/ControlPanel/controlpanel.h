@@ -24,7 +24,6 @@ private slots:
     void on_pushButton_Reset_clicked(void);
     void on_pushButton_Stop_clicked(void);
     void on_pushButton_shutdown_clicked(void);
-    void on_pushButton_Test_clicked(void);
     void updatePanel(void);
     void updatePosition(void);
 

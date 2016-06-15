@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="pushButton_shutdown">
     <property name="geometry">
      <rect>
-      <x>238</x>
+      <x>221</x>
       <y>39</y>
-      <width>84</width>
+      <width>101</width>
       <height>60</height>
      </rect>
     </property>
@@ -69,10 +69,10 @@
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>227</width>
-      <height>58</height>
+      <x>11</x>
+      <y>41</y>
+      <width>201</width>
+      <height>54</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -127,27 +127,10 @@
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Filled</enum>
-       </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="pushButton_Test">
-       <property name="text">
-        <string>Test</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="3">
-      <widget class="QLCDNumber" name="lcdNumber_Position">
-       <property name="digitCount">
-        <number>20</number>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Flat</enum>
-       </property>
-      </widget>
+     <item row="1" column="0" colspan="2">
+      <widget class="QLCDNumber" name="lcdNumber_Position"/>
      </item>
     </layout>
    </widget>

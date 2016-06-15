@@ -109,11 +109,6 @@ void ControlPanel::updatePosition(void) {
     ui->lcdNumber_Position->display(QString::fromStdString(posStr));
 }
 
-void ControlPanel::on_pushButton_Test_clicked(void)
-{
-    controller->testProgram();
-}
-
 void ControlPanel::on_pushButton_shutdown_clicked(void)
 {
     const char* command = "kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')";
