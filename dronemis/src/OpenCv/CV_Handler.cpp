@@ -131,7 +131,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
               biggestArray = i;
         }
 
-       // cubes = calculatePosition(cascades[biggestArray]);
+        cascades[biggestArray] = calculatePosition(cascades[biggestArray]);
 
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
