@@ -14,6 +14,7 @@
 #include "cvd/byte.h"
 #include <cvd/image_io.h>
 #include <cvd/rgb.h>
+#include <std_srvs/Empty.h>
 
 
 class CV_Handler {
@@ -21,6 +22,10 @@ class CV_Handler {
 
 private:
     void show(void);
+    ros::NodeHandle nodeHandle;
+    ros::ServiceClient cam_service;
+    ros::NodeHandle cam_channel;
+    std_srvs::Empty toggleCam_srv_srvs;
 
 public:
     bool cascade_image_ready;

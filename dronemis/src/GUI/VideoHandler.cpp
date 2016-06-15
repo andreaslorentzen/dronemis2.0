@@ -19,6 +19,8 @@ VideoHandler::VideoHandler(CV_Handler* cvHandler){
     while(nodeHandle.ok()) {
         ros::spinOnce();
         r.sleep();
+
+
     }
 }
 
@@ -33,8 +35,3 @@ void VideoHandler::video(sensor_msgs::ImageConstPtr img) {
     cv_handler->video(img);
 }
 
-
-void VideoHandler::swapCam() {
-    cam_service = nodeHandle.serviceClient<std_srvs::Empty>(nodeHandle.resolveName("ardrone/togglecam"),1);
-    cam_service.call(toggleCam_srv_srvs);
-}

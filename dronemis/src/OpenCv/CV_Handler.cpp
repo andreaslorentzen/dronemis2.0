@@ -19,7 +19,7 @@ CV_Handler::CV_Handler(void) {
 }
 
 void CV_Handler::run(void) {
-    frontCamSelected = false;
+    frontCamSelected = true;
     greySelected = false;
     cascade = new Cascade();
     color = new Color();
@@ -92,9 +92,11 @@ void CV_Handler::show(void) {
 
 
 void CV_Handler::swapCam(bool frontCam) {
-    if (frontCamSelected != frontCam)
-        videohandler->swapCam();
-    frontCamSelected = frontCam;
+    cam_service = nodeHandle.serviceClient<std_srvs::Empty>(nodeHandle.resolveName("ardrone/togglecam"),1);
+    if (frontCamSelected != frontCam) {
+        cam_service.call(toggleCam_srv_srvs);
+        frontCamSelected = frontCam;
+    }
 }
 
 
@@ -102,19 +104,19 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     int frameCount = 0;
 
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
-    std::vector<cascadeArray> cascades;
+    std::vector<cascadeArray> cascades(1);
 
     ros::Rate r(10); // 10 hz
 
     cv::Mat processedImage;
 
-    boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
-    lock.unlock();
+  //  boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
+    //lock.unlock();
 
     while (ros::ok()) {
 
-        if (cascade_image_ready) {
-            lock.lock();
+       // if (cascade_image_ready) {
+           // lock.lock();
 
             cv::Mat imageBW(storedImageBW.size().y,
                             storedImageBW.size().x,
@@ -128,32 +130,35 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
                           
             cascade_image_ready = false;
 
-            lock.unlock();
-            new_frame_signal.notify_all();
+           // lock.unlock();
+            //new_frame_signal.notify_all();
 
-            cascades.push_back(color->checkColors(cascade->checkCascade(imageBW), image));
+            cascades.push_back(cascade->checkCascade(imageBW));
 
             if (++frameCount == CASCADE_FRAMES)
                 break;
 
             r.sleep();
-        } else
-            new_frame_signal.wait(lock);
+      //  } else;
+          //  new_frame_signal.wait(lock);
     }
 
+
     int biggestArray = 0;
+
+    if (cascades.size() != 0) {
 
     for (unsigned int i = 0; i < cascades.size(); i++) {
        if (cascades[i].size() > cascades[biggestArray].size())
            biggestArray = i;
-    }
+    } }
 
-
+    if (cascades[biggestArray].size() != 0) {
     std::cout << "The biggest array is nr. " << biggestArray << std::endl;
 
-
-
-
+        std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
+        std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
+    }
 
 
 
