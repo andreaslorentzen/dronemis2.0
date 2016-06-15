@@ -16,6 +16,7 @@
 
 class Nav {
 private:
+    int start_time;
     bool running;
     double last;
 

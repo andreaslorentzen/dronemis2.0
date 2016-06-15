@@ -6,16 +6,15 @@
 #include "Nav.h"
 
 void Nav::run(ros::NodeHandle *n) {
-    last = current_time();
+
     ros::Subscriber sub_navdata = n->subscribe<ardrone_autonomy::Navdata>("ardrone/navdata", 5000, &Nav::navdataCallback, this);
     ros::Subscriber sub_magneto = n->subscribe<ardrone_autonomy::navdata_magneto>("ardrone/navdata_magneto", 5000, &Nav::magnetoCallback, this);
     ros::Subscriber sub_init = n->subscribe<std_msgs::Empty>("nav/init", 5000, &Nav::initCallback, this);
 
-    // start the navdata
-    ros::Publisher pub_reset_pos = n->advertise<std_msgs::Empty>("nav/init", 1);
+    while(ros::ok()){
+        ros::spinOnce();
+    }
 
-    std_msgs::Empty empty_msg;
-    pub_reset_pos.publish(empty_msg);
 }
 double Nav::current_time() {
     return ros::Time::now().toNSec();
@@ -29,37 +28,47 @@ void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
 //    printf("running: %d",running);
 }
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
-    if(running)
-        return;
 
     state = msg->state;
 
-    std::ofstream file;
-     file.open ("../workspaces/dronemis_ws/src/dronemis/src/navdata/log.txt", std::ios::app);
-     file << msg->ax;
-     file << ";";
-     file << msg->ay;
-     file << ";";
-     file << msg->vx;
-     file << ";";
-     file << msg->vy;
-     file << "\n";
-     file.close();
 
-    float vX = msg->vx;
-    float vY = msg->vy;
+
+    float vx = msg->vx;
+    float vy = msg->vy;
 //    float vZ = msg->vz;
-    float aX = msg->ax;
-    float aY = msg->ay;
+    float ax = msg->ax;
+    float ay = msg->ay;
 //    float aZ = msg->az;
 
     position.z = msg->altd;
-
-    double curr = (current_time()-last)/1000000000;
+/*
+     = (current_time()-last)/1000000000;
     last = current_time();
+*/
+    double curr = 0.005;
+    position.x += vx * curr + 0.5 * ax * curr*curr;
+    position.y += vy * curr + 0.5 * ay * curr*curr;
 
-    position.x += vX * curr + 0.5 * aX * curr*curr;
-    position.y += vY * curr + 0.5 * aY * curr*curr;
+    std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
+    filename.append(std::to_string(start_time));
+    filename.append(".csv");
+
+    std::ofstream file;
+    file.open (filename, std::ios::app);
+    file << position.x;
+    file << ";";
+    file << position.y;
+    file << ";";
+    file << msg->ax;
+    file << ";";
+    file << msg->ay;
+    file << ";";
+    file << msg->vx;
+    file << ";";
+    file << msg->vy;
+    file << "\n";
+    file.close();
+
 
     //x += vX * curr + 0.5 ;
     //y += vY * curr + 0.5 ;
@@ -79,8 +88,9 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
 
 
 Nav::Nav() {
-    running = 1;
+    running = 0;
     position.x = 0.0;
     position.y = 0.0;
+    start_time = (int) ros::Time::now().toSec();
 }
 
