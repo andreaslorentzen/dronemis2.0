@@ -106,9 +106,11 @@ double QR::calculateDistance(int pixel){
 }
 
 void QR::initializeQR() {
-    ifstream file ( "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv" );
     string value;
     int i = 0;
+    ifstream file ( "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv" );
+    if (!file.good())
+        cout << "Unable to read QR csv file" << endl;
     getline(file, value);
 
     while (!file.eof()) {
@@ -118,10 +120,10 @@ void QR::initializeQR() {
         QRWallCode[i].x = std::atoi(value.c_str());
         getline ( file, value );
         QRWallCode[i].y = std::atoi(value.c_str());
-        cout << "Name: " << QRWallCode[i].name << endl;
-        cout << "x: " << QRWallCode[i].x << endl;
-        cout << "y: " << QRWallCode[i].y << endl;
-        i++; }
+        i++;
+    }
+
+    cout << i << " QR codes initialized" << endl;
 
     distanceToQR[38] = 310;
     distanceToQR[39] = 298;
