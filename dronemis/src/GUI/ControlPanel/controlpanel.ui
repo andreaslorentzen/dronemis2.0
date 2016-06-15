@@ -33,7 +33,7 @@
      <string>Shutdown</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -66,7 +66,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
@@ -130,7 +130,14 @@
       </widget>
      </item>
      <item row="1" column="0" colspan="2">
-      <widget class="QLCDNumber" name="lcdNumber_Position"/>
+      <widget class="QLCDNumber" name="lcdNumber_Position">
+       <property name="digitCount">
+        <number>20</number>
+       </property>
+       <property name="segmentStyle">
+        <enum>QLCDNumber::Flat</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
