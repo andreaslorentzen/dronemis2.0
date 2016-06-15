@@ -138,18 +138,17 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
         std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
         std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
-
-    } return std::vector<Cascade::cubeInfo>();
+    }
+    return std::vector<Cascade::cubeInfo>();
 }
 
 std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> cubes) {
-    double xFactor = 95.8/640;
-    double yFactor = 51.7/360;
+    double xFactor = 95.8 / 640;
+    double yFactor = 51.7 / 360;
 
     for (unsigned int i = 0; i < cubes.size(); i++) {
-        cubes[i].xDist = xFactor/navData->getHeight();
-        cubes[i].yDist = yFactor/navData->getHeight();
+        cubes[i].xDist = xFactor / navData->getPosition().z;
+        cubes[i].yDist = yFactor / navData->getPosition().z;
     }
-
     return cubes;
 }

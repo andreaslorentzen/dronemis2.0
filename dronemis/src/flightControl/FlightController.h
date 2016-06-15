@@ -29,7 +29,7 @@ struct MyVector{
 class FlightController{
 public:
     FlightController();
-    FlightController(int loopRate, ros::NodeHandle *nh);
+    FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav);
     ~FlightController();
     void goToWaypoint(Command newWaypoint);
     void turnTowardsPoint(Command waypoint);

@@ -88,7 +88,7 @@ std::vector<Cascade::cubeInfo> Color::checkColorsRed(std::vector<Cascade::cubeIn
 
     findNonZero(imgThresholded, nonZeros);
 
-    int count;
+    //int count;
     for (unsigned int i = 0; i < cubes.size(); i++) {
         for (unsigned int j = 0; j < nonZeros.total(); j++) {
             if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y)
@@ -119,7 +119,7 @@ std::vector<Cascade::cubeInfo> Color::checkColorsGreen(std::vector<Cascade::cube
 
     findNonZero(imgThresholded, nonZeros);
 
-    int count;
+    //int count;
     for (unsigned int i = 0; i < cubes.size(); i++) {
         for (unsigned int j = 0; j < nonZeros.total(); j++) {
             if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y)

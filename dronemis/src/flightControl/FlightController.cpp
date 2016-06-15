@@ -28,7 +28,7 @@ FlightController::FlightController(){
     straightFlight = false;
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
+FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav) {
     baseSpeed = 0.1;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
@@ -41,10 +41,9 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
     precision = 50;
     maxSpeed = 0.5;
 
-
     cvHandler = new CV_Handler();
     qr = new QR(cvHandler);
-    navData = new Nav();
+    navData = nav;
 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
@@ -66,7 +65,6 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
 FlightController::~FlightController() {
     delete(cvHandler);
     delete(qr);
-    delete(navData);
 }
 
 void FlightController::run(){
@@ -331,7 +329,7 @@ void FlightController::abortProgram(){
 }
 
 void FlightController::testProgram(){
-    ROS_INFO("TESTING!");
+    ROS_INFO("TEST!");
 }
 
 void* startNavdata(void *thread_arg){

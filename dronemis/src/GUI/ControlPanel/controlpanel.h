@@ -16,7 +16,7 @@ class ControlPanel : public QMainWindow
 
 public:
     explicit ControlPanel(QWidget *parent = 0);
-    void setValues(FlightController *newController, ros::NodeHandle *n, int countdownSeconds);
+    void setValues(Nav *nav, FlightController *newController, ros::NodeHandle *n, int countdownSeconds);
     ~ControlPanel(void);
 
 private slots:
@@ -24,8 +24,9 @@ private slots:
     void on_pushButton_Reset_clicked(void);
     void on_pushButton_Stop_clicked(void);
     void on_pushButton_shutdown_clicked(void);
-    void on_pushButton_Test_clicked();
+    void on_pushButton_Test_clicked(void);
     void updatePanel(void);
+    void updatePosition(void);
 
 private:
     bool started;
@@ -36,10 +37,12 @@ private:
     int secondsLeft;
     int secondsleftConst;
     Ui::ControlPanel *ui;
+    Nav *navData;
     FlightController *controller;
     QPalette paletteRed;
     QPalette paletteOrg;
     QTimer * timer;
+    QTimer * timerPos;
 };
 
 #endif // CONTROLPANEL_H

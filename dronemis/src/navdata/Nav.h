@@ -35,7 +35,7 @@ public:
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
     void run(ros::NodeHandle *n);
-    int getHeight(){return position.z;}
+    positionStruct getPosition(){return position;}
 };
 
 
