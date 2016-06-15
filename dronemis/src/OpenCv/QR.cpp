@@ -191,7 +191,6 @@ void QR::calculateFinalDronePostition(std::string QRname){
             FinalDronePosition.y = (QRWallCode[4].y - DronePosition.y);
             FinalDronePosition.heading = yDiversionAngle;
         }
-
     }
 
     else if(QRname.find("W01.")== 0){       // Wall 1 has been found
