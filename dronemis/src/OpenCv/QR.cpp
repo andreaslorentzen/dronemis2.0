@@ -110,9 +110,9 @@ void QR::initializeQR() {
     int i = 0;
     ifstream file ( "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv" );
     if (!file.good())
-        cout << "Unable to read QR csv file" << endl;
-    getline(file, value);
+        ROS_INFO("Unable to read QR csv file");
 
+    getline(file, value);
     while (!file.eof()) {
         getline ( file, value, ';' );
         QRWallCode[i].name = value;
@@ -123,7 +123,7 @@ void QR::initializeQR() {
         i++;
     }
 
-    cout << i << " QR codes initialized" << endl;
+    ROS_INFO("%d QR codes initialized", i);
 
     distanceToQR[38] = 310;
     distanceToQR[39] = 298;
