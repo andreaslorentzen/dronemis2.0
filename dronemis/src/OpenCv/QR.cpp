@@ -109,9 +109,10 @@ void QR::initializeQR() {
     string value;
     int i = 0;
     ifstream file ( "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/WallCoordinates.csv" );
-    if (!file.good())
+    if (!file.good()) {
         ROS_INFO("Unable to read QR csv file");
-
+        return;
+    }
     getline(file, value);
     while (!file.eof()) {
         getline ( file, value, ';' );
