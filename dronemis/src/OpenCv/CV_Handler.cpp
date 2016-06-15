@@ -9,6 +9,7 @@
 
 Cascade *cascade;
 Color *color;
+Nav *navData;
 
 using namespace std;
 
@@ -17,7 +18,8 @@ CV_Handler::CV_Handler(void) {
 }
 
 
-void CV_Handler::run(void) {
+void CV_Handler::run(Nav *nav) {
+    navData = nav;
     frontCamSelected = true;
     greySelected = false;
     cascade = new Cascade();
@@ -62,7 +64,6 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
 
 
 void CV_Handler::show(void) {
-
     cv::Mat image;
 
     if (greySelected) {
@@ -123,37 +124,29 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         if (++frameCount == CASCADE_FRAMES)
             break;
     }
-
-    if (cascades.size() != 0 && cascades[biggestArray].size() != 0) {
-
+    if (!cascades.empty()) {
         for (unsigned int i = 0; i < cascades.size(); i++) {
-           if (cascades[i].size() > cascades[biggestArray].size())
+           if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
-
-        std::cout << "The biggest array is nr. " << biggestArray << std::endl;
+        std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
+        std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
         std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
+        std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
+
+        return calculatePosition(cascades[biggestArray]);
+    } return std::vector<Cascade::cubeInfo>();
+}
+
+std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> cubes) {
+    double xFactor = 95.8/640;
+    double yFactor = 51.7/360;
+
+    for (unsigned int i = 0; i < cubes.size(); i++) {
+        cubes[i].xDist = xFactor/navData->getHeight();
+        cubes[i].yDist = yFactor/navData->getHeight();
     }
 
-
-/*
-
-
-
-
-
-    storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
-
-    size_t size = processedImage.cols * processedImage.rows;
-
-    lock.lock();
-
-    memcpy(storedImage.data(), processedImage.data,  size*3);
-    //greySelected = false;
-
-    lock.unlock();
-    new_frame_signal.notify_all();
-*/
-    return std::vector<Cascade::cubeInfo>();
+    return cubes;
 }
