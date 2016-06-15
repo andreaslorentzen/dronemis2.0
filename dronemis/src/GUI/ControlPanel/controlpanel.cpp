@@ -105,7 +105,8 @@ void ControlPanel::updatePosition(void) {
     posStr.append(to_string((int)navData->position.y));
     posStr.append(":");
     posStr.append(to_string(navData->position.z));
-
+    posStr.append(":");
+    posStr.append(to_string((int)navData->rotation));
     ui->lcdNumber_Position->display(QString::fromStdString(posStr));
 }
 
