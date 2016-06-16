@@ -398,9 +398,8 @@ void FlightController::startProgram() {
 
 void FlightController::resetProgram(){
     ROS_INFO("MANUEL RESET!");
-   // started = false;
-   // reset();
-    qr->checkQR();
+    started = false;
+    reset();
 }
 
 void FlightController::abortProgram(){
