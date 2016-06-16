@@ -113,7 +113,7 @@ void FlightController::run(){
     while (ros::ok()) {
         takeOff();
 
-        pub_reset_pos.publish(empty_msg);
+        //pub_reset_pos.publish(empty_msg);
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand = myRoute.nextCommand();
@@ -149,7 +149,8 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     MyVector d (newWaypoint.x - navData->position.x,
                 newWaypoint.y - navData->position.y,
-                newWaypoint.z - navData->position.z);
+                //newWaypoint.z - navData->position.z);
+                0);
 
     MyVector v_vec (0.0, 0.0, 0.0);
 
@@ -181,34 +182,27 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     /*
      * VERSION 2
      */
-
-
-/*    while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE *//*|| (int) abs(d.z) > TOLERANCE*//*){
+/*
+    //while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE || (int) abs(d.z) > TOLERANCE){
+   while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE ){
 
         v_vec = getVelocity(d);
         //    ROS_INFO("vx: %f\tvy: %f\n",v_vec.x,v_vec.y);
         //    ROS_INFO("dx: %f\tdy: %f\n",d.x,d.y);
-
-
-        if(v_vec.x != cmd.linear.x || v_vec.y != cmd.linear.y *//*|| v_vec.z != cmd.linear.z*//*){
+      // if(v_vec.x != cmd.linear.x || v_vec.y != cmd.linear.y || v_vec.z != cmd.linear.z){
+        if(v_vec.x != cmd.linear.x || v_vec.y != cmd.linear.y ){
             cmd.linear.x = v_vec.x;
             cmd.linear.y = v_vec.y;
-*//*
-            cmd.linear.z = v_vec.z;
-*//*
+            //cmd.linear.z = v_vec.z;
             ROS_INFO("SEND: vx: %f\tvy: %f\n",v_vec.x,v_vec.y);
-
-
             pub_control.publish(cmd);
         }
-
         control_loop.sleep();
-
         d.x = newWaypoint.x - navData->position.x;
         d.y = newWaypoint.y - navData->position.y;
-        d.z = newWaypoint.z - navData->position.z;
-
-    }*/
+        //d.z = newWaypoint.z - navData->position.z;
+    }
+*/
 
 
     hover(2);
@@ -424,7 +418,7 @@ void FlightController::land() {
     std_msgs::Empty empty_msg;
     pub_land.publish(empty_msg);
 
-    for (int j = 0; j < LOOP_RATE; j++) {
+    for (int j = 0; j < LOOP_RATE*6; j++) {
         ros::Rate(LOOP_RATE).sleep();
     }
 }

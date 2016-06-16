@@ -86,14 +86,14 @@ void navdataCallback2(const ardrone_autonomy::Navdata::ConstPtr &msg)
     aY = msg->ay;
     aZ = msg->az;
 
-    double curr = (current_time()-last)/1000000000;
+    double INTERVAL = (current_time()-last)/1000000000;
     last = current_time();
 
-    x += vX * curr + 0.5 * aX * curr*curr;
-    y += vY * curr + 0.5 * aY * curr*curr;
+    x += vX * INTERVAL + 0.5 * aX * INTERVAL*INTERVAL;
+    y += vY * INTERVAL + 0.5 * aY * INTERVAL*INTERVAL;
 
-    //x += vX * curr + 0.5 ;
-    //y += vY * curr + 0.5 ;
+    //x += vX * INTERVAL + 0.5 ;
+    //y += vY * INTERVAL + 0.5 ;
 
 //    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
     printf("s: %d\t%6.2f, %6.2f\n", state, x, y);

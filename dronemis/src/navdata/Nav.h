@@ -20,10 +20,12 @@ private:
     int start_time;
     bool running;
     double last;
-
     double current_time();
 public:
     unsigned int state;
+    double time;
+    double last_ts;
+    double last_vx;
     struct {
         float x;
         float y;
@@ -36,7 +38,7 @@ public:
 
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
-    void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
+   // void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
     void run(ros::NodeHandle *n);
