@@ -6,6 +6,7 @@
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
+void* startController(void *thread_arg);
 
 struct thread_data{
     Nav *navData;
@@ -129,7 +130,7 @@ void FlightController::run(){
 
         ROS_INFO("X = %d", dronePos.x);
         ROS_INFO("Y = %d", dronePos.y);
-        ROS_INFO("heading", dronePos.y);
+        ROS_INFO("heading = %d", dronePos.heading);
 
         land();
         return;
@@ -389,14 +390,13 @@ MyVector FlightController::transformCoordinates(MyVector incomingVector) {
 }
 
 void FlightController::startProgram() {
-    //qr->checkQR();
-    /*if (!started) {
+    if (!started) {
         ROS_INFO("STARTING!");
         pthread_t thread;
         myThreadData.controller = this;
         pthread_create(&thread, NULL, startController, &myThreadData);
         started = true;
-    }*/
+    }
 }
 
 void FlightController::resetProgram(){
