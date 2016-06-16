@@ -59,7 +59,8 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
 
     cascadeMutex.unlock();
 
-    show();
+
+    //show();
 }
 
 
