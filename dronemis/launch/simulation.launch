@@ -1,5 +1,8 @@
 <launch>
   <param name="/use_sim_time" value="true" />
   <include file="$(find cvg_sim_gazebo)/launch/dronemis_world.launch"  />
+  <param name="TRANSIT_SPEED" value="1" />
+  <param name="CRUISE_SPEED" value="0.1" />
+  <param name="CRUISE_LIMIT" value="500" />
   <node pkg="dronemis" type="blindFlight" name="blindFlight" output="screen" launch-prefix="xterm -e"></node>
 </launch>

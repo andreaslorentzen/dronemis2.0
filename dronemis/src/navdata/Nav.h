@@ -13,25 +13,43 @@
 #include <geometry_msgs/Twist.h>
 #include "std_msgs/String.h"
 #include "ros/callback_queue.h"
+#include <sensor_msgs/Imu.h>
 
 class Nav {
 private:
+    int start_time;
     bool running;
     double last;
-
     double current_time();
+    double lastvX;
+    double lastaX;
+
 public:
+    static const int ups_buffer_size = 50;
+    float ups_buffer[ups_buffer_size];
+    int ups_index = 0;
+    double ups_last_time;
+    float updateUPS();
+
     unsigned int state;
+
+    double time;
+    double last_ts;
+    double last_vx;
+
     struct positionStruct{
         float x;
         float y;
         int z;
 
     } position;
+    double x, y;
+
     float rotation;
 
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
+// void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     void resetToPosition(double x, double y, double heading);
     Nav();
