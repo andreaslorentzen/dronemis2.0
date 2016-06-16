@@ -9,8 +9,8 @@ using namespace cv;
 Cascade::Cascade(void) {
 
     if(!cascade_classifier.load("../workspaces/dronemis_ws/src/dronemis/src/OpenCv/cascades/cascade700.xml")){
-        ROS_INFO("ERROR LOADING DEFAULT CASCADE..");
-    };
+        ROS_INFO("ERROR LOADING DEFAULT CASCADE");
+    } ROS_INFO("CASCADE LAODED");
 }
 
 Cascade::~Cascade(void) {
@@ -34,9 +34,9 @@ bool Cascade::setCascade(const int cascadeNumber) {
     }
 
     if(!cascade_classifier.load(cascadeName)){
-        ROS_INFO("ERROR LOADING CASCADE..");
+        ROS_INFO("ERROR LOADING CASCADE");
         return false;
-    };
+    } ROS_INFO("CASCADE LAODED");
 
     return true;
 }

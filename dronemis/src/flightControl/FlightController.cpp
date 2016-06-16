@@ -4,6 +4,8 @@
 
 #include "FlightController.h"
 
+#define DEBUG 0
+
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
 void* startController(void *thread_arg);
@@ -66,7 +68,7 @@ FlightController::FlightController(){
 
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle *n) : FlightController(){
+FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav): FlightController() {
     LOOP_RATE = loopRate;
 
 
@@ -79,11 +81,13 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *n) : FlightCon
     pub_reset = n->advertise<std_msgs::Empty>("/ardrone/reset", 1);
 
     cvHandler = new CV_Handler();
+    qr = new QR(cvHandler);
+
+    navData = nav;
 
     myThreadData.cvHandler = cvHandler;
-    navData = new Nav();
     myThreadData.navData = navData;
-    myThreadData.n = n;
+    myThreadData.n = nh;
 
     pthread_t threads[2];
     pthread_create(&threads[0], NULL, startCV, &myThreadData);
@@ -96,6 +100,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *n) : FlightCon
 // Destructor
 FlightController::~FlightController() {
     delete(cvHandler);
+    delete(qr);
 }
 
 void FlightController::run(){
@@ -110,28 +115,82 @@ void FlightController::run(){
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
+    bool firstIteration = true;
+
+    DronePos dronePos;
+    double startHeading;
+
     while (ros::ok()) {
         takeOff();
 
-        //pub_reset_pos.publish(empty_msg);
+        startHeading = navData->rotation;
 
-        while (!myRoute.hasAllBeenVisited()) {
-            Command currentCommand = myRoute.nextCommand();
+        bool turning = true;
+        double amountTurned = 0;
+        double turnStepSize = 30;
+        dronePos = qr->checkQR();
 
-            if (currentCommand.commandType == Command::goTo) {
-                printf("hellle0\n");
-                goToWaypoint(currentCommand);
-            } else if (currentCommand.commandType == Command::hover) {
-                printf("hellle1\n");
+        while(!dronePos.positionLocked){
 
-                hover(currentCommand.timeToHover);
-            } else if (currentCommand.commandType == Command::turn) {
-                printf("hellle2\n");
+            if(turning) {
+                turnDegrees(turnStepSize);
+                dronePos = qr->checkQR();
+                amountTurned += turnStepSize;
+                if(amountTurned >= 360)
+                    turning = false;
+            } else{
+                Command tempCommand(navData->position.x + 500, navData->position.y);
 
-                //   urnDrone(currentCommand.degrees);
+                goToWaypoint(tempCommand);
+
+                dronePos = qr->checkQR();
             }
+
+            do {
+                double targetHeading = navData->rotation - dronePos.angle;
+
+                if (dronePos.relativeY > 150 && dronePos.relativeY < 225){
+                    goToWaypoint(Command(navData->position.x, navData->position.y+(dronePos.relativeX)));
+                    double currentHeading = navData->rotation;
+                    if(currentHeading < 0)
+                        currentHeading = 360 + currentHeading;
+                    turnDegrees(targetHeading-currentHeading);
+                }
+
+                dronePos = qr->checkQR();
+
+            } while((dronePos.numberOfQRs > 2 && !dronePos.positionLocked));
+
+
         }
 
+        navData->resetToPosition(dronePos.x*10, dronePos.y*10, dronePos.heading);
+
+        ROS_INFO("X = %d", dronePos.x);
+        ROS_INFO("Y = %d", dronePos.y);
+        ROS_INFO("heading = %d", dronePos.heading);
+
+        land();
+        return;
+
+        while (!myRoute.hasAllBeenVisited()) {
+            Command currentCommand;
+            if(firstIteration) {
+                currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
+                                                             navData->position.z);
+                firstIteration = false;
+            }else {
+                currentCommand = myRoute.nextCommand();
+            }
+
+            if (currentCommand.commandType == Command::goTo) {
+                goToWaypoint(currentCommand);
+            } else if (currentCommand.commandType == Command::hover) {
+                hover(currentCommand.timeToHover);
+            } else if (currentCommand.commandType == Command::turn) {
+               //   urnDrone(currentCommand.degrees);
+            }
+        }
 
         land();
 
@@ -143,9 +202,7 @@ void FlightController::run(){
     return;
 }
 
-
 void FlightController::goToWaypoint(Command newWaypoint) {
-    ROS_INFO("hellle00\n");
 
     MyVector d (newWaypoint.x - navData->position.x,
                 newWaypoint.y - navData->position.y,
@@ -327,6 +384,24 @@ MyVector FlightController::getVelocity(MyVector d) {
     return v_vec;
 }
 
+void FlightController::turnDegrees(double degrees){
+    double ori_deg = navData->rotation;
+    double target_deg = ori_deg+degrees;
+    float offset = 0.5;
+
+    if(target_deg == 180.0)
+        target_deg = 179.9;
+    else if(target_deg > 180.0)
+        target_deg = (-179.99)+(target_deg-179.99);
+
+    do {
+        cmd.linear.z = getRotationalSpeed( target_deg, ori_deg);
+
+    } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
+
+    hover(1);
+}
+
 void FlightController::turnTowardsPoint(Command waypoint) {
 
     double target_angle = atan2(waypoint.y, waypoint.x); // angle towards waypoint position
@@ -481,14 +556,6 @@ void FlightController::abortProgram(){
     land();
 }
 
-void FlightController::testProgram(){
-    ROS_INFO("TESTING!");
-
-}
-
-
-
-
 void* startNavdata(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
@@ -502,7 +569,7 @@ void* startCV(void *thread_arg) {
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-    thread_data->cvHandler->run();
+    thread_data->cvHandler->run(thread_data->navData);
     pthread_exit(NULL);
 }
 

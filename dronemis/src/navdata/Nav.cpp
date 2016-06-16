@@ -149,11 +149,9 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
     rotation = msg->heading_fusion_unwrapped;
 }
 
-/*
-    void Nav::imuCallback(const sensor_msgs::Imu::ConstPtr &msg) {
-    }
-*/
-
+void Nav::resetToPosition(double x, double y, double heading) {
+    //TODO IMPLEMENT THIS
+}
 
 
 Nav::Nav() {

@@ -12,22 +12,30 @@ struct {
     int kernel;
 } data;
 
-int kernel;
 int kernelState = 0;
-
+cv::Mat kernel;
 void setKernel(int state, void* userdata);
 
 Color::Color() {
-    kernel = 0;
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    cvCreateTrackbar("LowH", "Control", &(allFilter).iLowH, 255); //Hue (0 - 255)
-    cvCreateTrackbar("HighH", "Control", &(allFilter).iHighH, 255);
+    namedWindow("RedMis", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    cvCreateTrackbar("LowH", "RedMis", &(redFilter).iLowH, 255); //Hue (0 - 255)
+    cvCreateTrackbar("HighH", "RedMis", &(redFilter).iHighH, 255);
 
-    cvCreateTrackbar("LowS", "Control", &(allFilter).iLowS, 255); //Saturation (0 - 255)
-    cvCreateTrackbar("HighS", "Control", &(allFilter).iHighS, 255);
+    cvCreateTrackbar("LowS", "RedMis", &(redFilter).iLowS, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS", "RedMis", &(redFilter).iHighS, 255);
 
-    cvCreateTrackbar("LowV", "Control", &(allFilter).iLowV, 255); //Value (0 - 255)
-    cvCreateTrackbar("HighV", "Control", &(allFilter).iHighV, 255);
+    cvCreateTrackbar("LowV", "RedMis", &(redFilter).iLowV, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV", "RedMis", &(redFilter).iHighV, 255);
+
+    namedWindow("GreenMis", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    cvCreateTrackbar("LowH", "GreenMis", &(greenFilter).iLowH, 255); //Hue (0 - 255)
+    cvCreateTrackbar("HighH", "GreenMis", &(greenFilter).iHighH, 255);
+
+    cvCreateTrackbar("LowS", "GreenMis", &(greenFilter).iLowS, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS", "GreenMis", &(greenFilter).iHighS, 255);
+
+    cvCreateTrackbar("LowV", "GreenMis", &(greenFilter).iLowV, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV", "GreenMis", &(greenFilter).iHighV, 255);
 
     cvCreateButton("Kernel",setKernel, &data,CV_PUSH_BUTTON,0);
 }
@@ -37,7 +45,6 @@ Color::~Color() {
 }
 
 void setKernel(int state, void* userdata) {
-    cv::Mat kernel;
 
     switch (kernelState++) {
         case 0 :
@@ -57,45 +64,15 @@ void setKernel(int state, void* userdata) {
 }
 
 std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
-
-    Mat imgHSV;
-    Mat nonZeros;
-    Mat imgThresholded;
-    Mat imgThresholdedGreen;
-
-    //Convert from BGR to HSV
-    cvtColor(image, imgHSV, COLOR_BGR2HSV);
-
-    //morphological opening (remove small objects from the foreground)
-    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
-
-    //Threshold the image to match filter-values
-    inRange(imgHSV, Scalar(allFilter.iLowH, allFilter.iLowS, allFilter.iLowV), Scalar(allFilter.iHighH, allFilter.iHighS, allFilter.iHighV), imgThresholded);
-
-    //morphological closing (fill small holes in the foreground)
-    morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
-
-  /*  findNonZero(imgThresholded, nonZeros);
-
-    for (unsigned int i = 0; i < nonZeros.total(); i++ ) {
-        cout << "Zero#" << i << ": " << nonZeros.at<Point>(i).x << ", " << nonZeros.at<Point>(i).y << endl;
-    }
-*/
-    
-    //erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)));
-    //dilate(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)));
-
-    return cubes;
+    return checkColorsRed(checkColorsGreen(cubes,image),image);
 }
 
 
-
-cv::Mat Color::checkColorsTest(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+std::vector<Cascade::cubeInfo> Color::checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
 
     Mat imgHSV;
     Mat nonZeros;
     Mat imgThresholded;
-    Mat imgThresholdedGreen;
 
     //Convert from BGR to HSV
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
@@ -104,19 +81,51 @@ cv::Mat Color::checkColorsTest(std::vector<Cascade::cubeInfo> cubes, cv::Mat ima
     morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
 
     //Threshold the image to match filter-values
-    inRange(imgHSV, Scalar(allFilter.iLowH, allFilter.iLowS, allFilter.iLowV), Scalar(allFilter.iHighH, allFilter.iHighS, allFilter.iHighV), imgThresholded);
+    inRange(imgHSV, Scalar(redFilter.iLowH, redFilter.iLowS, redFilter.iLowV), Scalar(redFilter.iHighH, redFilter.iHighS, redFilter.iHighV), imgThresholded);
 
     //morphological closing (fill small holes in the foreground)
     morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
 
-   /* findNonZero(imgThresholded, nonZeros);
+    findNonZero(imgThresholded, nonZeros);
 
-    for (unsigned int i = 0; i < nonZeros.total(); i++ ) {
-        cout << "Zero#" << i << ": " << nonZeros.at<Point>(i).x << ", " << nonZeros.at<Point>(i).y << endl;
+    //int count;
+    for (unsigned int i = 0; i < cubes.size(); i++) {
+        for (unsigned int j = 0; j < nonZeros.total(); j++) {
+            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y)
+                cubes[i].color = 'r';
+        }
     }
-*/
+    
+    return cubes;
+}
 
+std::vector<Cascade::cubeInfo> Color::checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
 
+    Mat imgHSV;
+    Mat nonZeros;
+    Mat imgThresholded;
 
-    return imgThresholded;
+    //Convert from BGR to HSV
+    cvtColor(image, imgHSV, COLOR_BGR2HSV);
+
+    //morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Threshold the image to match filter-values
+    inRange(imgHSV, Scalar(greenFilter.iLowH, greenFilter.iLowS, greenFilter.iLowV), Scalar(greenFilter.iHighH, greenFilter.iHighS, greenFilter.iHighV), imgThresholded);
+
+    //morphological closing (fill small holes in the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
+
+    findNonZero(imgThresholded, nonZeros);
+
+    //int count;
+    for (unsigned int i = 0; i < cubes.size(); i++) {
+        for (unsigned int j = 0; j < nonZeros.total(); j++) {
+            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y)
+                cubes[i].color = 'r';
+        }
+    }
+
+    return cubes;
 }

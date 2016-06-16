@@ -21,10 +21,14 @@ void Route::initRoute(bool useFile) {
         char input[1000];
 
         if(flightPlan.is_open()) {
+            #ifdef DEBUG
             ROS_INFO("is open");
+            #endif
             while (!flightPlan.eof()) {
                 flightPlan >> input;
-                ROS_INFO("the input is: %s", input);
+                #ifdef DEBUG
+                    ROS_INFO("the input is: %s", input);
+                #endif
                 if(strcmp(input, "goto") == 0){
                     flightPlan >> input;
                     double tempX = atof(input);
@@ -36,7 +40,9 @@ void Route::initRoute(bool useFile) {
                 } else if(strcmp(input, "turn") == 0) {
 
                     flightPlan >> input;
+#ifdef DEBUG
                     ROS_INFO("input = %s", input);
+#endif
                     double degrees =  atof(input);
                     commands.push_back(Command(degrees));
                 } else if(strcmp(input, "hover") == 0) {
@@ -47,11 +53,12 @@ void Route::initRoute(bool useFile) {
             }
         }
         flightPlan.close();
-
+#ifdef DEBUG
         ROS_INFO("READ IN WAYPOINTS");
         for(unsigned int i = 0; i < commands.size(); i++){
             ROS_INFO("Command %d", i);
         }
+#endif
     } else{
         commands.push_back(Command(1.0, 0.0));
         commands.push_back(Command(1.0, 1.0));

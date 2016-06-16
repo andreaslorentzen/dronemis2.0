@@ -32,10 +32,12 @@ public:
     float updateUPS();
 
     unsigned int state;
+
     double time;
     double last_ts;
     double last_vx;
-    struct {
+
+    struct positionStruct{
         float x;
         float y;
         int z;
@@ -49,9 +51,10 @@ public:
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
 // void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
+    void resetToPosition(double x, double y, double heading);
     Nav();
     void run(ros::NodeHandle *n);
-
+    positionStruct getPosition(){return position;}
 };
 
 

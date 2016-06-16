@@ -7,22 +7,21 @@
 #include "OpenCv/CV_Handler.h"
 #include "flightControl/FlightController.h"
 #include "GUI/ControlPanel/controlpanel.h"
+#include "ros/callback_queue.h"
 
 #define NUM_THREADS 4
 #define LOOP_RATE (50)
 
-void *controlThread(void *thread_arg);
-void *buttonThread(void *thread_arg);
-void *cvThread(void *thread_arg);
-void *navdataThread(void *thread_Arg);
 
-bool started = false;
+void *buttonThread(void *thread_arg);
 FlightController *controller;
+Nav *nav;
 
 struct thread_data {
     int argc;
     char **argv;
     ros::NodeHandle *n;
+    Nav *nav;
 };
 
 struct thread_data td[NUM_THREADS];
@@ -34,13 +33,11 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "blindFlight");
     ros::NodeHandle *n = new ros::NodeHandle();
-
-
-
-
-    controller = new FlightController(LOOP_RATE, n);
+    nav = new Nav();
+    controller = new FlightController(LOOP_RATE, n, nav);
 
     td[0].n = n;
+    td[0].nav = nav;
 
     pthread_t thread;
     pthread_create(&thread, NULL, buttonThread, &td[0]);
@@ -59,7 +56,7 @@ void *buttonThread(void *thread_arg) {
     // Creating Control panel
     QApplication a(thread_data->argc, thread_data->argv);
     ControlPanel w;
-    w.setValues(controller, thread_data->n, 300);
+    w.setValues(thread_data->nav, controller, thread_data->n, 300);
     w.show();
     a.exec();
 
