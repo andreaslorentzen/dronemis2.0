@@ -42,7 +42,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav) 
     maxSpeed = 0.5;
 
     cvHandler = new CV_Handler();
-    //qr = new QR(cvHandler);
+    qr = new QR(cvHandler);
 
     navData = nav;
 
