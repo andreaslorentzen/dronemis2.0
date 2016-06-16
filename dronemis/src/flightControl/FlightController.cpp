@@ -75,10 +75,10 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav):
 
 
 
-    pub_land = n->advertise<std_msgs::Empty>("/ardrone/land", 1);
-    pub_takeoff = n->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
-    pub_control = n->advertise<geometry_msgs::Twist>("cmd_vel", 1);
-    pub_reset = n->advertise<std_msgs::Empty>("/ardrone/reset", 1);
+    pub_land = nh->advertise<std_msgs::Empty>("/ardrone/land", 1);
+    pub_takeoff = nh->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
+    pub_control = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    pub_reset = nh->advertise<std_msgs::Empty>("/ardrone/reset", 1);
 
     cvHandler = new CV_Handler();
     qr = new QR(cvHandler);
@@ -130,7 +130,7 @@ void FlightController::run(){
         double turnStepSize = 30;
         dronePos = qr->checkQR();
 
-        while(!dronePos.positionLocked){
+        /*while(!dronePos.positionLocked){
 
             if(turning) {
                 turnDegrees(turnStepSize);
@@ -171,24 +171,25 @@ void FlightController::run(){
         ROS_INFO("heading = %d", dronePos.heading);
 
         land();
-        return;
+        return;*/
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
-            if(firstIteration) {
+            /*if(firstIteration) {
                 currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
                                                              navData->position.z);
                 firstIteration = false;
             }else {
                 currentCommand = myRoute.nextCommand();
-            }
+            }*/
+            currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
                 goToWaypoint(currentCommand);
             } else if (currentCommand.commandType == Command::hover) {
                 hover(currentCommand.timeToHover);
             } else if (currentCommand.commandType == Command::turn) {
-               //   urnDrone(currentCommand.degrees);
+                turnDegrees(currentCommand.degrees);
             }
         }
 
@@ -216,7 +217,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
      * VERSION 1
      */
 
-    /*while ((int) abs(d.x) > TOLERANCE){
+    while ((int) abs(d.x) > TOLERANCE){
 
         v_vec.x = getSpeed(d.x);
 
@@ -233,12 +234,32 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.z = newWaypoint.z - navData->position.z;
 
     }
-    printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);*/
+
+    hover(2);
+
+    while ((int) abs(d.y) > TOLERANCE){
+
+        v_vec.y = getSpeed(d.y);
+
+        if(v_vec.y != cmd.linear.y){
+            printf("vx: %f\tdx: %f \n", v_vec.y, d.y);
+            cmd.linear.y = v_vec.y;
+            pub_control.publish(cmd);
+        }
+
+        control_loop.sleep();
+
+        d.x = newWaypoint.x - navData->position.x;
+        d.y = newWaypoint.y - navData->position.y;
+        d.z = newWaypoint.z - navData->position.z;
+
+    }
+    printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);
     /*
      * VERSION 2
      */
     //while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE || (int) abs(d.z) > TOLERANCE){
-   while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE ){
+  /* while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE ){
 
         v_vec = getVelocity(d);
         //    ROS_INFO("vx: %f\tvy: %f\n",v_vec.x,v_vec.y);
@@ -256,8 +277,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.y = newWaypoint.y - navData->position.y;
         //d.z = newWaypoint.z - navData->position.z;
     }
-
-
+*/
     hover(2);
 
 
@@ -386,8 +406,8 @@ MyVector FlightController::getVelocity(MyVector d) {
 
 void FlightController::turnDegrees(double degrees){
     double ori_deg = navData->rotation;
-    double target_deg = ori_deg+degrees;
-    float offset = 0.5;
+    double target_deg = ori_deg+degrees;;
+    float offset = 5;
 
     if(target_deg == 180.0)
         target_deg = 179.9;
@@ -395,10 +415,13 @@ void FlightController::turnDegrees(double degrees){
         target_deg = (-179.99)+(target_deg-179.99);
 
     do {
-        cmd.linear.z = getRotationalSpeed( target_deg, ori_deg);
+        ori_deg = navData->rotation;
 
+
+        cmd.angular.z = getRotationalSpeed( target_deg, ori_deg);
+        pub_control.publish(cmd);
     } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
-
+ROS_INFO("ori_deg: %6.2f", ori_deg);
     hover(1);
 }
 
@@ -428,18 +451,20 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
         diff_deg = 360 + diff_deg;
 
 #ifdef DEBUG
-    ROS_INFO("target_deg:\t%6.2f deg\n", diff_deg);
+    printf("target_deg: %6.2f deg\n", target_deg);
+    printf("diff_deg: %6.2f deg\n", diff_deg);
+    printf("ori_deg: %6.2f deg\n", ori_deg);
 #endif
     if (diff_deg < 180){
         dir = -1;
 #ifdef DEBUG
-        printf("Turn left");
+        printf("Turn left\n");
 #endif
     } else{
         dir = 1;
         diff_deg = 360 -diff_deg;
 #ifdef DEBUG
-        printf("Turn right");
+        printf("Turn right\n");
 #endif
     }
 
@@ -449,6 +474,9 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
         rot_speed = 0.5;
 
     rot_speed *= dir; // make sure to rotate the correct way
+#ifdef DEBUG
+    printf("Rotspeed = %f\n", rot_speed);
+#endif
 
     return rot_speed;
 }
