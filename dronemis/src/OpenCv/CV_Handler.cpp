@@ -11,7 +11,6 @@
 Cascade *cascade;
 Color *color;
 Nav *navData;
-QR *qr;
 
 using namespace std;
 
@@ -22,7 +21,6 @@ CV_Handler::CV_Handler(void) {
 
 void CV_Handler::run(Nav *nav) {
     imageReady = false;
-    qr = new QR(this);
     navData = nav;
     frontCamSelected = true;
     greySelected = false;
@@ -68,12 +66,10 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     show();
 }
 
-void* startQR(void *thread_arg);
-
-pthread_t threads;
 void CV_Handler::show(void) {
     cv::Mat image;
-/*
+    while(!imageReady);
+
     if (greySelected) {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC1 format - unsigned 8 bit MONO)
         cv::Mat imageBW(storedImageBW.size().y,
@@ -90,24 +86,12 @@ void CV_Handler::show(void) {
         image = imageBGR;
         //image = color->checkColorsTest(std::vector<Cascade::cubeInfo>(), image);
     }
-*/
 
-
-    pthread_create(&threads, NULL, startQR, NULL);
-/*
     cv::imshow("VideoMis", image);
     if (cv::waitKey(10) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         system("kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')");
-*/
 }
-void* startQR(void *thread_arg) {
-    struct thread_data *thread_data;
-    thread_data = (struct thread_data *) thread_arg;
 
-    qr->checkQR();
-
-    pthread_exit(NULL);
-}
 
 void CV_Handler::swapCam(bool frontCam) {
     cam_service = nodeHandle.serviceClient<std_srvs::Empty>(nodeHandle.resolveName("ardrone/togglecam"),1);
@@ -126,6 +110,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     std::vector<Cascade::cubeInfo> cubes;
 
     while (true) {
+        while (!imageReady);
         cascadeMutex.lock();
 
         cv::Mat imageBW(storedImageBW.size().y,
@@ -162,13 +147,10 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
 
 /*
     storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
-
     size_t size = processedImage.cols * processedImage.rows;
-
     memcpy(storedImage.data(), processedImage.data,  size*3);
-
-
 */
+
     return std::vector<Cascade::cubeInfo>();
 }
 

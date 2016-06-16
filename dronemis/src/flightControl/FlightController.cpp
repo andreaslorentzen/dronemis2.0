@@ -72,7 +72,6 @@ void FlightController::run(){
     Route myRoute;
     myRoute.initRoute(true);
 
-
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
@@ -158,8 +157,6 @@ void FlightController::run(){
 
         break;
     }
-
-
 
     return;
 }
@@ -401,8 +398,9 @@ void FlightController::startProgram() {
 
 void FlightController::resetProgram(){
     ROS_INFO("MANUEL RESET!");
-    started = false;
-    reset();
+   // started = false;
+   // reset();
+    qr->checkQR();
 }
 
 void FlightController::abortProgram(){
