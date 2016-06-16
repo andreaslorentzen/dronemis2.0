@@ -14,8 +14,13 @@
 struct DronePos {
     int x;
     int y;
+    int relativeX;
+    int relativeY;
     int heading;
     bool positionLocked;
+    int numberOfQRs;
+    double cameraPointing;
+    double angle;
 };
 
 class QR {

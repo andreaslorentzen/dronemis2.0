@@ -75,12 +75,74 @@ void FlightController::run(){
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
+    bool firstIteration = true;
+
+    DronePos dronePos;
+    double startHeading;
+
     while (ros::ok()) {
 
         takeOff();
 
+        startHeading = navData->rotation;
+
+        bool turning = true;
+        double amountTurned = 0;
+        double turnStepSize = 30;
+        dronePos = qr->checkQR();
+
+        while(!dronePos.positionLocked){
+
+            if(turning) {
+                turnDegrees(turnStepSize);
+                dronePos = qr->checkQR();
+                amountTurned += turnStepSize;
+                if(amountTurned >= 360)
+                    turning = false;
+            } else{
+                Command tempCommand(navData->position.x + 500, navData->position.y);
+
+                goToWaypoint(tempCommand);
+
+                dronePos = qr->checkQR();
+            }
+
+            do {
+                double targetHeading = navData->rotation - dronePos.angle;
+
+                if (dronePos.relativeY > 150 && dronePos.relativeY < 225){
+                    goToWaypoint(Command(navData->position.x, navData->position.y+(dronePos.relativeX)));
+                    double currentHeading = navData->rotation;
+                    if(currentHeading < 0)
+                        currentHeading = 360 + currentHeading;
+                    turnDegrees(targetHeading-currentHeading);
+                }
+
+                dronePos = qr->checkQR();
+
+            } while((dronePos.numberOfQRs > 2 && !dronePos.positionLocked));
+
+
+        }
+
+        navData->resetToPosition(dronePos.x*10, dronePos.y*10, dronePos.heading);
+
+        ROS_INFO("X = %d", dronePos.x);
+        ROS_INFO("Y = %d", dronePos.y);
+        ROS_INFO("heading", dronePos.y);
+
+        land();
+        return;
+
         while (!myRoute.hasAllBeenVisited()) {
-            Command currentCommand = myRoute.nextCommand();
+            Command currentCommand;
+            if(firstIteration) {
+                currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
+                                                             navData->position.z);
+                firstIteration = false;
+            }else {
+                currentCommand = myRoute.nextCommand();
+            }
 
             if (currentCommand.commandType == Command::goTo) {
                 goToWaypoint(currentCommand);
@@ -100,6 +162,8 @@ void FlightController::run(){
 
     return;
 }
+
+
 
 void FlightController::goToWaypoint(Command newWaypoint) {
     double dx = newWaypoint.x - navData->position.x;
@@ -176,6 +240,24 @@ double FlightController::getSpeed(double distance) {
         speed = maxSpeed;
 
     return speed;
+}
+
+void FlightController::turnDegrees(double degrees){
+    double ori_deg = navData->rotation;
+    double target_deg = ori_deg+degrees;
+    float offset = 0.5;
+
+    if(target_deg == 180.0)
+        target_deg = 179.9;
+    else if(target_deg > 180.0)
+        target_deg = (-179.99)+(target_deg-179.99);
+
+    do {
+        cmd.linear.z = getRotationalSpeed( target_deg, ori_deg);
+
+    } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
+
+    hover(1);
 }
 
 void FlightController::turnTowardsPoint(Command waypoint) {
