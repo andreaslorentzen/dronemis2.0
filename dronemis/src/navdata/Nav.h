@@ -33,6 +33,7 @@ public:
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
+    void resetToPosition(double x, double y, double heading);
     Nav();
     void run(ros::NodeHandle *n);
     positionStruct getPosition(){return position;}

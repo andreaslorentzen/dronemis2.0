@@ -62,6 +62,7 @@ private:
     geometry_msgs::Twist cmd;
     MyVector transformCoordinates(MyVector incomingVector);
     double getRotationalSpeed(double target_deg, double ori_deg);
+    void turnDegrees(double degrees);
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H

@@ -26,6 +26,7 @@ void Nav::run(ros::NodeHandle *n) {
 double Nav::current_time() {
     return ros::Time::now().toNSec();
 }
+
 void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg){
     running = !running;
 
@@ -71,6 +72,9 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
     rotation = msg->heading_fusion_unwrapped;
 }
 
+void Nav::resetToPosition(double x, double y, double heading) {
+    //TODO IMPLEMENT THIS
+}
 
 
 Nav::Nav() {
