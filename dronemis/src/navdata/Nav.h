@@ -21,7 +21,16 @@ private:
     bool running;
     double last;
     double current_time();
+    double lastvX;
+    double lastaX;
+
 public:
+    static const int ups_buffer_size = 50;
+    float ups_buffer[ups_buffer_size];
+    int ups_index = 0;
+    double ups_last_time;
+    float updateUPS();
+
     unsigned int state;
     double time;
     double last_ts;
@@ -38,7 +47,7 @@ public:
 
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
-   // void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
+// void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
     void initCallback(const std_msgs::Empty::ConstPtr &msg);
     Nav();
     void run(ros::NodeHandle *n);

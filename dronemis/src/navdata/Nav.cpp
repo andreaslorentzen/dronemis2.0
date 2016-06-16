@@ -36,10 +36,11 @@ void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg) {
 //    printf("running: %d",running);
 }
 
+int counter_size = 10;
 int counter = 0;
-int tickindex = 0;
+/*int tickindex = 0;
 float ticksum = 0;
-int ticklist[100];
+int ticklist[100];*/
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
     state = msg->state;
@@ -51,44 +52,59 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     float ax = msg->ax;
     float ay = msg->ay;
 //    float aZ = msg->az;
+
+    if(lastvX != 0.0)
+        if((lastvX < vx && lastaX < 0.0)){
+            lastvX = vx;
+            lastaX = ax;
+            ROS_INFO("Discarded!");
+            return;
+        }
+
+
     if (last_ts == 0)
         last_ts = ts;
-    float INTERVAL = (ts - last_ts)/1000000;
+    float interval = (ts - last_ts)/1000000;
     float avx = (last_vx + vx)/2;
     last_vx = vx;
-
-    ticksum-=ticklist[tickindex];
+    float ups = updateUPS();
+    /*ticksum-=ticklist[tickindex];
     ticksum+=INTERVAL;
     ticklist[tickindex]=INTERVAL;
     if (++tickindex==100)
         tickindex=0;
     float updatesPerSec = ticksum/100;
+*/
 
 
     last_ts = ts;
     position.z = msg->altd;
 
-    position.x += avx * INTERVAL;//+ 0.5 * ax * INTERVAL * INTERVAL;
-    position.y += vy * INTERVAL;//+ 0.5 * ay * INTERVAL * INTERVAL;
-    x += vx * INTERVAL;
-    y += vy * INTERVAL;
+    position.x += avx * interval;//+ 0.5 * ax * INTERVAL * INTERVAL;
+    position.y += vy * interval;//+ 0.5 * ay * INTERVAL * INTERVAL;
+    x += vx * interval;
+    y += vy * interval;
     std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
     filename.append(std::to_string(start_time));
     filename.append(".csv");
 
 
-    ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%d",INTERVAL, (int) position.x,(int) position.y, updatesPerSec);
-/*
+    if (++counter >= counter_size) {
+        ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
+        counter = 0;
+    }
     std::ofstream file;
     file.open(filename, std::ios::app);
+/*
     file << ts;
-    file << ";";
+    file << ";";*/
     file << state;
     file << ";";
-    file << position.x;
+/*    file << position.x;
     file << ";";
     file << position.y;
     file << ";";
+*/
     file << x;
     file << ";";
     file << y;
@@ -103,13 +119,30 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     file << "\n";
     file.close();
 
-*/
+
     //x += vX * INTERVAL + 0.5 ;
     //y += vY * INTERVAL + 0.5 ;
 
 //    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
 
 
+}
+
+float Nav::updateUPS() {
+    double time = ros::Time::now().toSec();
+    float interval = time - ups_last_time;
+    ups_last_time = time;
+// ROS_INFO("%f", interval);
+    ups_buffer[ups_index] = interval;
+    ups_index++;
+    if (ups_index == ups_buffer_size)
+        ups_index = 0;
+    float acc = 0;
+    for (int i = 0; i < ups_buffer_size; i++)
+        acc += ups_buffer[i];
+// acc /= 1000.0;
+
+    return ups_buffer_size / acc;
 }
 
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
@@ -133,5 +166,9 @@ Nav::Nav() {
     x = 0;
     y = 0;
     start_time = (int) ros::Time::now().toSec();
+    ups_last_time = ros::Time::now().toSec();
+
+    ups_index = 0;
+    ups_last_time = 0;
 }
 

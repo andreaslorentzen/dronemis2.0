@@ -40,12 +40,12 @@ FlightController::FlightController(){
     if (nh.hasParam("TOLERANCE"))
         nh.getParam("TOLERANCE", TOLERANCE);
     else
-        TOLERANCE = 50;
+        TOLERANCE = 100;
 
     if (nh.hasParam("TRANSIT_SPEED"))
         nh.getParam("TRANSIT_SPEED", TRANSIT_SPEED);
     else
-        TRANSIT_SPEED = 0.1;
+        TRANSIT_SPEED = 0.05;
 
     if (nh.hasParam("CRUISE_SPEED"))
         nh.getParam("CRUISE_SPEED", CRUISE_SPEED);
@@ -159,7 +159,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
      * VERSION 1
      */
 
-    while ((int) abs(d.x) > TOLERANCE){
+    /*while ((int) abs(d.x) > TOLERANCE){
 
         v_vec.x = getSpeed(d.x);
 
@@ -176,13 +176,10 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.z = newWaypoint.z - navData->position.z;
 
     }
-    printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);
-
-
+    printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);*/
     /*
      * VERSION 2
      */
-/*
     //while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE || (int) abs(d.z) > TOLERANCE){
    while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE ){
 
@@ -202,7 +199,6 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.y = newWaypoint.y - navData->position.y;
         //d.z = newWaypoint.z - navData->position.z;
     }
-*/
 
 
     hover(2);
