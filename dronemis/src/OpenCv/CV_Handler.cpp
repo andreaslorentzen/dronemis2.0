@@ -65,6 +65,7 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
 
 void CV_Handler::show(void) {
     cv::Mat image;
+    cascadeMutex.lock();
 
     if (greySelected) {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC1 format - unsigned 8 bit MONO)
@@ -82,6 +83,7 @@ void CV_Handler::show(void) {
         image = imageBGR;
         //image = color->checkColorsTest(std::vector<Cascade::cubeInfo>(), image);
     }
+    cascadeMutex.unlock();
 
     cv::imshow("VideoMis", image);
     if (cv::waitKey(10) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
@@ -140,8 +142,6 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
     }
 
-
-
 /*
     storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
 
@@ -149,12 +149,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
 
     memcpy(storedImage.data(), processedImage.data,  size*3);
 
-    lock.lock();
 
-    //greySelected = false;
-
-    lock.unlock();
-    new_frame_signal.notify_all();
 */
     return std::vector<Cascade::cubeInfo>();
 }

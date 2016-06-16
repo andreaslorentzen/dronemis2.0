@@ -25,8 +25,9 @@ DronePos QR::checkQR(void) {
                 cvHandler->storedImage.size().x,
                 CV_8UC3,
                 cvHandler->storedImage.data());
-
+#ifndef DEBUG
     cvHandler->cascadeMutex.unlock();
+#endif
 
     Mat grey;
     cvtColor(img, grey, CV_BGR2GRAY);
@@ -137,6 +138,7 @@ DronePos QR::checkQR(void) {
             cout << "DroneHeading = " << FinalDronePosition.heading << endl;
             break;
         }
+
 #ifdef DEBUG
         RotatedRect r = minAreaRect(vp);
         Point2f pts[4];
@@ -148,13 +150,13 @@ DronePos QR::checkQR(void) {
 #endif
     }
 #ifdef DEBUG
-    imshow("MyVideo", img); //show the frame in "MyVideo" window
-    if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-    {
-        cout << "esc key is pressed by user" << endl;
-        break;
-    }
+    cvHandler->storedImage.resize(CVD::ImageRef(img.cols, img.rows));
+    size_t size = img.cols * img.rows;
+    memcpy(cvHandler->storedImage.data(), img.data,  size*3);
+
+    cvHandler->cascadeMutex.unlock();
 #endif
+
     return FinalDronePosition;
 }
 
