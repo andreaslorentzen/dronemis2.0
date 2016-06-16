@@ -24,7 +24,6 @@ public:
     DronePos checkQR(void);
 
 private:
-    int averageCount = 0;
     int direction;
     double yRatioTemp;
     double yRatioAverage;

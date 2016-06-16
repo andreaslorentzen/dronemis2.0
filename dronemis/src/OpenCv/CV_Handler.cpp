@@ -4,12 +4,14 @@
 
 #include "CV_Handler.h"
 #include "Color.h"
+#include "QR.h"
 
 #define CASCADE_FRAMES 10
 
 Cascade *cascade;
 Color *color;
 Nav *navData;
+QR *qr;
 
 using namespace std;
 
@@ -19,6 +21,8 @@ CV_Handler::CV_Handler(void) {
 
 
 void CV_Handler::run(Nav *nav) {
+    imageReady = false;
+    qr = new QR(this);
     navData = nav;
     frontCamSelected = true;
     greySelected = false;
@@ -57,16 +61,19 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
     memcpy(storedImageBW.data(), cv_ptrBw->image.data, size);
     memcpy(storedImage.data(), cv_ptr->image.data, size * 3);
 
+    imageReady = true;
+
     cascadeMutex.unlock();
 
     show();
 }
 
+void* startQR(void *thread_arg);
 
+pthread_t threads;
 void CV_Handler::show(void) {
     cv::Mat image;
-    cascadeMutex.lock();
-
+/*
     if (greySelected) {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC1 format - unsigned 8 bit MONO)
         cv::Mat imageBW(storedImageBW.size().y,
@@ -83,13 +90,24 @@ void CV_Handler::show(void) {
         image = imageBGR;
         //image = color->checkColorsTest(std::vector<Cascade::cubeInfo>(), image);
     }
-    cascadeMutex.unlock();
+*/
 
+
+    pthread_create(&threads, NULL, startQR, NULL);
+/*
     cv::imshow("VideoMis", image);
     if (cv::waitKey(10) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         system("kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')");
+*/
 }
+void* startQR(void *thread_arg) {
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
 
+    qr->checkQR();
+
+    pthread_exit(NULL);
+}
 
 void CV_Handler::swapCam(bool frontCam) {
     cam_service = nodeHandle.serviceClient<std_srvs::Empty>(nodeHandle.resolveName("ardrone/togglecam"),1);

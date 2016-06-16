@@ -36,6 +36,7 @@ private:
 
 public:
     bool greySelected;
+    bool imageReady;
     bool frontCamSelected;
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;

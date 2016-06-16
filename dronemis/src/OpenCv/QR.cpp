@@ -9,153 +9,161 @@ QR::QR(CV_Handler *cv) {
     cvHandler = cv;
 }
 
-//#define DEBUG 1
+#define DEBUG 1
+#define DEBUG_COUT 0
 #define AVERAGE_COUNT 6
+#define FRAME_COUNT 10
 
 DronePos QR::checkQR(void) {
-
+    int frameCount = 0;
+    int averageCount = 0;
     ImageScanner scanner;
     scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
 
-    namedWindow("MyVideo", CV_WINDOW_AUTOSIZE); //create a window called "MyVideo"
+    while (frameCount++ != FRAME_COUNT) {
 
-    cvHandler->cascadeMutex.lock();
+        while (!cvHandler->imageReady) ;
 
-    cv::Mat img(cvHandler->storedImage.size().y,
-                cvHandler->storedImage.size().x,
-                CV_8UC3,
-                cvHandler->storedImage.data());
-#ifndef DEBUG
-    cvHandler->cascadeMutex.unlock();
-#endif
+        cvHandler->cascadeMutex.lock();
 
-    Mat grey;
-    cvtColor(img, grey, CV_BGR2GRAY);
-    int width = img.cols;
-    int height = img.rows;
-    uchar *raw = (uchar *) grey.data;
+        cv::Mat img(cvHandler->storedImage.size().y,
+                    cvHandler->storedImage.size().x,
+                    CV_8UC3,
+                    cvHandler->storedImage.data());
 
-    // wrap image data
-    Image image(width, height, "Y800", raw, width * height);
+        cvHandler->imageReady = false;
+
+        cvHandler->cascadeMutex.unlock();
+
+        Mat grey;
+        cvtColor(img, grey, CV_BGR2GRAY);
+        int width = img.cols;
+        int height = img.rows;
+        uchar *raw = (uchar *) grey.data;
+
+        // wrap image data
+        Image image(width, height, "Y800", raw, width * height);
 
 
-    // scan the image for barcodes
-    int numberQR = scanner.scan(image);                    // Returns number of codes in the image.
-    if (numberQR == 1) {
-        if (averageCount == AVERAGE_COUNT) averageCount = 1;
-        else averageCount++;
-    }
-    // cout << "Number of QR codes in the image is " << n << endl;
-    int x0, x1, x2, x3, y0, y1, y2, y3, xsize, ysize, xmidt, QRsize;
+        // scan the image for barcodes
+        int numberQR = scanner.scan(image);                    // Returns number of codes in the image.
+        if (numberQR == 1)
+            averageCount++;
 
-    // extract results
-    for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
+        // cout << "Number of QR codes in the image is " << n << endl;
+        int x0, x1, x2, x3, y0, y1, y2, y3, xsize, ysize, xmidt, QRsize;
         vector<Point> vp;
 
-        // do something useful with results
-        //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
-        int n = symbol->get_location_size();        // Returns 4 if QR code is scanned
-        for (int i = 0; i < n; i++) {
-            vp.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));      //Update VP
-            //cout << "symbol->get_location_x = " << symbol->get_location_x(i) << endl;
-            //cout << "symbol->get_location_y = " << symbol->get_location_y(i) << endl;
-        }
+        // extract results
+        for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
 
-        x0 = symbol->get_location_x(0);    //
-        x1 = symbol->get_location_x(1);    //
-        x2 = symbol->get_location_x(2);    //
-        x3 = symbol->get_location_x(3);    //  Saves the size of the QR code being detected
-        y0 = symbol->get_location_y(0);    //
-        y1 = symbol->get_location_y(1);    //
-        y2 = symbol->get_location_y(2);    //
-        y3 = symbol->get_location_y(3);    //
-        xsize = (abs((x0 - x2)) + abs((x1 - x3))) / 2;      // Vertical size of the QR
-        ysize = (abs((y0 - y2)) + abs((y3 - y1))) / 2;      // Horizontal size of the QR
-        xmidt = (x0 + x1 + x2 + x3) / 4;           // The horizontal middle of the QR
 
-        QRsize = (xsize + ysize) / 2;            // The size of the QR
-        int distancetoQR = calculateDistanceToQR(QRsize);
+            // do something useful with results
+            //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
+            int n = symbol->get_location_size();        // Returns 4 if QR code is scanned
+            for (int i = 0; i < n; i++) {
+                vp.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));      //Update VP
+                //cout << "symbol->get_location_x = " << symbol->get_location_x(i) << endl;
+                //cout << "symbol->get_location_y = " << symbol->get_location_y(i) << endl;
+            }
 
-        double yleft, yright, ytemp;
-        double yratio;
+            x0 = symbol->get_location_x(0);    //
+            x1 = symbol->get_location_x(1);    //
+            x2 = symbol->get_location_x(2);    //
+            x3 = symbol->get_location_x(3);    //  Saves the size of the QR code being detected
+            y0 = symbol->get_location_y(0);    //
+            y1 = symbol->get_location_y(1);    //
+            y2 = symbol->get_location_y(2);    //
+            y3 = symbol->get_location_y(3);    //
+            xsize = (abs((x0 - x2)) + abs((x1 - x3))) / 2;      // Vertical size of the QR
+            ysize = (abs((y0 - y2)) + abs((y3 - y1))) / 2;      // Horizontal size of the QR
+            xmidt = (x0 + x1 + x2 + x3) / 4;           // The horizontal middle of the QR
 
-        yleft = y1 - y0;
-        yright = y2 - y3;
+            QRsize = (xsize + ysize) / 2;            // The size of the QR
+            int distancetoQR = calculateDistanceToQR(QRsize);
 
-        if (yleft > yright) {
-            direction = 1;                                                      // If direction is 1 - Drone is left of the QR code
-        }
-        else if (yleft == yright) {
-            direction = 0;                                                      // If direction is 0 - Drone is in front of QR code
-        }
-        else {
-            direction = -1;                                                     // If direction is -1, Drone is right of the QR code.
-            ytemp = yleft;
-            yleft = yright; // Swap
-            yright = ytemp;
-        }
+            double yleft, yright, ytemp;
+            double yratio;
 
-        yratio = yleft / yright;
-        yRatioTemp = yRatioTemp + yratio;
-        //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
+            yleft = y1 - y0;
+            yright = y2 - y3;
 
-        if (averageCount == AVERAGE_COUNT) {
-            yRatioAverage = yRatioTemp / AVERAGE_COUNT;
-            //cout << "yRatioTemp = " << yRatioTemp << endl;
-            yRatioTemp = 0;
-            y1Diversion = (yRatioAverage * 360.0395) - 359.2821;
-            y2Diversion = (yRatioAverage * 637.3656) - 642.2072;
-            cout << "Distance = " << calculateDistanceToQR(QRsize) << "cm, with the text: " << symbol->get_data() <<
-            endl << endl;
-            double xDistanceStatic = 4.208955224; //
-            int xDistance = ((xmidt - 320) * 0.7 / xDistanceStatic * distancetoQR / 100);   //
-            cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
-            //cout << "y1Diversion (Parallel) = " << y1Diversion << endl;
-            //cout << "y2Diversion (Kig på QR)= " << y2Diversion << endl;
-            cout << "yRatioAverage = " << yRatioAverage << endl;
-
-            if (yRatioAverage < 1.06) {
-                yDiversionAngle = (y1Diversion + y2Diversion) / 2 * direction;
+            if (yleft > yright) {
+                direction = 1;                                                      // If direction is 1 - Drone is left of the QR code
+            }
+            else if (yleft == yright) {
+                direction = 0;                                                      // If direction is 0 - Drone is in front of QR code
             }
             else {
-                yDiversionAngle = y2Diversion * direction;
+                direction = -1;                                                     // If direction is -1, Drone is right of the QR code.
+                ytemp = yleft;
+                yleft = yright; // Swap
+                yright = ytemp;
             }
 
-            DronePosition.x = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) +
-                               xDistance); // xDistance (Forskydning)
-            DronePosition.y = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
+            yratio = yleft / yright;
+            yRatioTemp = yRatioTemp + yratio;
+            //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
 
-            cout << "Droneposition(x,y) = " << DronePosition.x << "," << DronePosition.y << endl;
+            if (averageCount == AVERAGE_COUNT) {
+                yRatioAverage = yRatioTemp / AVERAGE_COUNT;
+                //cout << "yRatioTemp = " << yRatioTemp << endl;
+                yRatioTemp = 0;
+                y1Diversion = (yRatioAverage * 360.0395) - 359.2821;
+                y2Diversion = (yRatioAverage * 637.3656) - 642.2072;
+#ifdef DEBUG_COUT
+                cout << "Distance = " << distancetoQR << "cm, with the text: "
+                << symbol->get_data() << endl << endl;
+#endif
 
-            //**************************************
-            //**** Match up with QR coordinates ****
-            //**************************************
+                double xDistanceStatic = 4.208955224; //
+                int xDistance = ((xmidt - 320) * 0.7 / xDistanceStatic * distancetoQR / 100);
+#ifdef DEBUG_COUT
+                cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
+                //cout << "y1Diversion (Parallel) = " << y1Diversion << endl;
+                //cout << "y2Diversion (Kig på QR)= " << y2Diversion << endl;
+                cout << "yRatioAverage = " << yRatioAverage << endl;
+#endif
+                if (yRatioAverage < 1.06) {
+                    yDiversionAngle = (y1Diversion + y2Diversion) / 2 * direction;
+                }
+                else {
+                    yDiversionAngle = y2Diversion * direction;
+                }
 
-            calculateFinalDronePostition(symbol->get_data());
-            //cout << symbol->get_data() << endl;
+                DronePosition.x = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) +
+                                   xDistance); // xDistance (Forskydning)
+                DronePosition.y = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
-            cout << "FinalDroneposition(x,y) = " << FinalDronePosition.x << "," << FinalDronePosition.y << endl;
-            cout << "DroneHeading = " << FinalDronePosition.heading << endl;
-            break;
-        }
+                //**************************************
+                //**** Match up with QR coordinates ****
+                //**************************************
 
+                calculateFinalDronePostition(symbol->get_data());
+#ifdef DEBUG_COUT
+                ROS_INFO("TEST");
+                cout << "Droneposition(x,y) = " << DronePosition.x << "," << DronePosition.y << endl;
+                //cout << symbol->get_data() << endl;
+                cout << "FinalDroneposition(x,y) = " << FinalDronePosition.x << "," << FinalDronePosition.y << endl;
+                cout << "DroneHeading = " << FinalDronePosition.heading << endl;
+#endif
+            }
 #ifdef DEBUG
-        RotatedRect r = minAreaRect(vp);
-        Point2f pts[4];
-        r.points(pts);
-        for(int i=0;i<4;i++){
-            line(img,pts[i],pts[(i+1)%4],Scalar(255,0,0),3);
+            if (!vp.empty()) {
+                RotatedRect r = minAreaRect(vp);
+                Point2f pts[4];
+                r.points(pts);
+                for (int i = 0; i < 4; i++) {
+                    line(img, pts[i], pts[(i + 1) % 4], Scalar(255, 0, 0), 3);
+                }
+            }
+#endif
         }
-        //cout<<"Angle: "<<r.angle<<endl;
+#ifdef DEBUG
+        imshow("QR", img);
+        waitKey(10);
 #endif
     }
-#ifdef DEBUG
-    cvHandler->storedImage.resize(CVD::ImageRef(img.cols, img.rows));
-    size_t size = img.cols * img.rows;
-    memcpy(cvHandler->storedImage.data(), img.data,  size*3);
-
-    cvHandler->cascadeMutex.unlock();
-#endif
 
     return FinalDronePosition;
 }

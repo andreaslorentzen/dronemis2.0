@@ -6,7 +6,6 @@
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
-void* startController(void *thread_arg);
 
 struct thread_data{
     Nav *navData;
@@ -42,14 +41,15 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav) 
     maxSpeed = 0.5;
 
     cvHandler = new CV_Handler();
-    qr = new QR(cvHandler);
+    //qr = new QR(cvHandler);
+
     navData = nav;
 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
     myThreadData.n = nh;
 
-    pthread_t threads[3];
+    pthread_t threads[2];
     pthread_create(&threads[0], NULL, startCV, &myThreadData);
     pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
 
@@ -307,13 +307,14 @@ MyVector FlightController::transformCoordinates(MyVector incomingVector) {
 }
 
 void FlightController::startProgram() {
-    if (!started) {
+    //qr->checkQR();
+    /*if (!started) {
         ROS_INFO("STARTING!");
         pthread_t thread;
         myThreadData.controller = this;
         pthread_create(&thread, NULL, startController, &myThreadData);
         started = true;
-    }
+    }*/
 }
 
 void FlightController::resetProgram(){
