@@ -139,6 +139,28 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
         std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
     }
+
+
+
+/*
+
+
+
+
+
+    storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
+
+    size_t size = processedImage.cols * processedImage.rows;
+
+    memcpy(storedImage.data(), processedImage.data,  size*3);
+
+    lock.lock();
+
+    //greySelected = false;
+
+    lock.unlock();
+    new_frame_signal.notify_all();
+*/
     return std::vector<Cascade::cubeInfo>();
 }
 
