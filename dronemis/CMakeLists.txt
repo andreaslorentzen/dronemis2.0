@@ -171,7 +171,6 @@ set(BLINDFLIGHT_SOURCE_FILES
         src/flightControl/FlightController.cpp
         src/flightControl/Route.cpp
         src/GUI/ControlPanel/controlpanel.cpp
-        src/GUI/VideoHandler.cpp
         src/OpenCv/Color.cpp
         src/OpenCv/Cascade.cpp
         src/OpenCv/CV_Handler.cpp
@@ -188,7 +187,6 @@ set(BLINDFLIGHT_HEADER_FILES
         src/OpenCv/Cascade.h
         src/OpenCv/CV_Handler.h
         src/GUI/ControlPanel/controlpanel.h
-        src/GUI/VideoHandler.h
         src/navdata/Nav.h
         src/OpenCv/QR.h)
 

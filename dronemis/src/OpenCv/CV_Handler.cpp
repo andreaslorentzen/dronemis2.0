@@ -3,69 +3,67 @@
 //
 
 #include "CV_Handler.h"
-#include "../GUI/VideoHandler.h"
-#include "ros/callback_queue.h"
 #include "Color.h"
-#include "QR.h"
 
 #define CASCADE_FRAMES 10
 
-VideoHandler *videohandler;
 Cascade *cascade;
 Color *color;
+Nav *navData;
+
+using namespace std;
 
 CV_Handler::CV_Handler(void) {
 
 }
 
-void CV_Handler::run(void) {
-    frontCamSelected = false;
+
+void CV_Handler::run(Nav *nav) {
+    navData = nav;
+    frontCamSelected = true;
     greySelected = false;
     cascade = new Cascade();
     color = new Color();
-    videohandler = new VideoHandler(this);
-}
+    video_channel = nodeHandle.resolveName("ardrone/image_raw");
+    video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
 
+    ros::Rate r(25);
+    while(nodeHandle.ok()) {
+        ros::spinOnce();
+        r.sleep();
+    }
+}
 
 CV_Handler::~CV_Handler(void) {
     delete(cascade);
-    delete(videohandler);
     delete(color);
 }
 
 
 void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
-
     size_t size = img->width * img->height;
 
-    // Convert from ROS image message to OpenCV Mat with cv_bridge (unsigned 8 bit MONO)
+    // Convert from ROS image message to OpenCV Mat with cv_bridge
     cv_bridge::CvImagePtr cv_ptrBw = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO8);
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
 
     // Save size constraints to data structure
     storedImageBW.resize(CVD::ImageRef(img->width, img->height));
-
-    // Convert from ROS image message to OpenCV Mat with cv_bridge (unsigned 8 bit BGR)
-    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
     storedImage.resize(CVD::ImageRef(img->width, img->height));
 
-    boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
+    cascadeMutex.lock();
 
     // Copy image to CVD data structure
     memcpy(storedImageBW.data(), cv_ptrBw->image.data, size);
     memcpy(storedImage.data(), cv_ptr->image.data, size * 3);
 
-    cascade_image_ready = true;
-
-     //Unlock mutex
-    lock.unlock();
-    new_frame_signal.notify_all();
+    cascadeMutex.unlock();
 
     show();
 }
 
 
 void CV_Handler::show(void) {
-
     cv::Mat image;
 
     if (greySelected) {
@@ -92,88 +90,82 @@ void CV_Handler::show(void) {
 
 
 void CV_Handler::swapCam(bool frontCam) {
-    if (frontCamSelected != frontCam)
-        videohandler->swapCam();
-    frontCamSelected = frontCam;
+    cam_service = nodeHandle.serviceClient<std_srvs::Empty>(nodeHandle.resolveName("ardrone/togglecam"),1);
+    if (frontCamSelected != frontCam) {
+        cam_service.call(toggleCam_srv_srvs);
+        frontCamSelected = frontCam;
+    }
 }
 
 
 std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     int frameCount = 0;
-
+    int biggestArray = 0;
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
     std::vector<cascadeArray> cascades;
+    std::vector<Cascade::cubeInfo> cubes;
 
-    ros::Rate r(10); // 10 hz
+    while (true) {
+        cascadeMutex.lock();
 
-    cv::Mat processedImage;
+        cv::Mat imageBW(storedImageBW.size().y,
+                        storedImageBW.size().x,
+                        CV_8UC1,
+                        storedImageBW.data());
 
-    boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
-    lock.unlock();
+        cv::Mat image(storedImage.size().y,
+                      storedImage.size().x,
+                      CV_8UC3,
+                      storedImage.data());
 
-    while (ros::ok()) {
+        cascadeMutex.unlock();
 
-        if (cascade_image_ready) {
-            lock.lock();
+        cascades.push_back(cascade->checkCascade(imageBW));
 
-            cv::Mat imageBW(storedImageBW.size().y,
-                            storedImageBW.size().x,
-                            CV_8UC1,
-                            storedImageBW.data());
-
-            cv::Mat image(storedImage.size().y,
-                          storedImage.size().x,
-                          CV_8UC3,
-                          storedImage.data());
-                          
-            cascade_image_ready = false;
-
-            lock.unlock();
-            new_frame_signal.notify_all();
-
-            cascades.push_back(color->checkColors(cascade->checkCascade(imageBW), image));
-
-            if (++frameCount == CASCADE_FRAMES)
-                break;
-
-            r.sleep();
-        } else
-            new_frame_signal.wait(lock);
+        if (++frameCount == CASCADE_FRAMES)
+            break;
     }
+    if (!cascades.empty()) {
+        for (unsigned int i = 0; i < cascades.size(); i++) {
+           if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
+              biggestArray = i;
+        }
 
-    int biggestArray = 0;
+        cascades[biggestArray] = calculatePosition(cascades[biggestArray]);
 
-    for (unsigned int i = 0; i < cascades.size(); i++) {
-       if (cascades[i].size() > cascades[biggestArray].size())
-           biggestArray = i;
+        std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
+        std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
+        std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
+        std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
+        std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
     }
-
-
-    std::cout << "The biggest array is nr. " << biggestArray << std::endl;
-
-
-
-
 
 
 
 /*
-
-
-
-
-
     storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
 
     size_t size = processedImage.cols * processedImage.rows;
 
+    memcpy(storedImage.data(), processedImage.data,  size*3);
+
     lock.lock();
 
-    memcpy(storedImage.data(), processedImage.data,  size*3);
     //greySelected = false;
 
     lock.unlock();
     new_frame_signal.notify_all();
 */
     return std::vector<Cascade::cubeInfo>();
+}
+
+std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> cubes) {
+    double xFactor = 95.8 / 640;
+    double yFactor = 51.7 / 360;
+
+    for (unsigned int i = 0; i < cubes.size(); i++) {
+        cubes[i].xDist = xFactor / navData->getPosition().z;
+        cubes[i].yDist = yFactor / navData->getPosition().z;
+    }
+    return cubes;
 }

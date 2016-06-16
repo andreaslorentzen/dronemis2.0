@@ -1,4 +1,4 @@
 <launch>
   <include file="$(find dronemis)/launch/ardrone.launch"/>
-  <node pkg="dronemis" type="blindFlight" name="blindFlight" output="screen" launch-prefix="xterm -e"></node>
+  <node pkg="dronemis" type="blindFlight" name="blindFlight" output="screen" ></node>
 </launch>

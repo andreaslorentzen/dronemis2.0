@@ -28,7 +28,7 @@ FlightController::FlightController(){
     straightFlight = false;
 }
 
-FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
+FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav) {
     baseSpeed = 0.1;
     LOOP_RATE = loopRate;
     takeoff_time = 3;
@@ -41,10 +41,9 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
     precision = 50;
     maxSpeed = 0.5;
 
-
     cvHandler = new CV_Handler();
     qr = new QR(cvHandler);
-    navData = new Nav();
+    navData = nav;
 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
@@ -65,6 +64,7 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh) {
 // Destructor
 FlightController::~FlightController() {
     delete(cvHandler);
+    delete(qr);
 }
 
 void FlightController::run(){
@@ -328,11 +328,6 @@ void FlightController::abortProgram(){
     land();
 }
 
-void FlightController::testProgram(){
-    ROS_INFO("TESTING!");
-
-}
-
 void* startNavdata(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
@@ -345,14 +340,7 @@ void* startCV(void *thread_arg) {
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
-    thread_data->cvHandler->run();
-    pthread_exit(NULL);
-}
-
-void* startQR(void *thread_arg) {
-    struct thread_data *thread_data;
-    thread_data = (struct thread_data *) thread_arg;
-
+    thread_data->cvHandler->run(thread_data->navData);
     pthread_exit(NULL);
 }
 
