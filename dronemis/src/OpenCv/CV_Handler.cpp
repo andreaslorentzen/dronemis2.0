@@ -59,8 +59,7 @@ void CV_Handler::video(sensor_msgs::ImageConstPtr img) {
 
     cascadeMutex.unlock();
 
-
-    //show();
+    show();
 }
 
 
@@ -144,11 +143,6 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
 
 
 /*
-
-
-
-
-
     storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
 
     size_t size = processedImage.cols * processedImage.rows;
