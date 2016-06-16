@@ -13,6 +13,7 @@ Color *color;
 Nav *navData;
 
 using namespace std;
+using namespace cv;
 
 CV_Handler::CV_Handler(void) {
 
@@ -23,12 +24,13 @@ void CV_Handler::run(Nav *nav) {
     imageReady = false;
     navData = nav;
     frontCamSelected = true;
-    greySelected = false;
+    graySelected = true;
     cascade = new Cascade();
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
-
+    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    cvCreateTrackbar("LowH", "Control", &thresh, 255);
     ros::Rate r(25);
     while(nodeHandle.ok()) {
         ros::spinOnce();
@@ -70,13 +72,14 @@ void CV_Handler::show(void) {
     cv::Mat image;
     while(!imageReady);
 
-    if (greySelected) {
+    if (graySelected) {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC1 format - unsigned 8 bit MONO)
         cv::Mat imageBW(storedImageBW.size().y,
                         storedImageBW.size().x,
                         CV_8UC1,
                         storedImageBW.data());
-        image = imageBW;
+        //image = imageBW;
+        image = checkBox(imageBW);
     } else {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
         cv::Mat imageBGR(storedImage.size().y,
@@ -126,6 +129,10 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         cascadeMutex.unlock();
 
         cascades.push_back(cascade->checkCascade(imageBW));
+        if (!cascades[frameCount].empty()) {
+            size_t size = image.cols * image.rows;
+            memcpy(cascades[frameCount][0].image.data, image.data, size*3);
+        }
 
         if (++frameCount == CASCADE_FRAMES)
             break;
@@ -136,7 +143,8 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
               biggestArray = i;
         }
 
-        cascades[biggestArray] = calculatePosition(cascades[biggestArray]);
+
+        calculatePosition(cascades[biggestArray]);
 
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
@@ -163,4 +171,55 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         cubes[i].yDist = yFactor / navData->getPosition().z;
     }
     return cubes;
+}
+
+cv::Mat CV_Handler::checkBox(cv::Mat img) {
+    Mat imgModded;
+    std::vector<cv::Vec3f> circles;
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    Scalar color = Scalar((255), (255), (255));
+
+    while (!imageReady);
+    cascadeMutex.lock();
+    cv::Mat imageBW(storedImageBW.size().y,
+                    storedImageBW.size().x,
+                    CV_8UC1,
+                    storedImageBW.data());
+#ifndef DEBUG
+    cascadeMutex.unlock();
+#endif
+    // Add gaussian blur
+    blur(imageBW, imgModded, Size(3,3));
+
+    // Detect edges using canny
+    Canny(imgModded, imgModded, thresh, thresh*2, 3);
+
+    // Find contours
+    findContours(imgModded, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+    // Draw contours
+    for(unsigned int i = 0; i< contours.size(); i++)
+        drawContours(imgModded, contours, i, color, 2, 8, hierarchy, 0, Point());
+
+    // Detect circles
+    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 10, 250);
+
+    // Draw circles
+    for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
+        Point center( circles[current_circle][0], circles[current_circle][1]);
+#ifdef DEBUG
+        circle(img, center, 3, Scalar(0,255,0), -1, 8, 0);// circle center
+        circle(img, center, circles[current_circle][2], Scalar(0,0,255), 3, 8, 0 );// circle outline
+        cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
+#endif
+    }
+#ifdef DEBUG
+        cvHandler->storedImage.resize(CVD::ImageRef(img.cols, img.rows));
+        size_t size = img.cols * img.rows;
+        memcpy(cvHandler->storedImage.data(), img.data,  size*3);
+        cvHandler->imageReady = true;
+        cvHandler->cascadeMutex.unlock();
+#endif
+    return img;
 }

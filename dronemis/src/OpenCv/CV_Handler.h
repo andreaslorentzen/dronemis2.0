@@ -23,6 +23,7 @@ class CV_Handler {
 
 
 private:
+    int thresh = 196;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
     ros::Subscriber video_subscriber;
@@ -35,7 +36,12 @@ private:
     std::vector<Cascade::cubeInfo> calculatePosition(std::vector<Cascade::cubeInfo> cubes);
 
 public:
-    bool greySelected;
+    struct boxCordsStruct {
+        int x;
+        int y;
+    }boxCords;
+
+    bool graySelected;
     bool imageReady;
     bool frontCamSelected;
     std::mutex cascadeMutex;
@@ -47,6 +53,7 @@ public:
 
     void run(Nav *nav);
     std::vector<Cascade::cubeInfo> checkCubes(void);
+    cv::Mat checkBox(cv::Mat img);
 };
 
 #endif //PROJECT_CV_HANDLER_H
