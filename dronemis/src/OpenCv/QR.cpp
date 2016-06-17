@@ -81,6 +81,7 @@ DronePos QR::checkQR(void) {
 
             QRsize = (xsize + ysize) / 2;            // The size of the QR
             int distancetoQR = calculateDistanceToQR(QRsize);
+            std::string QRName = symbol->get_data();
 
             double yleft, yright, ytemp;
             double yratio;
@@ -113,7 +114,7 @@ DronePos QR::checkQR(void) {
                 y2Diversion = (yRatioAverage * 637.3656) - 642.2072;
 #ifdef DEBUG_COUT
                 cout << "Distance = " << distancetoQR << "cm, with the text: "
-                << symbol->get_data() << endl << endl;
+                << QRName << endl << endl;
 #endif
 
                 double xDistanceStatic = 4.208955224; //
@@ -135,17 +136,22 @@ DronePos QR::checkQR(void) {
                                    xDistance); // xDistance (Forskydning)
                 DronePosition.y = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
+                bool positionLock;
+                if(yDiversionAngle < 15) positionLock = 1;
+                else positionLock = 0;
+
                 //**************************************
                 //**** Match up with QR coordinates ****
                 //**************************************
 
-                calculateFinalDronePostition(symbol->get_data());
+                calculateRoomDronePostition(QRName, DronePosition.x, DronePosition.y, positionLock, averageCount,
+                                            xDistance, yDiversionAngle);
 #ifdef DEBUG_COUT
-                ROS_INFO("TEST");
+                ROS_INFO("TESTMODE ACTIVE");
                 cout << "Droneposition(x,y) = " << DronePosition.x << "," << DronePosition.y << endl;
                 //cout << symbol->get_data() << endl;
-                cout << "FinalDroneposition(x,y) = " << FinalDronePosition.x << "," << FinalDronePosition.y << endl;
-                cout << "DroneHeading = " << FinalDronePosition.heading << endl;
+                cout << "FinalDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
+                cout << "DroneHeading = " << RoomDronePosition.heading << endl;
 #endif
             }
 #ifdef DEBUG
@@ -172,121 +178,127 @@ DronePos QR::checkQR(void) {
 #endif
     }
 
-    return FinalDronePosition;
+    return RoomDronePosition;
 }
 
 
-void QR::calculateFinalDronePostition(std::string QRname) {
+void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int relativeY, bool positionLocked, int numberOfQRs, double cameraPointing, double angle) {
+    RoomDronePosition.relativeX = relativeX;
+    RoomDronePosition.relativeY = relativeY;
+    RoomDronePosition.positionLocked = positionLocked;
+    RoomDronePosition.numberOfQRs = numberOfQRs;
+    RoomDronePosition.cameraPointing = cameraPointing;
+    RoomDronePosition.angle = angle;
     if (QRname.find("W00") == 0) {       // Wall 0 has been found
         if (QRname.find("W00.00") == 0) {     // Code W00.00
-            FinalDronePosition.x = (QRWallCode[0].x - DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[0].y - DronePosition.y);
-            FinalDronePosition.heading = yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[0].x - DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[0].y - DronePosition.y);
+            RoomDronePosition.heading = yDiversionAngle;
 
         }
         else if (QRname.find("W00.01") == 0) {     // Code W00.01
-            FinalDronePosition.x = (QRWallCode[1].x - DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[1].y - DronePosition.y);
-            FinalDronePosition.heading = yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[1].x - DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[1].y - DronePosition.y);
+            RoomDronePosition.heading = yDiversionAngle;
         }
         else if (QRname.find("W00.02") == 0) {     // Code W00.02
-            FinalDronePosition.x = (QRWallCode[2].x - DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[2].y - DronePosition.y);
-            FinalDronePosition.heading = yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[2].x - DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[2].y - DronePosition.y);
+            RoomDronePosition.heading = yDiversionAngle;
         }
         else if (QRname.find("W00.03") == 0) {     // Code W00.03
-            FinalDronePosition.x = (QRWallCode[3].x - DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[3].y - DronePosition.y);
-            FinalDronePosition.heading = yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[3].x - DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[3].y - DronePosition.y);
+            RoomDronePosition.heading = yDiversionAngle;
         }
         else if (QRname.find("W00.04") == 0) {     // Code W00.04
-            FinalDronePosition.x = (QRWallCode[4].x - DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[4].y - DronePosition.y);
-            FinalDronePosition.heading = yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[4].x - DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[4].y - DronePosition.y);
+            RoomDronePosition.heading = yDiversionAngle;
         }
     }
 
     else if (QRname.find("W01.") == 0) {       // Wall 1 has been found
         if (QRname.find("W01.00") == 0) {     // Code W01.00
-            FinalDronePosition.x = (QRWallCode[5].x - DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[5].y + DronePosition.x);
-            FinalDronePosition.heading = 90 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[5].x - DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[5].y + DronePosition.x);
+            RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.01") == 0) {     // Code W01.01
-            FinalDronePosition.x = (QRWallCode[6].x - DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[6].y + DronePosition.x);
-            FinalDronePosition.heading = 90 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[6].x - DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[6].y + DronePosition.x);
+            RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.02") == 0) {     // Code W01.02
-            FinalDronePosition.x = (QRWallCode[7].x - DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[7].y + DronePosition.x);
-            FinalDronePosition.heading = 90 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[7].x - DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[7].y + DronePosition.x);
+            RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.03") == 0) {     // Code W01.03
-            FinalDronePosition.x = (QRWallCode[8].x - DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[8].y + DronePosition.x);
-            FinalDronePosition.heading = 90 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[8].x - DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[8].y + DronePosition.x);
+            RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.04") == 0) {     // Code W01.04
-            FinalDronePosition.x = (QRWallCode[9].x - DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[9].y + DronePosition.x);
-            FinalDronePosition.heading = 90 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[9].x - DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[9].y + DronePosition.x);
+            RoomDronePosition.heading = 90 + yDiversionAngle;
         }
     }
 
     else if (QRname.find("W02.") == 0) {       // Wall 2 has been found
         if (QRname.find("W02.00") == 0) {     // Code W02.00
-            FinalDronePosition.x = (QRWallCode[10].x + DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[10].y + DronePosition.y);
-            FinalDronePosition.heading = 180 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[10].x + DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[10].y + DronePosition.y);
+            RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.01") == 0) {     // Code W02.01
-            FinalDronePosition.x = (QRWallCode[11].x + DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[11].y + DronePosition.y);
-            FinalDronePosition.heading = 180 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[11].x + DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[11].y + DronePosition.y);
+            RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.02") == 0) {     // Code W02.02
-            FinalDronePosition.x = (QRWallCode[12].x + DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[12].y + DronePosition.y);
-            FinalDronePosition.heading = 180 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[12].x + DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[12].y + DronePosition.y);
+            RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.03") == 0) {     // Code W02.03
-            FinalDronePosition.x = (QRWallCode[13].x + DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[13].y + DronePosition.y);
-            FinalDronePosition.heading = 180 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[13].x + DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[13].y + DronePosition.y);
+            RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.04") == 0) {     // Code W02.04
-            FinalDronePosition.x = (QRWallCode[14].x + DronePosition.x);
-            FinalDronePosition.y = (QRWallCode[14].y + DronePosition.y);
-            FinalDronePosition.heading = 180 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[14].x + DronePosition.x);
+            RoomDronePosition.y = (QRWallCode[14].y + DronePosition.y);
+            RoomDronePosition.heading = 180 + yDiversionAngle;
         }
     }
 
     else if (QRname.find("W03.") == 0) {       // Wall 3 has been found
         if (QRname.find("W03.00") == 0) {     // Code W03.00
-            FinalDronePosition.x = (QRWallCode[15].x + DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[15].y - DronePosition.x);
-            FinalDronePosition.heading = 270 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[15].x + DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[15].y - DronePosition.x);
+            RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.01") == 0) {     // Code W03.01
-            FinalDronePosition.x = (QRWallCode[16].x + DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[16].y - DronePosition.x);
-            FinalDronePosition.heading = 270 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[16].x + DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[16].y - DronePosition.x);
+            RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.02") == 0) {     // Code W03.02
-            FinalDronePosition.x = (QRWallCode[17].x + DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[17].y - DronePosition.x);
-            FinalDronePosition.heading = 270 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[17].x + DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[17].y - DronePosition.x);
+            RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.03") == 0) {     // Code W03.03
-            FinalDronePosition.x = (QRWallCode[18].x + DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[18].y - DronePosition.x);
-            FinalDronePosition.heading = 270 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[18].x + DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[18].y - DronePosition.x);
+            RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.04") == 0) {     // Code W03.04
-            FinalDronePosition.x = (QRWallCode[19].x + DronePosition.y);
-            FinalDronePosition.y = (QRWallCode[19].y - DronePosition.x);
-            FinalDronePosition.heading = 270 + yDiversionAngle;
+            RoomDronePosition.x = (QRWallCode[19].x + DronePosition.y);
+            RoomDronePosition.y = (QRWallCode[19].y - DronePosition.x);
+            RoomDronePosition.heading = 270 + yDiversionAngle;
         }
     }
 

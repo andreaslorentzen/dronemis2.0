@@ -463,7 +463,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
 #endif
     }
 
-    rot_speed = 0.5; // speed to rotate with
+    rot_speed = 0.1; // speed to rotate with
 
     if(diff_deg < 30)
         rot_speed = 0.1;
