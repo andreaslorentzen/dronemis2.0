@@ -35,6 +35,8 @@ private:
 
     float rotation;
 
+    Vector3 position = Vector3(0, 0, 0);
+
 public:
     static const int ups_buffer_size = 50;
     float ups_buffer[ups_buffer_size];
@@ -48,7 +50,6 @@ public:
     double last_ts;
     double last_vx;
 
-    Vector3 position = Vector3(0, 0, 0);
     double x, y;
 
 

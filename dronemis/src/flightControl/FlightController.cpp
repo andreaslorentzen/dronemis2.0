@@ -121,7 +121,7 @@ void FlightController::run(){
 
         cmd.linear.z = 0.5;
         pub_control.publish(cmd);
-        while(navData->position.z < 1200)
+        while(navData->getPosition().z < 1200)
             ros::Rate(LOOP_RATE).sleep();
 
         hover(1);
@@ -202,7 +202,7 @@ void FlightController::run(){
         }*/
 
 
-
+        Vector3 pos;
         while(!dronePossion.positionLocked){
 
             if(turning) {
@@ -211,7 +211,8 @@ void FlightController::run(){
                 if(amountTurned >= 360)
                     turning = false;
             } else{
-                Command tempCommand(navData->position.x + 500, navData->position.y);
+                pos = navData->getPosition();
+                Command tempCommand(pos.x + 500, pos.y);
 
                 goToWaypoint(tempCommand);
             }
@@ -220,7 +221,8 @@ void FlightController::run(){
                 double targetHeading = navData->getRotation() - dronePossion.angle;
 
                 if (dronePossion.relativeY > 150 && dronePossion.relativeY < 225){
-                    goToWaypoint(Command(navData->position.x, navData->position.y+(dronePos.relativeX)));
+                    pos = navData->getPosition();
+                    goToWaypoint(Command(pos.x, pos.y+(dronePos.relativeX)));
                     double currentHeading = navData->getRotation();
                     if(currentHeading < 0)
                         currentHeading = 360 + currentHeading;
@@ -277,8 +279,10 @@ void FlightController::run(){
 
 void FlightController::goToWaypoint(Command newWaypoint) {
 
-    Vector3 d (newWaypoint.x - navData->position.x,
-                newWaypoint.y - navData->position.y,
+    Vector3 pos = navData->getPosition();
+
+    Vector3 d (newWaypoint.x - pos.x,
+                newWaypoint.y - pos.y,
                 //newWaypoint.z - navData->position.z);
                 0);
 
@@ -301,9 +305,10 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
         control_loop.sleep();
 
-        d.x = newWaypoint.x - navData->position.x;
-        d.y = newWaypoint.y - navData->position.y;
-        d.z = newWaypoint.z - navData->position.z;
+        pos = navData->getPosition();
+        d.x = newWaypoint.x - pos.x;
+        d.y = newWaypoint.y - pos.y;
+        d.z = newWaypoint.z - pos.z;
 
     }
 
@@ -321,9 +326,10 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
         control_loop.sleep();
 
-        d.x = newWaypoint.x - navData->position.x;
-        d.y = newWaypoint.y - navData->position.y;
-        d.z = newWaypoint.z - navData->position.z;
+        pos = navData->getPosition();
+        d.x = newWaypoint.x - pos.x;
+        d.y = newWaypoint.y - pos.y;
+        d.z = newWaypoint.z - pos.z;
 
     }
 #ifdef DEBUG
