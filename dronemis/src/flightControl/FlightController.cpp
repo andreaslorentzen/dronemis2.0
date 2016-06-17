@@ -4,7 +4,7 @@
 
 #include "FlightController.h"
 
-#define DEBUG 0
+//#define DEBUG 0
 
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
@@ -125,6 +125,7 @@ void FlightController::run(){
         double turnStepSize = 30;
         dronePos = qr->checkQR();
 
+        hover(10);
 
         cmd.linear.z = 0.5;
         pub_control.publish(cmd);
@@ -132,6 +133,83 @@ void FlightController::run(){
             ros::Rate(LOOP_RATE).sleep();
 
         hover(1);
+
+        /*
+         * drej til venstre / højre 45/90
+         *
+         * 2 meter frem højre / venstre
+         *
+         * venstre/højre 2 meter frem
+         * */
+
+        /*
+        drej venstre 45 grader
+        */
+        /*int i = 1;
+        while(!dronePos.positionLocked){
+            turnDegrees(-10);
+            qr->checkQR();
+            i++;
+            if(i == 50/10)
+                break;
+        }*/
+
+        /*
+        drej venstre 90 grader
+        */
+        /*while(!dronePos.positionLocked){
+            turnDegrees(-5);
+            qr->checkQR();
+            i++;
+            if(i == 90/5)
+                break;
+        }*/
+
+        /*
+        drej højre 45 grader
+        */
+       /* while(!dronePos.positionLocked){
+            turnDegrees(5);
+            qr->checkQR();
+            i++;
+            if(i == 45/5)
+                break;
+        }*/
+
+        /*
+        drej højre 90 grader
+        */
+        /*while(!dronePos.positionLocked){
+            turnDegrees(5);
+            qr->checkQR();
+            i++;
+            if(i == 90/5)
+                break;
+        }
+*/
+        /*
+        flyv højre 2000 grader
+        */
+       /* while(!dronePos.positionLocked){
+            goToWaypoint(Command(navData->getPosition().x, navData->getPosition().y-200));
+            qr->checkQR();
+            i++;
+            if(i == 2000/200)
+                break;
+        }*/
+
+        /*
+        flyv venstre 2000 grader
+        */
+        /*while(!dronePos.positionLocked){
+            goToWaypoint(Command(navData->getPosition().x, navData->getPosition().y+200));
+            qr->checkQR();
+            i++;
+            if(i == 2000/200)
+                break;
+        }*/
+
+
 
         while(!dronePos.positionLocked){
 
@@ -422,7 +500,7 @@ void FlightController::turnDegrees(double degrees){
     if(iterations == 0)
         iterations = 2;
 
-    float offset = 5;
+    float offset = 1;
 
 
 
