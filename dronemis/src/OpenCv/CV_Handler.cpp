@@ -159,8 +159,8 @@ void CV_Handler::show(void) {
         else if (filterState == 2)
             image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
     }
-
-    cv::imshow("VideoMis", image);
+    if (!image.empty())
+        cv::imshow("VideoMis", image);
     if (cv::waitKey(10) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         system("kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')");
 }
