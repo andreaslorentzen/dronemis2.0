@@ -106,11 +106,6 @@ FlightController::~FlightController() {
 void FlightController::run(){
     Route myRoute;
     myRoute.initRoute(true);
-    ros::Publisher pub_reset_pos = myThreadData.n->advertise<std_msgs::Empty>("nav/init", 1);
-
-    std_msgs::Empty empty_msg;
-
-
 
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
@@ -118,12 +113,9 @@ void FlightController::run(){
     bool firstIteration = true;
 
     DronePos dronePos;
-    double startHeading;
 
     while (ros::ok()) {
         takeOff();
-
-        startHeading = navData->rotation;
 
         bool turning = true;
         double amountTurned = 0;
@@ -181,18 +173,18 @@ void FlightController::run(){
         land();
         return;
 #endif
-        /*
+
         hover(1);
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
-            *//*if(firstIteration) {
+            if(firstIteration) {
                 currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
                                                              navData->position.z);
                 firstIteration = false;
             }else {
                 currentCommand = myRoute.nextCommand();
-            }*//*
+            }
             currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
@@ -206,7 +198,7 @@ void FlightController::run(){
 
         land();
 
-        break;*/
+        break;
     }
 
 
@@ -458,12 +450,9 @@ void FlightController::turnTowardsPoint(Command waypoint) {
     double target_angle = atan2(waypoint.y, waypoint.x); // angle towards waypoint position
     double target_deg = target_angle * 180 / M_PI; // conversion to degrees
 
-    double ori_deg;
+    double ori_deg =navData->rotation;
 
-    float offset = 0.5;
-    do{
-
-    } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
+    turnDegrees(target_deg-ori_deg); // This should work, however i'm not sure
 }
 
 double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
