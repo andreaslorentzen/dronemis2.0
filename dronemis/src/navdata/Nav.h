@@ -14,6 +14,7 @@
 #include "std_msgs/String.h"
 #include "ros/callback_queue.h"
 #include <sensor_msgs/Imu.h>
+#include "../Vector3.h"
 
 class Nav {
 private:
@@ -37,16 +38,12 @@ public:
     double last_ts;
     double last_vx;
 
-    struct positionStruct{
-        float x;
-        float y;
-        int z;
-
-    } position;
+    Vector3 position;
     double x, y;
 
     float rotation;
 
+    Vector3 transformCoordinates(Vector3 incomingVector);
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
 // void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
@@ -54,7 +51,7 @@ public:
     void resetToPosition(double x, double y, double heading);
     Nav();
     void run(ros::NodeHandle *n);
-    positionStruct getPosition(){return position;}
+    Vector3 getPosition(){return position;}
 };
 
 

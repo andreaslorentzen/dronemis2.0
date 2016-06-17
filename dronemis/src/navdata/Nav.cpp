@@ -38,6 +38,7 @@ void Nav::initCallback(const std_msgs::Empty::ConstPtr &msg) {
 
 int counter_size = 10;
 int counter = 0;
+
 /*int tickindex = 0;
 float ticksum = 0;
 int ticklist[100];*/
@@ -58,16 +59,15 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
     if (last_ts == 0)
         last_ts = ts;
-    float interval = (ts - last_ts)/1000000;
-    float avx = (last_vx + vx)/2;
+    float interval = (ts - last_ts) / 1000000;
+    float avx = (last_vx + vx) / 2;
 
-    if(lastvX != 0.0)
-        if((lastvX < avx && lastaX < 0.0)){
-            lastvX = avx;
-            lastaX = ax;
-            ROS_INFO("Discarded!");
-            return;
-        }
+    if (lastvX != 0.0) if ((lastvX < avx && lastaX < 0.0)) {
+        lastvX = avx;
+        lastaX = ax;
+        ROS_INFO("Discarded!");
+        return;
+    }
 
     lastvX = avx;
     float ups = updateUPS();
@@ -147,7 +147,7 @@ float Nav::updateUPS() {
 
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
     float original_rotation = msg->heading_fusion_unwrapped;
-    if(original_rotation < 0)
+    if (original_rotation < 0)
         rotation = 360 + original_rotation;
     else
         rotation = original_rotation;
@@ -158,14 +158,49 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
 
 void Nav::resetToPosition(double x, double y, double heading) {
     //TODO IMPLEMENT THIS
+    position.x = 0.0;
+    position.y = 0.0;
+    x = 0;
+    y = 0;
+}
+
+Vector3 Nav::transformCoordinates(Vector3 incomingVector) {
+    Vector3 rotationMatrix[3];
+    rotationMatrix[0] = Vector3(cos(rotation), -sin(rotation), 0);
+    rotationMatrix[1] = Vector3(sin(rotation), cos(rotation), 0);
+    rotationMatrix[2] = Vector3(0, 0, 1);
+
+    Vector3 tempVector(incomingVector.x - position.x, incomingVector.y - position.y, incomingVector.z - position.z);
+
+    Vector3 resultVector(rotationMatrix[0].x * tempVector.x + rotationMatrix[0].y * tempVector.y +
+                         rotationMatrix[0].z * tempVector.z,
+                         rotationMatrix[1].x * tempVector.x + rotationMatrix[1].y * tempVector.y +
+                         rotationMatrix[1].z * tempVector.z,
+                         rotationMatrix[2].x * tempVector.x + rotationMatrix[2].y * tempVector.y +
+                         rotationMatrix[2].z * tempVector.z);
+
+
+    resultVector.x += position.x;
+    resultVector.y += position.y;
+    resultVector.z += position.z;
+
+    ROS_INFO("Incoming vector;");
+    ROS_INFO("X = %F", incomingVector.x);
+    ROS_INFO("Y = %F", incomingVector.y);
+    ROS_INFO("Z = %F", incomingVector.z);
+
+    ROS_INFO("Outgoing vector");
+    ROS_INFO("X = %F", resultVector.x);
+    ROS_INFO("Y = %F", resultVector.y);
+    ROS_INFO("Z = %F", resultVector.z);
+
+    return resultVector;
 }
 
 
 Nav::Nav() {
     last_ts = 0;
     running = 0;
-    position.x = 0.0;
-    position.y = 0.0;
     time = 0;
     last_vx = 0;
     x = 0;

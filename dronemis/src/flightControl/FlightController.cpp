@@ -130,7 +130,7 @@ void FlightController::run(){
         double turnStepSize = 30;
         dronePos = qr->checkQR();
 
-        /*while(!dronePos.positionLocked){
+        while(!dronePos.positionLocked){
 
             if(turning) {
                 turnDegrees(turnStepSize);
@@ -171,7 +171,7 @@ void FlightController::run(){
         ROS_INFO("heading = %d", dronePos.heading);
 
         land();
-        return;*/
+        //return;
 
         hover(1);
 
@@ -207,12 +207,12 @@ void FlightController::run(){
 
 void FlightController::goToWaypoint(Command newWaypoint) {
 
-    MyVector d (newWaypoint.x - navData->position.x,
+    Vector3 d (newWaypoint.x - navData->position.x,
                 newWaypoint.y - navData->position.y,
                 //newWaypoint.z - navData->position.z);
                 0);
 
-    MyVector v_vec (0.0, 0.0, 0.0);
+    Vector3 v_vec (0.0, 0.0, 0.0);
 
 
     /*
@@ -384,10 +384,10 @@ double FlightController::getSpeed(double distance) {
 
     return TRANSIT_SPEED;
 }
-MyVector FlightController::getVelocity(MyVector d) {
+Vector3 FlightController::getVelocity(Vector3 d) {
     double f = 1;
 
-    MyVector v_vec;
+    Vector3 v_vec;
 
     v_vec.x = getSpeed(d.x);
     v_vec.y = getSpeed(d.y);
@@ -538,36 +538,7 @@ void FlightController::setStraightFlight(bool newState) {
     straightFlight = newState;
 }
 
-MyVector FlightController::transformCoordinates(MyVector incomingVector) {
-    /* MyVector rotationMatrix[3];
-     rotationMatrix[0] = MyVector(cos(rotation), -sin(rotation), 0);
-     rotationMatrix[1] = MyVector(sin(rotation), cos(rotation), 0);
-     rotationMatrix[2] = MyVector(0, 0, 1);
 
-     MyVector tempVector(incomingVector.x-navData->position.x, incomingVector.y-navData->position.y, incomingVector.z-navData->position.z);
-
-     MyVector resultVector(rotationMatrix[0].x*tempVector.x+rotationMatrix[0].y*tempVector.y+rotationMatrix[0].z*tempVector.z,
-                         rotationMatrix[1].x*tempVector.x+rotationMatrix[1].y*tempVector.y+rotationMatrix[1].z*tempVector.z,
-                         rotationMatrix[2].x*tempVector.x+rotationMatrix[2].y*tempVector.y+rotationMatrix[2].z*tempVector.z);
-
-
-     resultVector.x += navData->position.x;
-     resultVector.y += navData->position.y;
-     resultVector.z += navData->position.z;
-
-     ROS_INFO("Incoming vector;");
-     ROS_INFO("X = %F", incomingVector.x);
-     ROS_INFO("Y = %F", incomingVector.y);
-     ROS_INFO("Z = %F", incomingVector.z);
-
-     ROS_INFO("Outgoing vector");
-     ROS_INFO("X = %F", resultVector.x);
-     ROS_INFO("Y = %F", resultVector.y);
-     ROS_INFO("Z = %F", resultVector.z);
- */
-    return incomingVector;
-
-}
 
 void FlightController::startProgram() {
     if (!started) {
