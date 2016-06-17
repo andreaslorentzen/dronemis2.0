@@ -74,10 +74,6 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     position.y += vy * interval;//+ 0.5 * ay * INTERVAL * INTERVAL;
     x += vx * interval;
     y += vy * interval;
-    std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
-    filename.append(std::to_string(start_time));
-    filename.append(".csv");
-
     if (++counter >= counter_size) {
         //ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
         counter = 0;
@@ -95,9 +91,9 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     file << ";";
     file << state;
     file << ";";
-    file << position.x;
+    file << getPosition().x;
     file << ";";
-    file << position.y;
+    file << getPosition().y;
     file << ";";
     file << msg->ax;
     file << ";";
@@ -190,7 +186,7 @@ Vector3 Nav::getPosition() {
 
     resultVector.x += qr_vector.x;
     resultVector.y += qr_vector.y;
-    resultVector.z += qr_vector.z;
+    resultVector.z = position.z;
 
 #ifdef DEBUG_NAV_COUT
     ROS_INFO("Outgoing vector");
