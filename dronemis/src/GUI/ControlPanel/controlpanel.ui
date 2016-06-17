@@ -14,7 +14,7 @@
    <string>ControlPanel</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton_shutdown">
+   <widget class="QPushButton" name="pushButton_Stop">
     <property name="geometry">
      <rect>
       <x>221</x>
@@ -30,7 +30,7 @@
      </size>
     </property>
     <property name="text">
-     <string>Shutdown</string>
+     <string>STOP</string>
     </property>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -58,9 +58,9 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QPushButton" name="pushButton_Stop">
+      <widget class="QPushButton" name="pushButton_shutdown">
        <property name="text">
-        <string>Stop</string>
+        <string>Shutdown</string>
        </property>
       </widget>
      </item>
@@ -76,6 +76,25 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="1">
+      <widget class="QLCDNumber" name="lcdNumber_Right">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <property name="segmentStyle">
+        <enum>QLCDNumber::Filled</enum>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLCDNumber" name="lcdNumber_Left">
        <property name="font">
@@ -116,8 +135,8 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLCDNumber" name="lcdNumber_Right">
+     <item row="1" column="0" colspan="2">
+      <widget class="QLCDNumber" name="lcdNumber_Position">
        <property name="font">
         <font>
          <weight>75</weight>
@@ -127,11 +146,10 @@
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="QLCDNumber" name="lcdNumber_Position">
-       <property name="digitCount">
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <property name="numDigits">
         <number>20</number>
        </property>
        <property name="segmentStyle">

@@ -12,9 +12,6 @@ ControlPanel::ControlPanel(QWidget *parent) : QMainWindow(parent), ui(new Ui::Co
     ui->setupUi(this);
     paletteOrg.setColor(paletteOrg.WindowText, Qt::black);
     paletteRed.setColor(paletteRed.WindowText, Qt::red);
-    ui->lcdNumber_Right->setPalette(paletteOrg);
-    ui->lcdNumber_Left->setPalette(paletteOrg);
-    ui->lcdNumber_Position->setPalette(paletteOrg);
     ui->lcdNumber_Right->display("00");
     ui->lcdNumber_Left->display("00:00");
     ui->lcdNumber_Position->display("000:000:000");
@@ -104,7 +101,7 @@ void ControlPanel::updatePosition(void) {
     posStr.append(":");
     posStr.append(to_string((int)navData->position.y));
     posStr.append(":");
-    posStr.append(to_string(navData->position.z));
+    posStr.append(to_string(navData->position.z/10));
     posStr.append(":");
     posStr.append(to_string((int)navData->rotation));
     ui->lcdNumber_Position->display(QString::fromStdString(posStr));
