@@ -97,11 +97,14 @@ void ControlPanel::updatePanel(void) {
 
 void ControlPanel::updatePosition(void) {
     string posStr;
-    posStr.append(to_string((int)navData->position.x));
+    Vector3 pos = navData->getPosition();
+
+
+    posStr.append(to_string((int)pos.x));
     posStr.append(":");
-    posStr.append(to_string((int)navData->position.y));
+    posStr.append(to_string((int)pos.y));
     posStr.append(":");
-    posStr.append(to_string((int) (navData->position.z/10)));
+    posStr.append(to_string((int) (pos.z/10)));
     posStr.append(":");
     posStr.append(to_string((int)navData->getRotation()));
     ui->lcdNumber_Position->display(QString::fromStdString(posStr));
