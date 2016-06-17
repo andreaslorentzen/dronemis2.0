@@ -147,9 +147,9 @@ DronePos QR::checkQR(void) {
                                             xDistance, yDiversionAngle);
 #ifdef DEBUG_COUT
                 ROS_INFO("TESTMODE ACTIVE");
-                cout << "Droneposition(x,y) = " << DronePosition.x << "," << DronePosition.y << endl;
-                cout << "Angle relative to QR =" << DronePosition.angle << endl;
-
+                cout << "Droneposition relative (x,y) = " << DronePosition.relativeX << "," << DronePosition.relativeY << endl;
+                
+                cout << "RoomAngle relative to QR =" << RoomDronePosition.angle << endl;
                 //cout << symbol->get_data() << endl;
                 cout << "RoomDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
                 cout << "RoomDroneHeading = " << RoomDronePosition.heading << endl;
@@ -193,113 +193,113 @@ void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int rela
     RoomDronePosition.angle = angle;
     if (QRname.find("W00") == 0) {       // Wall 0 has been found
         if (QRname.find("W00.00") == 0) {     // Code W00.00
-            RoomDronePosition.x = (QRWallCode[0].x - DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[0].y - DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[0].x - relativeX);
+            RoomDronePosition.y = (QRWallCode[0].y - relativeY);
             RoomDronePosition.heading = yDiversionAngle;
 
         }
         else if (QRname.find("W00.01") == 0) {     // Code W00.01
-            RoomDronePosition.x = (QRWallCode[1].x - DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[1].y - DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[1].x - relativeX);
+            RoomDronePosition.y = (QRWallCode[1].y - relativeY);
             RoomDronePosition.heading = yDiversionAngle;
         }
         else if (QRname.find("W00.02") == 0) {     // Code W00.02
-            RoomDronePosition.x = (QRWallCode[2].x - DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[2].y - DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[2].x - relativeX);
+            RoomDronePosition.y = (QRWallCode[2].y - relativeY);
             RoomDronePosition.heading = yDiversionAngle;
         }
         else if (QRname.find("W00.03") == 0) {     // Code W00.03
-            RoomDronePosition.x = (QRWallCode[3].x - DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[3].y - DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[3].x - relativeX);
+            RoomDronePosition.y = (QRWallCode[3].y - relativeY);
             RoomDronePosition.heading = yDiversionAngle;
         }
         else if (QRname.find("W00.04") == 0) {     // Code W00.04
-            RoomDronePosition.x = (QRWallCode[4].x - DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[4].y - DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[4].x - relativeX);
+            RoomDronePosition.y = (QRWallCode[4].y - relativeY);
             RoomDronePosition.heading = yDiversionAngle;
         }
     }
 
     else if (QRname.find("W01.") == 0) {       // Wall 1 has been found
         if (QRname.find("W01.00") == 0) {     // Code W01.00
-            RoomDronePosition.x = (QRWallCode[5].x - DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[5].y + DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[5].x - relativeY);
+            RoomDronePosition.y = (QRWallCode[5].y + relativeX);
             RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.01") == 0) {     // Code W01.01
-            RoomDronePosition.x = (QRWallCode[6].x - DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[6].y + DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[6].x - relativeY);
+            RoomDronePosition.y = (QRWallCode[6].y + relativeX);
             RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.02") == 0) {     // Code W01.02
-            RoomDronePosition.x = (QRWallCode[7].x - DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[7].y + DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[7].x - relativeY);
+            RoomDronePosition.y = (QRWallCode[7].y + relativeX);
             RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.03") == 0) {     // Code W01.03
-            RoomDronePosition.x = (QRWallCode[8].x - DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[8].y + DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[8].x - relativeY);
+            RoomDronePosition.y = (QRWallCode[8].y + relativeX);
             RoomDronePosition.heading = 90 + yDiversionAngle;
         }
         else if (QRname.find("W01.04") == 0) {     // Code W01.04
-            RoomDronePosition.x = (QRWallCode[9].x - DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[9].y + DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[9].x - relativeY);
+            RoomDronePosition.y = (QRWallCode[9].y + relativeX);
             RoomDronePosition.heading = 90 + yDiversionAngle;
         }
     }
 
     else if (QRname.find("W02.") == 0) {       // Wall 2 has been found
         if (QRname.find("W02.00") == 0) {     // Code W02.00
-            RoomDronePosition.x = (QRWallCode[10].x + DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[10].y + DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[10].x + relativeX);
+            RoomDronePosition.y = (QRWallCode[10].y + relativeY);
             RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.01") == 0) {     // Code W02.01
-            RoomDronePosition.x = (QRWallCode[11].x + DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[11].y + DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[11].x + relativeX);
+            RoomDronePosition.y = (QRWallCode[11].y + relativeY);
             RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.02") == 0) {     // Code W02.02
-            RoomDronePosition.x = (QRWallCode[12].x + DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[12].y + DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[12].x + relativeX);
+            RoomDronePosition.y = (QRWallCode[12].y + relativeY);
             RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.03") == 0) {     // Code W02.03
-            RoomDronePosition.x = (QRWallCode[13].x + DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[13].y + DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[13].x + relativeX);
+            RoomDronePosition.y = (QRWallCode[13].y + relativeY);
             RoomDronePosition.heading = 180 + yDiversionAngle;
         }
         else if (QRname.find("W02.04") == 0) {     // Code W02.04
-            RoomDronePosition.x = (QRWallCode[14].x + DronePosition.x);
-            RoomDronePosition.y = (QRWallCode[14].y + DronePosition.y);
+            RoomDronePosition.x = (QRWallCode[14].x + relativeX);
+            RoomDronePosition.y = (QRWallCode[14].y + relativeY);
             RoomDronePosition.heading = 180 + yDiversionAngle;
         }
     }
 
     else if (QRname.find("W03.") == 0) {       // Wall 3 has been found
         if (QRname.find("W03.00") == 0) {     // Code W03.00
-            RoomDronePosition.x = (QRWallCode[15].x + DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[15].y - DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[15].x + relativeY);
+            RoomDronePosition.y = (QRWallCode[15].y - relativeX);
             RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.01") == 0) {     // Code W03.01
-            RoomDronePosition.x = (QRWallCode[16].x + DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[16].y - DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[16].x + relativeY);
+            RoomDronePosition.y = (QRWallCode[16].y - relativeX);
             RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.02") == 0) {     // Code W03.02
-            RoomDronePosition.x = (QRWallCode[17].x + DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[17].y - DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[17].x + relativeY);
+            RoomDronePosition.y = (QRWallCode[17].y - relativeX);
             RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.03") == 0) {     // Code W03.03
-            RoomDronePosition.x = (QRWallCode[18].x + DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[18].y - DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[18].x + relativeY);
+            RoomDronePosition.y = (QRWallCode[18].y - relativeX);
             RoomDronePosition.heading = 270 + yDiversionAngle;
         }
         else if (QRname.find("W03.04") == 0) {     // Code W03.04
-            RoomDronePosition.x = (QRWallCode[19].x + DronePosition.y);
-            RoomDronePosition.y = (QRWallCode[19].y - DronePosition.x);
+            RoomDronePosition.x = (QRWallCode[19].x + relativeY);
+            RoomDronePosition.y = (QRWallCode[19].y - relativeX);
             RoomDronePosition.heading = 270 + yDiversionAngle;
         }
     }
