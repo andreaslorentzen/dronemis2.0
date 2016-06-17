@@ -107,6 +107,9 @@ void FlightController::run(){
     Route myRoute;
     myRoute.initRoute(true);
 
+
+
+
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
@@ -119,7 +122,7 @@ void FlightController::run(){
 
         bool turning = true;
         double amountTurned = 0;
-        double turnStepSize = 15;
+        double turnStepSize = 30;
         dronePos = qr->checkQR();
 
 
@@ -147,11 +150,11 @@ void FlightController::run(){
             }
 
             do {
-                double targetHeading = navData->rotation - dronePos.angle;
+                double targetHeading = navData->getRotation() - dronePos.angle;
 
                 if (dronePos.relativeY > 150 && dronePos.relativeY < 225){
                     goToWaypoint(Command(navData->position.x, navData->position.y+(dronePos.relativeX)));
-                    double currentHeading = navData->rotation;
+                    double currentHeading = navData->getRotation();
                     if(currentHeading < 0)
                         currentHeading = 360 + currentHeading;
                     turnDegrees(targetHeading-currentHeading);
@@ -410,7 +413,7 @@ Vector3 FlightController::getVelocity(Vector3 d) {
 }
 
 void FlightController::turnDegrees(double degrees){
-    double ori_deg = navData->rotation;
+    double ori_deg = navData->getRotation();
     double target_deg = ori_deg+degrees;;
     int iterations;
 
@@ -433,7 +436,7 @@ void FlightController::turnDegrees(double degrees){
             target_deg = target_deg - 360;
 
         do {
-            ori_deg = navData->rotation;
+            ori_deg = navData->getRotation();
             cmd.angular.z = getRotationalSpeed(target_deg, ori_deg);
             pub_control.publish(cmd);
         } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
@@ -450,7 +453,7 @@ void FlightController::turnTowardsPoint(Command waypoint) {
     double target_angle = atan2(waypoint.y, waypoint.x); // angle towards waypoint position
     double target_deg = target_angle * 180 / M_PI; // conversion to degrees
 
-    double ori_deg =navData->rotation;
+    double ori_deg =navData->getRotation();
 
     turnDegrees(target_deg-ori_deg); // This should work, however i'm not sure
 }
