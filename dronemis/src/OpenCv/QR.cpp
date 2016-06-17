@@ -11,7 +11,7 @@ QR::QR(CV_Handler *cv) {
 
 //#define DEBUG 1
 #define DEBUG_COUT 1
-#define AVERAGE_COUNT 6
+#define AVERAGE_COUNT 1
 #define FRAME_COUNT 10
 
 DronePos QR::checkQR(void) {
