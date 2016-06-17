@@ -39,6 +39,8 @@ public:
     struct boxCordsStruct {
         int x;
         int y;
+        int radius;
+        bool boxIsTooClose = 0;
     }boxCords;
 
     bool imageReady;
@@ -50,7 +52,6 @@ public:
 
     CV_Handler(void);
     virtual ~CV_Handler(void);
-
     void run(Nav *nav);
     std::vector<Cascade::cubeInfo> checkCubes(void);
     cv::Mat checkBox(CV_Handler::boxCordsStruct boxcords);

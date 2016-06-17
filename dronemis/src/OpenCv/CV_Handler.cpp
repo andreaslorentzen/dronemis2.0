@@ -15,11 +15,11 @@ int filterState = 0;
 
 using namespace std;
 using namespace cv;
+bool frontCamSelected = true;
+bool graySelected = false;
 
 void setKernel(int state, void* userdata);
 void setFilter(int state, void* userdata);
-bool graySelected;
-bool frontCamSelected;
 
 CV_Handler::CV_Handler(void) {
 
@@ -28,7 +28,7 @@ CV_Handler::CV_Handler(void) {
 void CV_Handler::run(Nav *nav) {
     imageReady = false;
     navData = nav;
-    frontCamSelected = true;
+
     cascade = new Cascade();
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
@@ -82,26 +82,7 @@ void setKernel(int state, void* userdata) {
 void setFilter(int state, void* userdata) {
     if (++filterState > 4)
         filterState = 0;
-    if (filterState == 0) {
-        ROS_INFO("Standard video-feed");
-        graySelected = false;
-    }
-    if (filterState == 1) {
-        ROS_INFO("Red video-feed");
-        graySelected = false;
-    }
-    if (filterState == 2) {
-        ROS_INFO("Green video-feed");
-        graySelected = false;
-    }
-    if (filterState == 3) {
-        ROS_INFO("Circle threshold video-feed");
-        graySelected = true;
-    }
-    if (filterState == 4) {
-        ROS_INFO("Circle painted video-feed");
-        graySelected = true;
-    }
+    ROS_INFO("Changed filter to Nr. %d", filterState);
 }
 
 CV_Handler::~CV_Handler(void) {
@@ -145,8 +126,6 @@ void CV_Handler::show(void) {
                         CV_8UC1,
                         storedImageBW.data());
         image = imageBW;
-        if (filterState == 3 || filterState == 4)
-            image = checkBox(CV_Handler::boxCordsStruct());
     } else {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
         cv::Mat imageBGR(storedImage.size().y,
@@ -158,6 +137,8 @@ void CV_Handler::show(void) {
             image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
         else if (filterState == 2)
             image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
+        else if (filterState == 3)
+            image = checkBox(CV_Handler::boxCordsStruct());
     }
 
     cv::imshow("VideoMis", image);
@@ -270,12 +251,16 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         Point center(circles[current_circle][0], circles[current_circle][1]);
         boxcords.x = center.x;
         boxcords.y = center.y;
+        boxcords.radius = circles[current_circle][2];
+        if(boxcords.radius >=45) boxcords.boxIsTooClose = 1;
+        else boxcords.boxIsTooClose = 0;
+
+        cout << "Boxistooclose = " << boxcords.boxIsTooClose << endl;
 
 #ifdef DEBUG_CV_COUT
         cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
 #endif
-        if (filterState == 4)
-            circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
+        circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
         return imageBW;
      }
      if (filterState == 3)
@@ -283,5 +268,5 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
      else if (filterState == 4)
          return imageBW;
 
-     return imgModded;
+     return cv::Mat();
 }
