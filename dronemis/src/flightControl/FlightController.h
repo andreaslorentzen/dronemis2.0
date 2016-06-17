@@ -13,18 +13,7 @@
 #include "../navdata/Nav.h"
 #include "../OpenCv/CV_Handler.h"
 #include "../OpenCv/QR.h"
-
-struct MyVector{
-    double x;
-    double y;
-    double z;
-    MyVector(){
-
-    }
-    MyVector(double newX, double newY, double newZ): x(newX), y(newY), z(newZ){
-
-    }
-};
+#include "../Vector3.h"
 
 class FlightController{
 public:
@@ -44,13 +33,10 @@ public:
     void abortProgram(void);
 
 private:
-    double baseSpeed;
     bool started;
     int LOOP_RATE;
-    int takeoff_time;
-    double precision;
+    int TAKEOFF_TIME;
     bool straightFlight;
-    double maxSpeed;
     ros::Publisher pub_takeoff;
     ros::Publisher pub_land;
     ros::Publisher pub_control;
@@ -58,10 +44,20 @@ private:
     Nav *navData;
     CV_Handler *cvHandler;
     QR *qr;
-    double getSpeed(double distance);
     geometry_msgs::Twist cmd;
-    MyVector transformCoordinates(MyVector incomingVector);
+    Vector3 transformCoordinates(Vector3 incomingVector);
     double getRotationalSpeed(double target_deg, double ori_deg);
+
+    int TOLERANCE;
+    double TRANSIT_SPEED;
+    double CRUISE_SPEED;
+    double CRUISE_LIMIT;
+    int CONTROL_SLEEP;
+
+    ros::Rate control_loop = ros::Rate(0);
+
+    double getSpeed(double distance);
+    Vector3 getVelocity(Vector3 d);
     void turnDegrees(double degrees);
 };
 
