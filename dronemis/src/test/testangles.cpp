@@ -7,23 +7,49 @@
 float radiansBetweenTwoPoints(float x0, float y0, float x1, float y1);
 double getRotaionalSpeed(double target_deg, double ori_deg);
 
+using namespace std;
+
 int main(void) {
-    float x = 0; // waypoint x
-    float y = -1; // waypoint y
-    double ori_deg = 90; // drone Z orientation
-    double target_deg = 95;
+    double degrees = 90;
+    double ori_deg = 60.0123;// navData->rotation;
+    double target_deg = ori_deg+degrees;;
+    int iterations;
 
-    double target_angle = atan2(y, x); // angle towards waypoint position
-    target_deg = target_angle * 180 / M_PI;
+    iterations = ((int)degrees/30)+1;
 
-    printf("Target deg: \t %6.5f\n", target_deg);
+    cout << "iterations = " << iterations << endl;
 
-    float rot_speed = getRotaionalSpeed(target_deg, ori_deg);
-    printf("Rotational speed:\t%6.5f deg\n", rot_speed);
-    return 0;
+    float offset = 5;
+
+
+
+    for(int i = 1; i < iterations; i++){
+
+        if(i == iterations-1 && ((int)degrees % 30) != 0)
+            target_deg = ori_deg + ((int)degrees%30);
+        else
+            target_deg = ori_deg + 30;
+
+        if (target_deg > 360)
+            target_deg = target_deg - 360;
+
+        cout << "target deg = " << target_deg << endl;
+
+
+        ori_deg = target_deg;
+
+        /*do {
+            ori_deg = navData->rotation;
+            cmd.angular.z = getRotationalSpeed(target_deg, ori_deg);
+            pub_control.publish(cmd);
+        } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
+        hover(1);*/
+    }
+
+
 }
 
-double getRotaionalSpeed(double target_deg, double ori_deg) {
+/*double getRotaionalSpeed(double target_deg, double ori_deg) {
     float dir; // direction
     float rot_speed; // calculated rotational speed
     float target_angle = atan2(y, x); // angle towards waypoint position
@@ -64,6 +90,6 @@ float radiansBetweenTwoPoints(float x0, float y0, float x1, float y1) {
         return M_PI;
     else
         return acos(a);
-}
+}*/
 
 

@@ -130,7 +130,7 @@ void FlightController::run(){
         double turnStepSize = 30;
         dronePos = qr->checkQR();
 
-        /*while(!dronePos.positionLocked){
+        while(!dronePos.positionLocked){
 
             if(turning) {
                 turnDegrees(turnStepSize);
@@ -171,7 +171,7 @@ void FlightController::run(){
         ROS_INFO("heading = %d", dronePos.heading);
 
         land();
-        return;*/
+        //return;
 
         hover(1);
 
@@ -207,12 +207,12 @@ void FlightController::run(){
 
 void FlightController::goToWaypoint(Command newWaypoint) {
 
-    MyVector d (newWaypoint.x - navData->position.x,
+    Vector3 d (newWaypoint.x - navData->position.x,
                 newWaypoint.y - navData->position.y,
                 //newWaypoint.z - navData->position.z);
                 0);
 
-    MyVector v_vec (0.0, 0.0, 0.0);
+    Vector3 v_vec (0.0, 0.0, 0.0);
 
 
     /*
@@ -384,10 +384,10 @@ double FlightController::getSpeed(double distance) {
 
     return TRANSIT_SPEED;
 }
-MyVector FlightController::getVelocity(MyVector d) {
+Vector3 FlightController::getVelocity(Vector3 d) {
     double f = 1;
 
-    MyVector v_vec;
+    Vector3 v_vec;
 
     v_vec.x = getSpeed(d.x);
     v_vec.y = getSpeed(d.y);
@@ -409,18 +409,30 @@ MyVector FlightController::getVelocity(MyVector d) {
 void FlightController::turnDegrees(double degrees){
     double ori_deg = navData->rotation;
     double target_deg = ori_deg+degrees;;
+    int iterations;
+
+    iterations = ((int)degrees/30)+1;
+
     float offset = 5;
 
-    if (target_deg > 360)
-        target_deg = target_deg - 360;
-
-    do {
-        ori_deg = navData->rotation;
 
 
-        cmd.angular.z = getRotationalSpeed( target_deg, ori_deg);
-        pub_control.publish(cmd);
-    } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
+    for(int i = 1; i < iterations; i++){
+        if(i == iterations-1 && ((int)degrees % 30) != 0)
+            target_deg = ori_deg + ((int)degrees%30);
+        else
+            target_deg = ori_deg + 30;
+
+        if (target_deg > 360)
+            target_deg = target_deg - 360;
+
+        do {
+            ori_deg = navData->rotation;
+            cmd.angular.z = getRotationalSpeed(target_deg, ori_deg);
+            pub_control.publish(cmd);
+        } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
+        hover(1);
+    }
 ROS_INFO("ori_deg: %6.2f", ori_deg);
     hover(1);
 }
@@ -463,7 +475,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
 #endif
     }
 
-    rot_speed = 0.5; // speed to rotate with
+    rot_speed = 0.1; // speed to rotate with
 
     if(diff_deg < 30)
         rot_speed = 0.1;
@@ -526,36 +538,7 @@ void FlightController::setStraightFlight(bool newState) {
     straightFlight = newState;
 }
 
-MyVector FlightController::transformCoordinates(MyVector incomingVector) {
-    /* MyVector rotationMatrix[3];
-     rotationMatrix[0] = MyVector(cos(rotation), -sin(rotation), 0);
-     rotationMatrix[1] = MyVector(sin(rotation), cos(rotation), 0);
-     rotationMatrix[2] = MyVector(0, 0, 1);
 
-     MyVector tempVector(incomingVector.x-navData->position.x, incomingVector.y-navData->position.y, incomingVector.z-navData->position.z);
-
-     MyVector resultVector(rotationMatrix[0].x*tempVector.x+rotationMatrix[0].y*tempVector.y+rotationMatrix[0].z*tempVector.z,
-                         rotationMatrix[1].x*tempVector.x+rotationMatrix[1].y*tempVector.y+rotationMatrix[1].z*tempVector.z,
-                         rotationMatrix[2].x*tempVector.x+rotationMatrix[2].y*tempVector.y+rotationMatrix[2].z*tempVector.z);
-
-
-     resultVector.x += navData->position.x;
-     resultVector.y += navData->position.y;
-     resultVector.z += navData->position.z;
-
-     ROS_INFO("Incoming vector;");
-     ROS_INFO("X = %F", incomingVector.x);
-     ROS_INFO("Y = %F", incomingVector.y);
-     ROS_INFO("Z = %F", incomingVector.z);
-
-     ROS_INFO("Outgoing vector");
-     ROS_INFO("X = %F", resultVector.x);
-     ROS_INFO("Y = %F", resultVector.y);
-     ROS_INFO("Z = %F", resultVector.z);
- */
-    return incomingVector;
-
-}
 
 void FlightController::startProgram() {
     if (!started) {
