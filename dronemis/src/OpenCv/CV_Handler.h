@@ -23,7 +23,7 @@
 class CV_Handler {
 
 private:
-    int thresh = 196;
+    int thresh = 76;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
     ros::Subscriber video_subscriber;
@@ -39,11 +39,11 @@ public:
     struct boxCordsStruct {
         int x;
         int y;
+        int radius;
+        bool boxIsTooClose = 0;
     }boxCords;
 
-    bool graySelected;
     bool imageReady;
-    bool frontCamSelected;
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;
     CVD::Image<CVD::Rgb <float> > storedImage;
@@ -52,7 +52,6 @@ public:
 
     CV_Handler(void);
     virtual ~CV_Handler(void);
-
     void run(Nav *nav);
     std::vector<Cascade::cubeInfo> checkCubes(void);
     cv::Mat checkBox(CV_Handler::boxCordsStruct boxcords);

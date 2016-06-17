@@ -46,17 +46,6 @@ public:
         int iHighV = 67;
     }greenFilter;
 
-    struct {
-        int iLowH = 0;
-        int iHighH = 255;
-
-        int iLowS = 0;
-        int iHighS = 255;
-
-        int iLowV = 0;
-        int iHighV = 255;
-    }allFilter;
-
     Color(void);
     virtual ~Color(void);
     cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
