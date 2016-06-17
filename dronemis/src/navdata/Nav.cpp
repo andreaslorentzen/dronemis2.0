@@ -186,7 +186,7 @@ Vector3 Nav::getPosition() {
 
     resultVector.x += qr_vector.x;
     resultVector.y += qr_vector.y;
-    resultVector.z += qr_vector.z;
+    resultVector.z = position.z;
 
 #ifdef DEBUG_NAV_COUT
     ROS_INFO("Outgoing vector");
