@@ -147,7 +147,7 @@ ROS_INFO("INSIDE LOOP");
                 DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
                 bool positionLock;
-                if(yDiversionAngle < 15) positionLock = 1;
+                if(yDiversionAngle < 15 && yDiversionAngle > -15) positionLock = 1;
                 else positionLock = 0;
 
                 //**************************************

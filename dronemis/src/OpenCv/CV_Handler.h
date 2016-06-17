@@ -23,7 +23,7 @@
 class CV_Handler {
 
 private:
-    int thresh = 196;
+    int thresh = 76;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
     ros::Subscriber video_subscriber;

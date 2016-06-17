@@ -263,21 +263,21 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         drawContours(imgModded, contours, i, color, 2, 8, hierarchy, 0, Point());
 
     // Detect circles
-    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 40, 180);
+    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 20, 180);
 
     // Draw circles
     for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
         Point center(circles[current_circle][0], circles[current_circle][1]);
         boxcords.x = center.x;
         boxcords.y = center.y;
-        boxcords.radius = circles[current_circle][2];
+        boxcords.radius = (int)circles[current_circle][2];
         if(boxcords.radius >=45) boxcords.boxIsTooClose = 1;
         else boxcords.boxIsTooClose = 0;
 
         cout << "Boxistooclose = " << boxcords.boxIsTooClose << endl;
 
 #ifdef DEBUG_CV_COUT
-        cout << "Found circle: " << center << ", radius: " << boxCords.radius << endl;
+        cout << "Found circle: " << center << ", radius: " << boxcords.radius << endl;
 #endif
         if (filterState == 4) {
             circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
