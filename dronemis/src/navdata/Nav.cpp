@@ -146,11 +146,11 @@ float Nav::updateUPS() {
 }
 
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
-    double original_rotation = msg->heading_fusion_unwrapped;
+    float original_rotation = msg->heading_fusion_unwrapped;
     if(original_rotation < 0)
-        rotation = 87.25 - original_rotation;
+        rotation = 360 + original_rotation;
     else
-        rotation = rotation;
+        rotation = original_rotation;
     ROS_INFO("rotation = %f", rotation);
 }
 
