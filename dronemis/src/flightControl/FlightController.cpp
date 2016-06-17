@@ -173,7 +173,7 @@ void FlightController::run(){
         land();
         return;*/
 
-        hover(10);
+        hover(1);
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
@@ -465,7 +465,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
 
     rot_speed = 0.5; // speed to rotate with
 
-    if(diff_deg > 30)
+    if(diff_deg < 30)
         rot_speed = 0.1;
 
     rot_speed *= dir; // make sure to rotate the correct way
