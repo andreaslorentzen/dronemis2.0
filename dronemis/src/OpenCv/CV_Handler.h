@@ -55,7 +55,7 @@ public:
 
     void run(Nav *nav);
     std::vector<Cascade::cubeInfo> checkCubes(void);
-    boxCordsStruct checkBox(void);
+    cv::Mat checkBox(CV_Handler::boxCordsStruct boxcords);
 };
 
 #endif //PROJECT_CV_HANDLER_H

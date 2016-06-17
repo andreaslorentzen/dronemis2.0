@@ -8,9 +8,10 @@
 
 #define CASCADE_FRAMES 10
 //#define DEBUG 1
-//#define DEBUG_COUT 1
+#define DEBUG_COUT 1
 //#define DEBUG_RED 1
 //#define DEBUG_GREEN 1
+#define DEBUG_BOX 1
 
 Cascade *cascade;
 Color *color;
@@ -95,6 +96,9 @@ void CV_Handler::show(void) {
 #elif DEBUG_GREEN
         image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
 #endif
+#ifdef DEBUG_BOX
+        image = checkBox(CV_Handler::boxCordsStruct());
+#endif
     }
 
     cv::imshow("VideoMis", image);
@@ -171,7 +175,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
     return cubes;
 }
 
-CV_Handler::boxCordsStruct CV_Handler::checkBox(void) {
+ cv::Mat CV_Handler::checkBox(CV_Handler::boxCordsStruct boxcords) {
     Mat imgModded;
     std::vector<cv::Vec3f> circles;
     vector<vector<Point> > contours;
@@ -208,23 +212,18 @@ CV_Handler::boxCordsStruct CV_Handler::checkBox(void) {
     // Draw circles
     for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
         Point center( circles[current_circle][0], circles[current_circle][1]);
-        boxCords.x = center.x;
-        boxCords.y = center.y;
-#ifdef DEBUG
-        circle(imageBW, center, circles[current_circle][2], Scalar(0,0,255), 3, 8, 0 );
-#endif
+        boxcords.x = center.x;
+        boxcords.y = center.y;
+
+
 #ifdef DEBUG_COUT
         cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
 #endif
-    }
-#ifdef DEBUG
-        storedImage.resize(CVD::ImageRef(imageBW.cols, imageBW.rows));
-        size_t size = imageBW.cols * imageBW.rows;
-        memcpy(storedImage.data(), imageBW.data,  size*3);
-        imageReady = true;
-        cascadeMutex.unlock();
+
+#ifdef DEBUG_BOX_PAINT
+        circle(imageBW, center, circles[current_circle][2], Scalar(0,0,255), 3, 8, 0 );
+        return imageBW;
 #endif
-
-
-    return boxCords;
+     }
+     return imgModded;
 }
