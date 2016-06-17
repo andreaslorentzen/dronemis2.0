@@ -15,6 +15,15 @@ class Color {
 
 private:
 
+public:
+    int kernelState = 0;
+    cv::Mat kernel;
+
+    struct {
+        int state;
+        int kernel;
+    }data;
+
     struct {
         int iLowH = 173;
         int iHighH = 196;
@@ -48,7 +57,6 @@ private:
         int iHighV = 255;
     }allFilter;
 
-public:
     Color(void);
     virtual ~Color(void);
     cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);

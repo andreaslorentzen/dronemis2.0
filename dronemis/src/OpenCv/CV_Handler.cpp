@@ -16,14 +16,17 @@
 Cascade *cascade;
 Color *color;
 Nav *navData;
+int filterState = 0;
 
 using namespace std;
 using namespace cv;
 
+void setKernel(int state, void* userdata);
+void setFilter(int state, void* userdata);
+
 CV_Handler::CV_Handler(void) {
 
 }
-
 
 void CV_Handler::run(Nav *nav) {
     imageReady = false;
@@ -34,13 +37,56 @@ void CV_Handler::run(Nav *nav) {
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
-    namedWindow("BoxMis", CV_WINDOW_AUTOSIZE);
-    cvCreateTrackbar("Thresh", "BoxMis", &thresh, 255); //Hue (0 - 255)
+    namedWindow("FilterMis", CV_WINDOW_AUTOSIZE);
+    cvCreateTrackbar("Thresh", "FilterMis", &thresh, 255); //Hue (0 - 255)
+
+    cvCreateTrackbar("LowH_R", "FilterMis", &(color->redFilter).iLowH, 255); //Hue (0 - 255)
+    cvCreateTrackbar("HighH_R", "FilterMis", &(color->redFilter).iHighH, 255);
+    cvCreateTrackbar("LowS_R", "FilterMis", &(color->redFilter).iLowS, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS_R", "FilterMis", &(color->redFilter).iHighS, 255);
+    cvCreateTrackbar("LowV_R", "FilterMis", &(color->redFilter).iLowV, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV_R", "FilterMis", &(color->redFilter).iHighV, 255);
+
+    cvCreateTrackbar("LowH_G", "FilterMis", &(color->greenFilter).iLowH, 255); //Hue (0 - 255)
+    cvCreateTrackbar("HighH_G", "FilterMis", &(color->greenFilter).iHighH, 255);
+    cvCreateTrackbar("LowS_G", "FilterMis", &(color->greenFilter).iLowS, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS_G", "FilterMis", &(color->greenFilter).iHighS, 255);
+    cvCreateTrackbar("LowV_G", "FilterMis", &(color->greenFilter).iLowV, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV_G", "FilterMis", &(color->greenFilter).iHighV, 255);
+
+    cvCreateButton("Kernel", setKernel, &color->data,CV_PUSH_BUTTON,0);
+    cvCreateButton("Filter", setFilter, &color->data,CV_PUSH_BUTTON,0);
+
     ros::Rate r(25);
     while(nodeHandle.ok()) {
         ros::spinOnce();
         r.sleep();
     }
+}
+
+void setKernel(int state, void* userdata) {
+
+    switch (color->kernelState++) {
+        case 0 :
+            color->kernel = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
+            cout << "kernel changed to ELLIPSE" << endl;
+            break;
+        case 1:
+            color->kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+            cout << "kernel changed to RECT" << endl;
+            break;
+        case 2:
+            color->kernel = getStructuringElement(MORPH_CROSS, Size(5, 5));
+            cout << "kernel changed to CROSS" << endl;
+            color->kernelState = 0;
+            break;
+    }
+}
+
+void setFilter(int state, void* userdata) {
+    if (++filterState > 4)
+        filterState = 0;
+    ROS_INFO("Changed filter to Nr. %d", filterState);
 }
 
 CV_Handler::~CV_Handler(void) {
@@ -91,21 +137,18 @@ void CV_Handler::show(void) {
                          CV_8UC3,
                  storedImage.data());
         image = imageBGR;
-#ifdef DEBUG_RED
-        image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
-#elif DEBUG_GREEN
-        image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
-#endif
-#ifdef DEBUG_BOX
-        image = checkBox(CV_Handler::boxCordsStruct());
-#endif
+        if (filterState == 1)
+            image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
+        else if (filterState == 2)
+            image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
+        else if (filterState > 2)
+            image = checkBox(CV_Handler::boxCordsStruct());
     }
 
     cv::imshow("VideoMis", image);
     if (cv::waitKey(10) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
         system("kill $(ps aux | grep ros | grep -v grep | awk '{print $2}')");
 }
-
 
 void CV_Handler::swapCam(bool frontCam) {
     cam_service = nodeHandle.serviceClient<std_srvs::Empty>(nodeHandle.resolveName("ardrone/togglecam"),1);
@@ -114,7 +157,6 @@ void CV_Handler::swapCam(bool frontCam) {
         frontCamSelected = frontCam;
     }
 }
-
 
 std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     int frameCount = 0;
@@ -190,9 +232,8 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
                     storedImageBW.size().x,
                     CV_8UC1,
                     storedImageBW.data());
-#ifndef DEBUG
     cascadeMutex.unlock();
-#endif
+
     // Add gaussian blur
     blur(imageBW, imgModded, Size(3,3));
 
@@ -211,19 +252,20 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
 
     // Draw circles
     for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
-        Point center( circles[current_circle][0], circles[current_circle][1]);
+        Point center(circles[current_circle][0], circles[current_circle][1]);
         boxcords.x = center.x;
         boxcords.y = center.y;
-
 
 #ifdef DEBUG_COUT
         cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
 #endif
-
-#ifdef DEBUG_BOX_PAINT
-        circle(imageBW, center, circles[current_circle][2], Scalar(0,0,255), 3, 8, 0 );
+        circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
         return imageBW;
-#endif
      }
-     return imgModded;
+     if (filterState == 3)
+         return imgModded;
+     else if (filterState == 4)
+         return imageBW;
+
+     return cv::Mat();
 }

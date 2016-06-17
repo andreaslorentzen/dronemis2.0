@@ -21,7 +21,6 @@
 
 class CV_Handler {
 
-
 private:
     int thresh = 196;
     ros::NodeHandle nodeHandle;

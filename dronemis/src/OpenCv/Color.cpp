@@ -7,60 +7,12 @@
 using namespace cv;
 using namespace std;
 
-struct {
-    int state;
-    int kernel;
-} data;
-
-int kernelState = 0;
-cv::Mat kernel;
-void setKernel(int state, void* userdata);
-
 Color::Color() {
-    namedWindow("RedMis", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    cvCreateTrackbar("LowH", "RedMis", &(redFilter).iLowH, 255); //Hue (0 - 255)
-    cvCreateTrackbar("HighH", "RedMis", &(redFilter).iHighH, 255);
 
-    cvCreateTrackbar("LowS", "RedMis", &(redFilter).iLowS, 255); //Saturation (0 - 255)
-    cvCreateTrackbar("HighS", "RedMis", &(redFilter).iHighS, 255);
-
-    cvCreateTrackbar("LowV", "RedMis", &(redFilter).iLowV, 255); //Value (0 - 255)
-    cvCreateTrackbar("HighV", "RedMis", &(redFilter).iHighV, 255);
-
-    namedWindow("GreenMis", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    cvCreateTrackbar("LowH", "GreenMis", &(greenFilter).iLowH, 255); //Hue (0 - 255)
-    cvCreateTrackbar("HighH", "GreenMis", &(greenFilter).iHighH, 255);
-
-    cvCreateTrackbar("LowS", "GreenMis", &(greenFilter).iLowS, 255); //Saturation (0 - 255)
-    cvCreateTrackbar("HighS", "GreenMis", &(greenFilter).iHighS, 255);
-
-    cvCreateTrackbar("LowV", "GreenMis", &(greenFilter).iLowV, 255); //Value (0 - 255)
-    cvCreateTrackbar("HighV", "GreenMis", &(greenFilter).iHighV, 255);
-
-    cvCreateButton("Kernel",setKernel, &data,CV_PUSH_BUTTON,0);
 }
 
 Color::~Color() {
 
-}
-
-void setKernel(int state, void* userdata) {
-
-    switch (kernelState++) {
-        case 0 :
-            kernel = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
-            cout << "kernel changed to ELLIPSE" << endl;
-            break;
-        case 1:
-            kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
-            cout << "kernel changed to RECT" << endl;
-            break;
-        case 2:
-            kernel = getStructuringElement(MORPH_CROSS, Size(5, 5));
-            cout << "kernel changed to CROSS" << endl;
-            kernelState = 0;
-            break;
-    }
 }
 
 std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
