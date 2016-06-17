@@ -138,9 +138,8 @@ ROS_INFO("INSIDE LOOP");
                     yDiversionAngle = y2Diversion * direction;
                 }
 
-                DronePosition.x = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) +
-                                   xDistance); // xDistance (Forskydning)
-                DronePosition.y = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
+                DronePosition.relativeX = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
+                DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
                 bool positionLock;
                 if(yDiversionAngle < 15) positionLock = 1;
@@ -150,14 +149,17 @@ ROS_INFO("INSIDE LOOP");
                 //**** Match up with QR coordinates ****
                 //**************************************
 
-                calculateRoomDronePostition(QRName, DronePosition.x, DronePosition.y, positionLock, averageCount,
+                calculateRoomDronePostition(QRName, DronePosition.relativeX, DronePosition.relativeY, positionLock, averageCount,
                                             xDistance, yDiversionAngle);
 #ifdef DEBUG_COUT
                 ROS_INFO("TESTMODE ACTIVE");
                 cout << "Droneposition(x,y) = " << DronePosition.x << "," << DronePosition.y << endl;
+                cout << "Angle relative to QR =" << DronePosition.angle << endl;
+
                 //cout << symbol->get_data() << endl;
-                cout << "FinalDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
-                cout << "DroneHeading = " << RoomDronePosition.heading << endl;
+                cout << "RoomDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
+                cout << "RoomDroneHeading = " << RoomDronePosition.heading << endl;
+
 #endif
             }
 #ifdef DEBUG
