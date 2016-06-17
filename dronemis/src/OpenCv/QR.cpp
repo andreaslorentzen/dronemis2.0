@@ -10,7 +10,7 @@ QR::QR(CV_Handler *cv) {
 }
 
 //#define DEBUG 1
-//#define DEBUG_COUT 1
+#define DEBUG_COUT 1
 #define AVERAGE_COUNT 6
 #define FRAME_COUNT 10
 
@@ -18,6 +18,9 @@ DronePos QR::checkQR(void) {
 #ifdef DEBUG
     ROS_INFO("inside the checkQR");
 #endif
+    RoomDronePosition.resetCoordinates();
+    DronePosition.resetCoordinates();
+    yRatioTemp = 0;
     int frameCount = 0;
     int averageCount = 0;
     ImageScanner scanner;
@@ -107,8 +110,12 @@ ROS_INFO("INSIDE LOOP");
             }
 
             yratio = yleft / yright;
+            cout << "yleft / yright = " << yleft << " / " << yright << endl;
             yRatioTemp = yRatioTemp + yratio;
             //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
+
+            cout << "yratio = " << yratio << endl;
+            cout << "yratioTemp = " << yRatioTemp << endl;
 
             if (averageCount == AVERAGE_COUNT) {
                 yRatioAverage = yRatioTemp / AVERAGE_COUNT;

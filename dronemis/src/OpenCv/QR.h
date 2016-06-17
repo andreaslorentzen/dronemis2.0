@@ -21,6 +21,9 @@ struct DronePos {
     int numberOfQRs;
     double cameraPointing;
     double angle;
+    void resetCoordinates(){
+        x, y, relativeX, relativeY, numberOfQRs, positionLocked, heading, cameraPointing, angle = 0;
+    }
 };
 
 class QR {
