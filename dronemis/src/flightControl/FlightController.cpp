@@ -4,11 +4,10 @@
 
 #include "FlightController.h"
 
-#define DEBUG 0
-
 void* startNavdata(void *thread_args);
 void* startCV(void *thread_args);
 void* startController(void *thread_arg);
+void* runQR(void *thread_arg);
 
 struct thread_data{
     Nav *navData;
@@ -71,10 +70,6 @@ FlightController::FlightController(){
 FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav): FlightController() {
     LOOP_RATE = loopRate;
 
-
-
-
-
     pub_land = nh->advertise<std_msgs::Empty>("/ardrone/land", 1);
     pub_takeoff = nh->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
     pub_control = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1);
@@ -107,9 +102,6 @@ void FlightController::run(){
     Route myRoute;
     myRoute.initRoute(true);
 
-
-
-
     ros::Rate loop_rate(LOOP_RATE);
     setStraightFlight(true);
 
@@ -123,21 +115,98 @@ void FlightController::run(){
         bool turning = true;
         double amountTurned = 0;
         double turnStepSize = 30;
-        dronePos = qr->checkQR();
 
+
+        hover(10);
 
         cmd.linear.z = 0.5;
         pub_control.publish(cmd);
-        while(navData->position.z < 1400)
+        while(navData->position.z < 1200)
             ros::Rate(LOOP_RATE).sleep();
 
         hover(1);
 
+        /*
+         * drej til venstre / højre 45/90
+         *
+         * 2 meter frem højre / venstre
+         *
+         * venstre/højre 2 meter frem
+         * */
+
+        /*
+        drej venstre 45 grader
+        */
+        /*int i = 1;
         while(!dronePos.positionLocked){
+            turnDegrees(-10);
+            qr->checkQR();
+            i++;
+            if(i == 50/10)
+                break;
+        }*/
+
+        /*
+        drej venstre 90 grader
+        */
+        /*while(!dronePos.positionLocked){
+            turnDegrees(-5);
+            qr->checkQR();
+            i++;
+            if(i == 90/5)
+                break;
+        }*/
+
+        /*
+        drej højre 45 grader
+        */
+       /* while(!dronePos.positionLocked){
+            turnDegrees(5);
+            qr->checkQR();
+            i++;
+            if(i == 45/5)
+                break;
+        }*/
+
+        /*
+        drej højre 90 grader
+        */
+        /*while(!dronePos.positionLocked){
+            turnDegrees(5);
+            qr->checkQR();
+            i++;
+            if(i == 90/5)
+                break;
+        }
+*/
+        /*
+        flyv højre 2000 grader
+        */
+       /* while(!dronePos.positionLocked){
+            goToWaypoint(Command(navData->getPosition().x, navData->getPosition().y-200));
+            qr->checkQR();
+            i++;
+            if(i == 2000/200)
+                break;
+        }*/
+
+        /*
+        flyv venstre 2000 grader
+        */
+        /*while(!dronePos.positionLocked){
+            goToWaypoint(Command(navData->getPosition().x, navData->getPosition().y+200));
+            qr->checkQR();
+            i++;
+            if(i == 2000/200)
+                break;
+        }*/
+
+
+
+        while(!dronePossion.positionLocked){
 
             if(turning) {
                 turnDegrees(turnStepSize);
-                dronePos = qr->checkQR();
                 amountTurned += turnStepSize;
                 if(amountTurned >= 360)
                     turning = false;
@@ -145,33 +214,30 @@ void FlightController::run(){
                 Command tempCommand(navData->position.x + 500, navData->position.y);
 
                 goToWaypoint(tempCommand);
-
-                dronePos = qr->checkQR();
             }
 
             do {
-                double targetHeading = navData->getRotation() - dronePos.angle;
+                double targetHeading = navData->getRotation() - dronePossion.angle;
 
-                if (dronePos.relativeY > 150 && dronePos.relativeY < 225){
+                if (dronePossion.relativeY > 150 && dronePossion.relativeY < 225){
                     goToWaypoint(Command(navData->position.x, navData->position.y+(dronePos.relativeX)));
                     double currentHeading = navData->getRotation();
                     if(currentHeading < 0)
                         currentHeading = 360 + currentHeading;
                     turnDegrees(targetHeading-currentHeading);
                 }
-
-                dronePos = qr->checkQR();
-
-            } while((dronePos.numberOfQRs > 2 && !dronePos.positionLocked));
+            } while((dronePossion.numberOfQRs > 2 && !dronePossion.positionLocked));
 
 
         }
 
-        navData->resetToPosition(dronePos.x*10, dronePos.y*10, dronePos.heading);
+        navData->resetToPosition(dronePossion.x*10, dronePossion.y*10, dronePossion.heading);
+
+        lookingForQR = false;
 #ifdef DEBUG
-        ROS_INFO("X = %d", dronePos.x);
-        ROS_INFO("Y = %d", dronePos.y);
-        ROS_INFO("heading = %d", dronePos.heading);
+        ROS_INFO("X = %d", dronePossion.x);
+        ROS_INFO("Y = %d", dronePossion.y);
+        ROS_INFO("heading = %d", dronePossion.heading);
 
         land();
         return;
@@ -419,10 +485,10 @@ void FlightController::turnDegrees(double degrees){
 
     iterations = ((int)degrees/30)+1;
 
-    if(iterations == 0)
+    if(iterations ==1)
         iterations = 2;
 
-    float offset = 5;
+    float offset = 1;
 
 
 
@@ -443,7 +509,7 @@ void FlightController::turnDegrees(double degrees){
         hover(1);
     }
 #ifdef DEBUG
-    ROS_INFO("ori_deg: %6.2f", ori_deg);
+    //ROS_INFO("ori_deg: %6.2f", ori_deg);
 #endif
     hover(1);
 }
@@ -465,21 +531,21 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
     double diff_deg = target_deg - ori_deg; // calculate difference
 
 #ifdef DEBUG
-    printf("target_deg: %6.2f     deg diff_deg: %6.2f deg    ori_deg: %6.2f deg", target_deg,diff_deg,ori_deg);
+    //printf("target_deg: %6.2f     deg diff_deg: %6.2f deg    ori_deg: %6.2f deg", target_deg,diff_deg,ori_deg);
 #endif
     if ((diff_deg < 180 && diff_deg > 0) || (diff_deg < -180)) {
         dir = -1;
         if (diff_deg < -180)
             diff_deg = 360 + diff_deg;
 #ifdef DEBUG
-        printf("Turn left\n");
+        //printf("Turn left\n");
 #endif
     } else {
         dir = 1;
         if(diff_deg > 180)
             diff_deg = 360 -diff_deg;
 #ifdef DEBUG
-        printf("Turn right\n");
+        //printf("Turn right\n");
 #endif
     }
 
@@ -490,7 +556,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
 
     rot_speed *= dir; // make sure to rotate the correct way
 #ifdef DEBUG
-    printf("Rotspeed = %f\n", rot_speed);
+    //printf("Rotspeed = %f\n", rot_speed);
 #endif
 
     return rot_speed;
@@ -593,6 +659,24 @@ void* startController(void *thread_arg){
     struct thread_data *thread_data;
     thread_data = (struct thread_data *) thread_arg;
 
+    pthread_t thread;
+    pthread_create(&thread, NULL, runQR, thread_data);
+
+
     thread_data->controller->run();
+
+    pthread_exit(NULL);
+}
+
+void* runQR(void *thread_arg){
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+#ifdef DEBUG
+    ROS_INFO("Inside the thread");
+#endif
+    while(thread_data->controller->lookingForQR) {
+        thread_data->controller->dronePossion = thread_data->controller->getQr()->checkQR();
+        ros::Rate(25).sleep();
+    }
     pthread_exit(NULL);
 }

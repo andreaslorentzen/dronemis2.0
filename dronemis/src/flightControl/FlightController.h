@@ -31,7 +31,9 @@ public:
     void startProgram(void);
     void resetProgram(void);
     void abortProgram(void);
-
+    bool lookingForQR = true;
+    DronePos dronePossion;
+    QR* getQr(){return qr;};
 private:
     bool started;
     int LOOP_RATE;

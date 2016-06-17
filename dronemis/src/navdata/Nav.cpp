@@ -74,6 +74,9 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     position.y += vy * interval;//+ 0.5 * ay * INTERVAL * INTERVAL;
     x += vx * interval;
     y += vy * interval;
+    std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
+    filename.append(std::to_string(start_time));
+    filename.append(".csv");
 
     if (++counter >= counter_size) {
         //ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
@@ -135,8 +138,11 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
     while(drone_heading > 360)
         drone_heading -= 360;
 
-    if (!rotinit)
+    if (!rotinit){
         rotoffset = drone_heading;
+        rotinit = true;
+    }
+
 
     rotation = drone_heading - rotoffset;
 
