@@ -18,6 +18,8 @@ using namespace cv;
 
 void setKernel(int state, void* userdata);
 void setFilter(int state, void* userdata);
+bool graySelected;
+bool frontCamSelected;
 
 CV_Handler::CV_Handler(void) {
 
@@ -27,7 +29,6 @@ void CV_Handler::run(Nav *nav) {
     imageReady = false;
     navData = nav;
     frontCamSelected = true;
-    graySelected = false;
     cascade = new Cascade();
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
@@ -81,7 +82,26 @@ void setKernel(int state, void* userdata) {
 void setFilter(int state, void* userdata) {
     if (++filterState > 4)
         filterState = 0;
-    ROS_INFO("Changed filter to Nr. %d", filterState);
+    if (filterState == 0) {
+        ROS_INFO("Standard video-feed");
+        graySelected = false;
+    }
+    if (filterState == 1) {
+        ROS_INFO("Red video-feed");
+        graySelected = false;
+    }
+    if (filterState == 2) {
+        ROS_INFO("Green video-feed");
+        graySelected = false;
+    }
+    if (filterState == 3) {
+        ROS_INFO("Circle threshold video-feed");
+        graySelected = true;
+    }
+    if (filterState == 4) {
+        ROS_INFO("Circle painted video-feed");
+        graySelected = true;
+    }
 }
 
 CV_Handler::~CV_Handler(void) {
@@ -125,6 +145,8 @@ void CV_Handler::show(void) {
                         CV_8UC1,
                         storedImageBW.data());
         image = imageBW;
+        if (filterState == 3 || filterState == 4)
+            image = checkBox(CV_Handler::boxCordsStruct());
     } else {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
         cv::Mat imageBGR(storedImage.size().y,
@@ -136,8 +158,6 @@ void CV_Handler::show(void) {
             image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
         else if (filterState == 2)
             image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
-        else if (filterState == 3)
-            image = checkBox(CV_Handler::boxCordsStruct());
     }
 
     cv::imshow("VideoMis", image);
@@ -189,7 +209,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         }
         calculatePosition(cascades[biggestArray]);
 
-#ifdef DEBUG_COUT
+#ifdef DEBUG_CV_COUT
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
         std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
@@ -251,10 +271,11 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         boxcords.x = center.x;
         boxcords.y = center.y;
 
-#ifdef DEBUG_COUT
+#ifdef DEBUG_CV_COUT
         cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
 #endif
-        circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
+        if (filterState == 4)
+            circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
         return imageBW;
      }
      if (filterState == 3)
@@ -262,5 +283,5 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
      else if (filterState == 4)
          return imageBW;
 
-     return cv::Mat();
+     return imgModded;
 }

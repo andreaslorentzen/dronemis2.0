@@ -41,9 +41,7 @@ public:
         int y;
     }boxCords;
 
-    bool graySelected;
     bool imageReady;
-    bool frontCamSelected;
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;
     CVD::Image<CVD::Rgb <float> > storedImage;
