@@ -60,7 +60,9 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     if (lastvX != 0.0) if ((lastvX < avx && lastaX < 0.0)) {
         lastvX = avx;
         lastaX = ax;
+#ifdef DEBUG_NAV_COUT
         ROS_INFO("Discarded!");
+#endif
         return;
     }
     lastvX = avx;
@@ -72,14 +74,15 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     position.y += vy * interval;//+ 0.5 * ay * INTERVAL * INTERVAL;
     x += vx * interval;
     y += vy * interval;
-    std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
-    filename.append(std::to_string(start_time));
-    filename.append(".csv");
 
     if (++counter >= counter_size) {
         //ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
         counter = 0;
     }
+#ifdef DEBUG_NAV_LOG
+    std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
+    filename.append(std::to_string(start_time));
+    filename.append(".csv");
     std::ofstream file;
     file.open(filename, std::ios::app);
 /*
@@ -102,6 +105,7 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     file << msg->vy;
     file << "\n";
     file.close();
+#endif
 }
 
 float Nav::updateUPS() {
@@ -136,9 +140,10 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
 
     rotation = drone_heading - rotoffset;
 
+#ifdef DEBUG_NAV_COUT
     ROS_INFO("ORIGINAL = %f", drone_heading);
     ROS_INFO("rotation = %f", rotation);
-
+#endif
 }
 double Nav::getRotation() {
     double rot = QRoffset + rotation;
@@ -181,10 +186,12 @@ Vector3 Nav::getPosition() {
     resultVector.y += qr_vector.y;
     resultVector.z += qr_vector.z;
 
+#ifdef DEBUG_NAV_COUT
     ROS_INFO("Outgoing vector");
     ROS_INFO("X = %F", resultVector.x);
     ROS_INFO("Y = %F", resultVector.y);
     ROS_INFO("Z = %F", resultVector.z);
+#endif
 
     return resultVector;
 }

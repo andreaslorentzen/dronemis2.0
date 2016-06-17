@@ -15,6 +15,7 @@
 #include "ros/callback_queue.h"
 #include <sensor_msgs/Imu.h>
 #include "../Vector3.h"
+#include "../debug.h"
 
 class Nav {
 private:
