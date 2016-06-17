@@ -64,11 +64,14 @@ void setKernel(int state, void* userdata) {
 }
 
 std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
-    return checkColorsRed(checkColorsGreen(cubes,image),image);
+
+    checkColorsRed(cubes,image);
+    checkColorsGreen(cubes,image);
+    return std::vector<Cascade::cubeInfo>();
 }
 
 
-std::vector<Cascade::cubeInfo> Color::checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+cv::Mat Color::checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
 
     Mat imgHSV;
     Mat nonZeros;
@@ -76,30 +79,33 @@ std::vector<Cascade::cubeInfo> Color::checkColorsRed(std::vector<Cascade::cubeIn
 
     //Convert from BGR to HSV
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
-
-    //morphological opening (remove small objects from the foreground)
-    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
 
     //Threshold the image to match filter-values
     inRange(imgHSV, Scalar(redFilter.iLowH, redFilter.iLowS, redFilter.iLowV), Scalar(redFilter.iHighH, redFilter.iHighS, redFilter.iHighV), imgThresholded);
 
-    //morphological closing (fill small holes in the foreground)
+    //Morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Morphological closing (fill small holes in the foreground)
     morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
 
+    //Find white areas
     findNonZero(imgThresholded, nonZeros);
 
     //int count;
     for (unsigned int i = 0; i < cubes.size(); i++) {
         for (unsigned int j = 0; j < nonZeros.total(); j++) {
-            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y)
+            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y) {
                 cubes[i].color = 'r';
+                cout << "Found red cube!!!" << endl;
+            }
         }
     }
     
-    return cubes;
+    return imgThresholded;
 }
 
-std::vector<Cascade::cubeInfo> Color::checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
 
     Mat imgHSV;
     Mat nonZeros;
@@ -108,24 +114,27 @@ std::vector<Cascade::cubeInfo> Color::checkColorsGreen(std::vector<Cascade::cube
     //Convert from BGR to HSV
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
 
-    //morphological opening (remove small objects from the foreground)
-    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
-
     //Threshold the image to match filter-values
     inRange(imgHSV, Scalar(greenFilter.iLowH, greenFilter.iLowS, greenFilter.iLowV), Scalar(greenFilter.iHighH, greenFilter.iHighS, greenFilter.iHighV), imgThresholded);
 
-    //morphological closing (fill small holes in the foreground)
+    //Morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Morphological closing (fill small holes in the foreground)
     morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
 
+    //Find white areas
     findNonZero(imgThresholded, nonZeros);
 
     //int count;
     for (unsigned int i = 0; i < cubes.size(); i++) {
         for (unsigned int j = 0; j < nonZeros.total(); j++) {
-            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y)
-                cubes[i].color = 'r';
+            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y) {
+                cubes[i].color = 'g';
+                cout << "Found green cube!!!" << endl;
+            }
         }
     }
 
-    return cubes;
+    return imgThresholded;
 }

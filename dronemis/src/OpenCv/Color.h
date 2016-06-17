@@ -48,13 +48,11 @@ private:
         int iHighV = 255;
     }allFilter;
 
-    std::vector<Cascade::cubeInfo> checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
-    std::vector<Cascade::cubeInfo> checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
-
 public:
     Color(void);
     virtual ~Color(void);
-
+    cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
+    cv::Mat checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
     std::vector<Cascade::cubeInfo> checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
 };
 

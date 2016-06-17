@@ -7,6 +7,10 @@
 #include "QR.h"
 
 #define CASCADE_FRAMES 10
+//#define DEBUG 1
+//#define DEBUG_COUT 1
+//#define DEBUG_RED 1
+//#define DEBUG_GREEN 1
 
 Cascade *cascade;
 Color *color;
@@ -24,13 +28,13 @@ void CV_Handler::run(Nav *nav) {
     imageReady = false;
     navData = nav;
     frontCamSelected = true;
-    graySelected = true;
+    graySelected = false;
     cascade = new Cascade();
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-    cvCreateTrackbar("LowH", "Control", &thresh, 255);
+    namedWindow("BoxMis", CV_WINDOW_AUTOSIZE);
+    cvCreateTrackbar("Thresh", "BoxMis", &thresh, 255); //Hue (0 - 255)
     ros::Rate r(25);
     while(nodeHandle.ok()) {
         ros::spinOnce();
@@ -78,8 +82,7 @@ void CV_Handler::show(void) {
                         storedImageBW.size().x,
                         CV_8UC1,
                         storedImageBW.data());
-        //image = imageBW;
-        image = checkBox(imageBW);
+        image = imageBW;
     } else {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
         cv::Mat imageBGR(storedImage.size().y,
@@ -87,7 +90,11 @@ void CV_Handler::show(void) {
                          CV_8UC3,
                  storedImage.data());
         image = imageBGR;
-        //image = color->checkColorsTest(std::vector<Cascade::cubeInfo>(), image);
+#ifdef DEBUG_RED
+        image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
+#elif DEBUG_GREEN
+        image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
+#endif
     }
 
     cv::imshow("VideoMis", image);
@@ -110,7 +117,6 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     int biggestArray = 0;
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
     std::vector<cascadeArray> cascades;
-    std::vector<Cascade::cubeInfo> cubes;
 
     while (true) {
         while (!imageReady);
@@ -129,10 +135,8 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         cascadeMutex.unlock();
 
         cascades.push_back(cascade->checkCascade(imageBW));
-        if (!cascades[frameCount].empty()) {
-            size_t size = image.cols * image.rows;
-            memcpy(cascades[frameCount][0].image.data, image.data, size*3);
-        }
+        if (!cascades[frameCount].empty())
+            color->checkColors(cascades[frameCount],image);
 
         if (++frameCount == CASCADE_FRAMES)
             break;
@@ -142,23 +146,16 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
-
-
         calculatePosition(cascades[biggestArray]);
 
+#ifdef DEBUG_COUT
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
         std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
         std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
         std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
+#endif
     }
-
-/*
-    storedImage.resize(CVD::ImageRef(processedImage.cols, processedImage.rows));
-    size_t size = processedImage.cols * processedImage.rows;
-    memcpy(storedImage.data(), processedImage.data,  size*3);
-*/
-
     return std::vector<Cascade::cubeInfo>();
 }
 
@@ -170,14 +167,17 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         cubes[i].xDist = xFactor / navData->getPosition().z;
         cubes[i].yDist = yFactor / navData->getPosition().z;
     }
+
     return cubes;
 }
 
-cv::Mat CV_Handler::checkBox(cv::Mat img) {
+CV_Handler::boxCordsStruct CV_Handler::checkBox(void) {
     Mat imgModded;
     std::vector<cv::Vec3f> circles;
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
+    typedef std::vector<CV_Handler::boxCordsStruct> boxCordsArrayStruct;
+    std::vector<boxCordsArrayStruct> boxCordsArray;
     Scalar color = Scalar((255), (255), (255));
 
     while (!imageReady);
@@ -208,18 +208,23 @@ cv::Mat CV_Handler::checkBox(cv::Mat img) {
     // Draw circles
     for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
         Point center( circles[current_circle][0], circles[current_circle][1]);
+        boxCords.x = center.x;
+        boxCords.y = center.y;
 #ifdef DEBUG
-        circle(img, center, 3, Scalar(0,255,0), -1, 8, 0);// circle center
-        circle(img, center, circles[current_circle][2], Scalar(0,0,255), 3, 8, 0 );// circle outline
+        circle(imageBW, center, circles[current_circle][2], Scalar(0,0,255), 3, 8, 0 );
+#endif
+#ifdef DEBUG_COUT
         cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
 #endif
     }
 #ifdef DEBUG
-        cvHandler->storedImage.resize(CVD::ImageRef(img.cols, img.rows));
-        size_t size = img.cols * img.rows;
-        memcpy(cvHandler->storedImage.data(), img.data,  size*3);
-        cvHandler->imageReady = true;
-        cvHandler->cascadeMutex.unlock();
+        storedImage.resize(CVD::ImageRef(imageBW.cols, imageBW.rows));
+        size_t size = imageBW.cols * imageBW.rows;
+        memcpy(storedImage.data(), imageBW.data,  size*3);
+        imageReady = true;
+        cascadeMutex.unlock();
 #endif
-    return img;
+
+
+    return boxCords;
 }

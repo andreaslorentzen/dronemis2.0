@@ -9,8 +9,8 @@ QR::QR(CV_Handler *cv) {
     cvHandler = cv;
 }
 
-#define DEBUG 1
-#define DEBUG_COUT 1
+//#define DEBUG 1
+//#define DEBUG_COUT 1
 #define AVERAGE_COUNT 6
 #define FRAME_COUNT 10
 
@@ -160,14 +160,13 @@ DronePos QR::checkQR(void) {
 #endif
         }
 #ifdef DEBUG
-        //imshow("QR", img);
-        //waitKey(10);
         cvHandler->cascadeMutex.lock();
 
         cvHandler->storedImage.resize(CVD::ImageRef(img.cols, img.rows));
         size_t size = img.cols * img.rows;
         memcpy(cvHandler->storedImage.data(), img.data,  size*3);
         cvHandler->imageReady = true;
+
         cvHandler->cascadeMutex.unlock();
 #endif
     }

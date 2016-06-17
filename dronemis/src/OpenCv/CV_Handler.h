@@ -47,13 +47,15 @@ public:
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;
     CVD::Image<CVD::Rgb <float> > storedImage;
+    CVD::Image<CVD::byte> workImageBW;
+    CVD::Image<CVD::Rgb <float> > workImage;
 
     CV_Handler(void);
     virtual ~CV_Handler(void);
 
     void run(Nav *nav);
     std::vector<Cascade::cubeInfo> checkCubes(void);
-    cv::Mat checkBox(cv::Mat img);
+    boxCordsStruct checkBox(void);
 };
 
 #endif //PROJECT_CV_HANDLER_H

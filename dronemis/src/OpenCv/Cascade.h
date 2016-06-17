@@ -25,9 +25,10 @@ public:
         int y;
         double xDist;
         double yDist;
-        int width;
-        int height;
+        double width;
+        double height;
         unsigned char color;
+        cv::Mat image;
     };
 
     Cascade(void);
