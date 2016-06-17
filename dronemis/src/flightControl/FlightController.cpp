@@ -409,18 +409,30 @@ MyVector FlightController::getVelocity(MyVector d) {
 void FlightController::turnDegrees(double degrees){
     double ori_deg = navData->rotation;
     double target_deg = ori_deg+degrees;;
+    int iterations;
+
+    iterations = ((int)degrees/30)+1;
+
     float offset = 5;
 
-    if (target_deg > 360)
-        target_deg = target_deg - 360;
-
-    do {
-        ori_deg = navData->rotation;
 
 
-        cmd.angular.z = getRotationalSpeed( target_deg, ori_deg);
-        pub_control.publish(cmd);
-    } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
+    for(int i = 1; i < iterations; i++){
+        if(i == iterations-1 && ((int)degrees % 30) != 0)
+            target_deg = ori_deg + ((int)degrees%30);
+        else
+            target_deg = ori_deg + 30;
+
+        if (target_deg > 360)
+            target_deg = target_deg - 360;
+
+        do {
+            ori_deg = navData->rotation;
+            cmd.angular.z = getRotationalSpeed(target_deg, ori_deg);
+            pub_control.publish(cmd);
+        } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
+        hover(1);
+    }
 ROS_INFO("ori_deg: %6.2f", ori_deg);
     hover(1);
 }
