@@ -129,7 +129,7 @@ void FlightController::run(){
 
         cmd.linear.z = 0.5;
         pub_control.publish(cmd);
-        while(navData->position.z < 1400)
+        while(navData->position.z < 1200)
             ros::Rate(LOOP_RATE).sleep();
 
         hover(1);
@@ -497,7 +497,7 @@ void FlightController::turnDegrees(double degrees){
 
     iterations = ((int)degrees/30)+1;
 
-    if(iterations == 0)
+    if(iterations ==1)
         iterations = 2;
 
     float offset = 1;
@@ -521,7 +521,7 @@ void FlightController::turnDegrees(double degrees){
         hover(1);
     }
 #ifdef DEBUG
-    ROS_INFO("ori_deg: %6.2f", ori_deg);
+    //ROS_INFO("ori_deg: %6.2f", ori_deg);
 #endif
     hover(1);
 }
@@ -543,14 +543,14 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
     double diff_deg = target_deg - ori_deg; // calculate difference
 
 #ifdef DEBUG
-    printf("target_deg: %6.2f     deg diff_deg: %6.2f deg    ori_deg: %6.2f deg", target_deg,diff_deg,ori_deg);
+    //printf("target_deg: %6.2f     deg diff_deg: %6.2f deg    ori_deg: %6.2f deg", target_deg,diff_deg,ori_deg);
 #endif
     if ((diff_deg < 180 && diff_deg > 0) || (diff_deg < -180)) {
         dir = -1;
         if (diff_deg < -180)
             diff_deg = 360 + diff_deg;
 #ifdef DEBUG
-        printf("Turn left\n");
+        //printf("Turn left\n");
 #endif
     } else {
         dir = 1;
@@ -568,7 +568,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
 
     rot_speed *= dir; // make sure to rotate the correct way
 #ifdef DEBUG
-    printf("Rotspeed = %f\n", rot_speed);
+    //printf("Rotspeed = %f\n", rot_speed);
 #endif
 
     return rot_speed;
