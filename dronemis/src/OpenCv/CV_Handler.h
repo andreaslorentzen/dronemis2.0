@@ -18,6 +18,7 @@
 #include <std_srvs/Empty.h>
 #include <mutex>
 #include <thread>
+#include "debug.h"
 
 class CV_Handler {
 
