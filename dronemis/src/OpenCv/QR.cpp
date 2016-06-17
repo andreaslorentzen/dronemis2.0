@@ -55,15 +55,15 @@ DronePos QR::checkQR(void) {
             averageCount++;
 
 
-        ROS_INFO("QRs %d", numberQR);
+
         // cout << "Number of QR codes in the image is " << n << endl;
         int x0, x1, x2, x3, y0, y1, y2, y3, xsize, ysize, xmidt, QRsize;
         vector<Point> vp;
 
         // extract results
-        ROS_INFO("BEFORE LOOP");
+
         for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
-ROS_INFO("INSIDE LOOP");
+
 
             // do something useful with results
             //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
@@ -147,7 +147,7 @@ ROS_INFO("INSIDE LOOP");
                 DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
                 bool positionLock;
-                if(yDiversionAngle < 15) positionLock = 1;
+                if(yDiversionAngle < 25) positionLock = 1;
                 else positionLock = 0;
 
                 //**************************************

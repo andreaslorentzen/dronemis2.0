@@ -158,7 +158,6 @@ void FlightController::run(){
         }
 
         navData->resetToPosition(dronePossion.x*10, dronePossion.y*10, dronePossion.heading);
-
         lookingForQR = false;
 #ifdef DEBUG
         ROS_INFO("X = %d", dronePossion.x);
@@ -217,12 +216,14 @@ void FlightController::goToWaypoint(Command newWaypoint) {
      * VERSION 1
      */
 
-    while ((int) abs(d.x) > TOLERANCE){
+    turnTowardsPoint(newWaypoint);
 
-        v_vec.x = getSpeed(d.x);
+    while ((int) d.distance() > TOLERANCE){
+
+        v_vec.x = getSpeed(d.distance());
 
         if(v_vec.x != cmd.linear.x){
-            printf("vx: %f\tdx: %f \n", v_vec.x, d.x);
+            printf("vx: %f\tdx: %f \n", v_vec.x, d.distance());
             cmd.linear.x = v_vec.x;
             pub_control.publish(cmd);
         }
@@ -238,7 +239,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     hover(2);
 
-    while ((int) abs(d.y) > TOLERANCE){
+    /*while ((int) abs(d.y) > TOLERANCE){
 
         v_vec.y = getSpeed(d.y);
 
@@ -255,7 +256,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.y = newWaypoint.y - pos.y;
         d.z = newWaypoint.z - pos.z;
 
-    }
+    }*/
 #ifdef DEBUG
     printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);
 #endif
@@ -378,13 +379,20 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 }
 
 double FlightController::getSpeed(double distance) {
-    if(distance <= TOLERANCE)
+    if(abs(distance) <= TOLERANCE)
         return 0.0;
 
-    if (distance <= CRUISE_LIMIT)
-        return CRUISE_SPEED;
 
-    return TRANSIT_SPEED;
+    if (abs(distance) <= CRUISE_LIMIT)
+        if(distance < 0)
+            return -CRUISE_SPEED;
+        else
+            return CRUISE_SPEED;
+
+    if (distance < 0)
+        return -TRANSIT_SPEED;
+    else
+        return TRANSIT_SPEED;
 }
 Vector3 FlightController::getVelocity(Vector3 d) {
     double f = 1;
@@ -413,7 +421,9 @@ void FlightController::turnDegrees(double degrees){
     double target_deg = ori_deg+degrees;;
     int iterations;
 
-    iterations = ((int)degrees/30)+1;
+    iterations = abs(((int)degrees/30))+1;
+
+    ROS_INFO("iterations = %d", iterations);
 
     if(iterations ==1)
         iterations = 2;
@@ -423,13 +433,23 @@ void FlightController::turnDegrees(double degrees){
 
 
     for(int i = 1; i < iterations; i++){
+        ROS_INFO("Now inside the loop: %d",i);
         if(i == iterations-1 && ((int)degrees % 30) != 0)
-            target_deg = ori_deg + ((int)degrees%30);
+            if(degrees > 0)
+                target_deg = ori_deg + ((int)degrees%30);
+            else
+                target_deg = ori_deg - ((int)degrees%30);
         else
-            target_deg = ori_deg + 30;
+            if(degrees > 0)
+                target_deg = ori_deg + 30;
+            else
+                target_deg = ori_deg -30;
 
         if (target_deg > 360)
             target_deg = target_deg - 360;
+
+        if (target_deg < 0)
+            target_deg = target_deg + 360;
 
         do {
             ori_deg = navData->getRotation();
@@ -446,12 +466,29 @@ void FlightController::turnDegrees(double degrees){
 
 void FlightController::turnTowardsPoint(Command waypoint) {
 
-    double target_angle = atan2(waypoint.y, waypoint.x); // angle towards waypoint position
-    double target_deg = target_angle * 180 / M_PI; // conversion to degrees
+
+    Vector3 pos = navData->getPosition();
+
+    ROS_INFO("X = %f ", pos.x);
+    ROS_INFO("Y = %f ", pos.y);
+
+    double target_angle = atan2(waypoint.y-pos.y, waypoint.x-pos.x); // angle towards waypoint position
+    double target_deg = target_angle / 180 * M_PI; // conversion to degrees
+
+    ROS_INFO("Target angle  = %f", target_angle);
+    ROS_INFO("Target degrees = %f", target_deg);
+
+    if(target_deg < 0)
+        target_deg += 360;
+
+    if(target_deg > 360)
+        target_deg -= 360;
 
     double ori_deg =navData->getRotation();
 
-    turnDegrees(target_deg-ori_deg); // This should work, however i'm not sure
+
+    ROS_INFO("Original degrees = %f", ori_deg);
+    turnDegrees(target_deg-ori_deg);
 }
 
 double FlightController::getRotationalSpeed(double target_deg, double ori_deg){

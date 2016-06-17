@@ -155,6 +155,7 @@ double Nav::getRotation() {
 }
 
 void Nav::resetToPosition(double x, double y, double heading) {
+
     QRx = x;
     QRy = y;
     QRheading = heading;

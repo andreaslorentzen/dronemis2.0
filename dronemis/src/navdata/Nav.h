@@ -43,7 +43,7 @@ public:
     int ups_index = 0;
     double ups_last_time;
     float updateUPS();
-
+    double getRotoffset(){return rotoffset;}
     unsigned int state;
 
     double time;
