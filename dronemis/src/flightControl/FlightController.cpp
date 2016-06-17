@@ -247,13 +247,13 @@ void FlightController::run(){
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
-            if(firstIteration) {
+            /*if(firstIteration) {
                 currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
                                                              navData->position.z);
                 firstIteration = false;
             }else {
                 currentCommand = myRoute.nextCommand();
-            }
+            }*/
             currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
