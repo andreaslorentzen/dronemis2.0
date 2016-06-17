@@ -158,8 +158,6 @@ void CV_Handler::show(void) {
             image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
         else if (filterState == 2)
             image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
-        else if (filterState == 3)
-            image = checkBox(CV_Handler::boxCordsStruct());
     }
 
     cv::imshow("VideoMis", image);
@@ -265,7 +263,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         drawContours(imgModded, contours, i, color, 2, 8, hierarchy, 0, Point());
 
     // Detect circles
-    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 10, 250);
+    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 40, 180);
 
     // Draw circles
     for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
@@ -279,11 +277,12 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         cout << "Boxistooclose = " << boxcords.boxIsTooClose << endl;
 
 #ifdef DEBUG_CV_COUT
-        cout << "Found circle: " << center << ", radius: " << circles[current_circle][2] << endl;
+        cout << "Found circle: " << center << ", radius: " << boxCords.radius << endl;
 #endif
-        if (filterState == 4)
+        if (filterState == 4) {
             circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
-        return imageBW;
+            return imageBW;
+        }
      }
      if (filterState == 3)
          return imgModded;
