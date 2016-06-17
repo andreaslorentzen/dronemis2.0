@@ -34,8 +34,6 @@ DronePos QR::checkQR(void) {
                     CV_8UC3,
                     cvHandler->storedImage.data());
 
-        cvHandler->imageReady = false;
-
         cvHandler->cascadeMutex.unlock();
 
         Mat grey;
@@ -159,32 +157,10 @@ ROS_INFO("INSIDE LOOP");
                 //cout << symbol->get_data() << endl;
                 cout << "RoomDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
                 cout << "RoomDroneHeading = " << RoomDronePosition.heading << endl;
-
 #endif
             }
-#ifdef DEBUG
-           /* if (!vp.empty()) {
-                RotatedRect r = minAreaRect(vp);
-                Point2f pts[4];
-                r.points(pts);
-                for (int i = 0; i < 4; i++) {
-                    line(img, pts[i], pts[(i + 1) % 4], Scalar(255, 0, 0), 3);
-                }
-            }*/
-#endif
         }
-#ifdef DEBUG
-        cvHandler->cascadeMutex.lock();
-
-        cvHandler->storedImage.resize(CVD::ImageRef(img.cols, img.rows));
-        size_t size = img.cols * img.rows;
-        memcpy(cvHandler->storedImage.data(), img.data,  size*3);
-        cvHandler->imageReady = true;
-
-        cvHandler->cascadeMutex.unlock();
-#endif
     }
-
     return RoomDronePosition;
 }
 
