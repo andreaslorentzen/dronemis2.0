@@ -7,11 +7,6 @@
 #include "QR.h"
 
 #define CASCADE_FRAMES 10
-//#define DEBUG 1
-#define DEBUG_COUT 1
-//#define DEBUG_RED 1
-//#define DEBUG_GREEN 1
-#define DEBUG_BOX 1
 
 Cascade *cascade;
 Color *color;
@@ -141,7 +136,7 @@ void CV_Handler::show(void) {
             image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
         else if (filterState == 2)
             image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
-        else if (filterState > 2)
+        else if (filterState == 3)
             image = checkBox(CV_Handler::boxCordsStruct());
     }
 

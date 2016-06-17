@@ -24,6 +24,15 @@ private:
     double current_time();
     double lastvX;
     double lastaX;
+    bool rotinit;
+    double rotoffset;
+
+    double QRx;
+    double QRy;
+    double QRheading;
+    double QRoffset;
+
+    float rotation;
 
 public:
     static const int ups_buffer_size = 50;
@@ -38,12 +47,10 @@ public:
     double last_ts;
     double last_vx;
 
-    Vector3 position;
+    Vector3 position = Vector3(0, 0, 0);
     double x, y;
 
-    float rotation;
 
-    Vector3 transformCoordinates(Vector3 incomingVector);
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
 // void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
@@ -51,7 +58,9 @@ public:
     void resetToPosition(double x, double y, double heading);
     Nav();
     void run(ros::NodeHandle *n);
-    Vector3 getPosition(){return position;}
+
+    Vector3 getPosition();
+    double getRotation();
 };
 
 

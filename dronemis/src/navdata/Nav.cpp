@@ -43,9 +43,7 @@ int counter = 0;
 float ticksum = 0;
 int ticklist[100];*/
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
-
     state = msg->state;
-
     float ts = msg->tm;
     float vx = msg->vx;
     float vy = msg->vy;
@@ -53,9 +51,6 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     float ax = msg->ax;
     float ay = msg->ay;
 //    float aZ = msg->az;
-
-
-
 
     if (last_ts == 0)
         last_ts = ts;
@@ -68,18 +63,8 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
         ROS_INFO("Discarded!");
         return;
     }
-
     lastvX = avx;
     float ups = updateUPS();
-    /*ticksum-=ticklist[tickindex];
-    ticksum+=INTERVAL;
-    ticklist[tickindex]=INTERVAL;
-    if (++tickindex==100)
-        tickindex=0;
-    float updatesPerSec = ticksum/100;
-*/
-
-
     last_ts = ts;
     position.z = msg->altd;
 
@@ -90,7 +75,6 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     std::string filename = "../workspaces/dronemis_ws/src/dronemis/src/navdata/log";
     filename.append(std::to_string(start_time));
     filename.append(".csv");
-
 
     if (++counter >= counter_size) {
         //ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
@@ -118,14 +102,6 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     file << msg->vy;
     file << "\n";
     file.close();
-
-
-    //x += vX * INTERVAL + 0.5 ;
-    //y += vY * INTERVAL + 0.5 ;
-
-//    printf("s: %d\ta: %d\trot: %6.2f, %6.2f, %6.2f\tvel: %6.2f, %6.2f, %6.2f \tacc: %8.4f, %8.4f, %8.4f\n", state, altd, rX, rY, rZ, vX,vY,vZ, aX, aY, aZ);
-
-
 }
 
 float Nav::updateUPS() {
@@ -146,52 +122,64 @@ float Nav::updateUPS() {
 }
 
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
-    float original_rotation = msg->heading_fusion_unwrapped;
-    rotation = original_rotation;
+    float drone_heading = msg->heading_fusion_unwrapped;
 
-    while(rotation < 0)
-        rotation += 360;
 
-    while(rotation > 360)
-        rotation -= 360;
+    while(drone_heading < 0)
+        drone_heading += 360;
 
-    /*ROS_INFO("ORIGINAL = %f", original_rotation);
-    ROS_INFO("rotation = %f", rotation);*/
+    while(drone_heading > 360)
+        drone_heading -= 360;
 
+    if (!rotinit)
+        rotoffset = drone_heading;
+
+    rotation = drone_heading - rotoffset;
+
+    ROS_INFO("ORIGINAL = %f", drone_heading);
+    ROS_INFO("rotation = %f", rotation);
+
+}
+double Nav::getRotation() {
+    double rot = QRoffset + rotation;
+    if(rot >= 360)
+        rot -= 360;
+    return rot;
 }
 
 void Nav::resetToPosition(double x, double y, double heading) {
-    //TODO IMPLEMENT THIS
-    position.x = 0.0;
-    position.y = 0.0;
-    x = 0;
-    y = 0;
+    QRx = x;
+    QRy = y;
+    QRheading = heading;
+    QRoffset = heading - rotation;
+
+    position.x = 0;
+    position.y = 0;
 }
 
-Vector3 Nav::transformCoordinates(Vector3 incomingVector) {
+Vector3 Nav::getPosition() {
+    double temp_rotation = (QRheading-90)*(-1);
+
+    if(temp_rotation >= 360)
+        temp_rotation -= 360;
+
+    temp_rotation = temp_rotation/180 * M_PI;
+
     Vector3 rotationMatrix[3];
-    rotationMatrix[0] = Vector3(cos(rotation), -sin(rotation), 0);
-    rotationMatrix[1] = Vector3(sin(rotation), cos(rotation), 0);
+    rotationMatrix[0] = Vector3(cos(temp_rotation), -sin(temp_rotation), 0);
+    rotationMatrix[1] = Vector3(sin(temp_rotation), cos(temp_rotation), 0);
     rotationMatrix[2] = Vector3(0, 0, 1);
 
-    Vector3 tempVector(incomingVector.x - position.x, incomingVector.y - position.y, incomingVector.z - position.z);
+    Vector3 position_vector(position.x, position.y, 0);
+    Vector3 qr_vector(QRx, QRy, 0);
 
-    Vector3 resultVector(rotationMatrix[0].x * tempVector.x + rotationMatrix[0].y * tempVector.y +
-                         rotationMatrix[0].z * tempVector.z,
-                         rotationMatrix[1].x * tempVector.x + rotationMatrix[1].y * tempVector.y +
-                         rotationMatrix[1].z * tempVector.z,
-                         rotationMatrix[2].x * tempVector.x + rotationMatrix[2].y * tempVector.y +
-                         rotationMatrix[2].z * tempVector.z);
+    Vector3 resultVector(rotationMatrix[0].x * position_vector.x + rotationMatrix[0].y * position_vector.y + rotationMatrix[0].z * position_vector.z,
+                         rotationMatrix[1].x * position_vector.x + rotationMatrix[1].y * position_vector.y + rotationMatrix[1].z * position_vector.z,
+                         rotationMatrix[2].x * position_vector.x + rotationMatrix[2].y * position_vector.y + rotationMatrix[2].z * position_vector.z);
 
-
-    resultVector.x += position.x;
-    resultVector.y += position.y;
-    resultVector.z += position.z;
-
-    ROS_INFO("Incoming vector;");
-    ROS_INFO("X = %F", incomingVector.x);
-    ROS_INFO("Y = %F", incomingVector.y);
-    ROS_INFO("Z = %F", incomingVector.z);
+    resultVector.x += qr_vector.x;
+    resultVector.y += qr_vector.y;
+    resultVector.z += qr_vector.z;
 
     ROS_INFO("Outgoing vector");
     ROS_INFO("X = %F", resultVector.x);
@@ -203,6 +191,8 @@ Vector3 Nav::transformCoordinates(Vector3 incomingVector) {
 
 
 Nav::Nav() {
+    rotinit = false;
+    rotoffset = 0;
     last_ts = 0;
     running = 0;
     time = 0;
@@ -211,6 +201,13 @@ Nav::Nav() {
     y = 0;
     start_time = (int) ros::Time::now().toSec();
     ups_last_time = ros::Time::now().toSec();
+
+     QRx=0;
+     QRy=0;
+     QRheading=90;
+     QRoffset=0;
+
+    rotation = 0;
 
     ups_index = 0;
     ups_last_time = 0;
