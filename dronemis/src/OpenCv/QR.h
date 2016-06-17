@@ -45,11 +45,12 @@ private:
 
     struct QRCodes QRWallCode[25];
     struct DronePos DronePosition;
-    struct DronePos FinalDronePosition;
+    struct DronePos RoomDronePosition;
     float distanceToQR[200];
 
     void initializeQR(void);
-    void calculateFinalDronePostition(std::string QRname);
+    void calculateRoomDronePostition(std::string QRname, int relativeX, int relativeY, bool positionLocked,
+                                     int numberOfQRs, double cameraPointing, double angle);
     double calculateDistanceToQR(int pixel);
 };
 
