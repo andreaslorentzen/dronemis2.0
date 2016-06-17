@@ -188,7 +188,7 @@ set(BLINDFLIGHT_HEADER_FILES
         src/OpenCv/CV_Handler.h
         src/GUI/ControlPanel/controlpanel.h
         src/navdata/Nav.h
-        src/OpenCv/QR.h)
+        src/OpenCv/QR.h src/debug.h)
 
 set(BLINDFLIGHT_UI_FILES
         src/GUI/ControlPanel/controlpanel.ui)
