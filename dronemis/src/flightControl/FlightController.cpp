@@ -173,14 +173,14 @@ void FlightController::run(){
         }
 
         navData->resetToPosition(dronePos.x*10, dronePos.y*10, dronePos.heading);
-
+#ifdef DEBUG
         ROS_INFO("X = %d", dronePos.x);
         ROS_INFO("Y = %d", dronePos.y);
         ROS_INFO("heading = %d", dronePos.heading);
 
         land();
         return;
-
+#endif
         /*
         hover(1);
 
@@ -265,7 +265,9 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.z = newWaypoint.z - navData->position.z;
 
     }
+#ifdef DEBUG
     printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);
+#endif
     /*
      * VERSION 2
      */
@@ -445,7 +447,9 @@ void FlightController::turnDegrees(double degrees){
         } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
         hover(1);
     }
-ROS_INFO("ori_deg: %6.2f", ori_deg);
+#ifdef DEBUG
+    ROS_INFO("ori_deg: %6.2f", ori_deg);
+#endif
     hover(1);
 }
 
