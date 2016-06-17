@@ -90,7 +90,7 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
 
     if (++counter >= counter_size) {
-        ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
+        //ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
         counter = 0;
     }
     std::ofstream file;
@@ -146,7 +146,12 @@ float Nav::updateUPS() {
 }
 
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
-    rotation = msg->heading_fusion_unwrapped;
+    double original_rotation = msg->heading_fusion_unwrapped;
+    if(original_rotation < 0)
+        rotation = 87.25 - original_rotation;
+    else
+        rotation = rotation;
+    ROS_INFO("rotation = %f", rotation);
 }
 
 void Nav::resetToPosition(double x, double y, double heading) {

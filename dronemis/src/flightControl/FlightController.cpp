@@ -409,10 +409,8 @@ void FlightController::turnDegrees(double degrees){
     double target_deg = ori_deg+degrees;;
     float offset = 5;
 
-    if(target_deg == 180.0)
-        target_deg = 179.9;
-    else if(target_deg > 180.0)
-        target_deg = (-179.99)+(target_deg-179.99);
+    if (target_deg > 360)
+        target_deg = target_deg - 360;
 
     do {
         ori_deg = navData->rotation;
@@ -434,9 +432,6 @@ void FlightController::turnTowardsPoint(Command waypoint) {
 
     float offset = 0.5;
     do{
-        ori_deg = navData->rotation;
-        if(ori_deg < 0)
-            ori_deg = 360 + ori_deg;
 
     } while(ori_deg < target_deg-offset or ori_deg > target_deg+offset);
 }
@@ -447,31 +442,29 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg){
 
     double diff_deg = target_deg - ori_deg; // calculate difference
 
-    if ( diff_deg < 0 )
-        diff_deg = 360 + diff_deg;
-
 #ifdef DEBUG
-    printf("target_deg: %6.2f deg\n", target_deg);
-    printf("diff_deg: %6.2f deg\n", diff_deg);
-    printf("ori_deg: %6.2f deg\n", ori_deg);
+    printf("target_deg: %6.2f     deg diff_deg: %6.2f deg    ori_deg: %6.2f deg", target_deg,diff_deg,ori_deg);
 #endif
-    if (diff_deg < 180){
+    if ((diff_deg < 180 && diff_deg > 0) || (diff_deg < -180)) {
         dir = -1;
+        if (diff_deg < -180)
+            diff_deg = 360 + diff_deg;
 #ifdef DEBUG
         printf("Turn left\n");
 #endif
-    } else{
+    } else {
         dir = 1;
-        diff_deg = 360 -diff_deg;
+        if(diff_deg > 180)
+            diff_deg = 360 -diff_deg;
 #ifdef DEBUG
         printf("Turn right\n");
 #endif
     }
 
-    rot_speed = (diff_deg*diff_deg)/200; // speed to rotate with
+    rot_speed = 0.5; // speed to rotate with
 
-    if(rot_speed > 0.5)
-        rot_speed = 0.5;
+    if(diff_deg > 30)
+        rot_speed = 0.1;
 
     rot_speed *= dir; // make sure to rotate the correct way
 #ifdef DEBUG
