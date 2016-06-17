@@ -127,8 +127,16 @@ void FlightController::run(){
 
         bool turning = true;
         double amountTurned = 0;
-        double turnStepSize = 30;
+        double turnStepSize = 15;
         dronePos = qr->checkQR();
+
+
+        cmd.linear.z = 0.5;
+        pub_control.publish(cmd);
+        while(navData->position.z < 1400)
+            ros::Rate(LOOP_RATE).sleep();
+
+        hover(1);
 
         while(!dronePos.positionLocked){
 
@@ -171,19 +179,20 @@ void FlightController::run(){
         ROS_INFO("heading = %d", dronePos.heading);
 
         land();
-        //return;
+        return;
 
+        /*
         hover(1);
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
-            /*if(firstIteration) {
+            *//*if(firstIteration) {
                 currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
                                                              navData->position.z);
                 firstIteration = false;
             }else {
                 currentCommand = myRoute.nextCommand();
-            }*/
+            }*//*
             currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
@@ -197,7 +206,7 @@ void FlightController::run(){
 
         land();
 
-        break;
+        break;*/
     }
 
 
@@ -413,6 +422,9 @@ void FlightController::turnDegrees(double degrees){
 
     iterations = ((int)degrees/30)+1;
 
+    if(iterations == 0)
+        iterations = 2;
+
     float offset = 5;
 
 
@@ -551,6 +563,8 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram(){
+    DronePos dronepos = qr->checkQR();
+    ROS_INFO("found : %d", dronepos.numberOfQRs);
     ROS_INFO("MANUEL RESET!");
     started = false;
     reset();
