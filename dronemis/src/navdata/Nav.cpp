@@ -102,7 +102,7 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     file << ts;
     file << ";";*/
     file << msg->tm;
-    file << ";"
+    file << ";";
     file << state;
     file << ";";
     file << position.x;
