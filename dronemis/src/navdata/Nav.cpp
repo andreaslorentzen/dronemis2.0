@@ -53,20 +53,23 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     float ay = msg->ay;
 //    float aZ = msg->az;
 
-    if(lastvX != 0.0)
-        if((lastvX < vx && lastaX < 0.0)){
-            lastvX = vx;
-            lastaX = ax;
-            ROS_INFO("Discarded!");
-            return;
-        }
+
 
 
     if (last_ts == 0)
         last_ts = ts;
     float interval = (ts - last_ts)/1000000;
     float avx = (last_vx + vx)/2;
-    last_vx = vx;
+
+    if(lastvX != 0.0)
+        if((lastvX < avx && lastaX < 0.0)){
+            lastvX = avx;
+            lastaX = ax;
+            ROS_INFO("Discarded!");
+            return;
+        }
+
+    lastvX = avx;
     float ups = updateUPS();
     /*ticksum-=ticklist[tickindex];
     ticksum+=INTERVAL;
@@ -90,7 +93,7 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 
 
     if (++counter >= counter_size) {
-        //ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
+        ROS_INFO("I:\t%f\t(x,y):\t%d\t%d\tups:\t%8.1f", interval, (int) position.x, (int) position.y, ups);
         counter = 0;
     }
     std::ofstream file;
@@ -98,16 +101,13 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
 /*
     file << ts;
     file << ";";*/
+    file << msg->tm;
+    file << ";"
     file << state;
     file << ";";
-/*    file << position.x;
+    file << position.x;
     file << ";";
     file << position.y;
-    file << ";";
-*/
-    file << x;
-    file << ";";
-    file << y;
     file << ";";
     file << msg->ax;
     file << ";";
@@ -151,7 +151,7 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
         rotation = 360 + original_rotation;
     else
         rotation = original_rotation;
-    ROS_INFO("rotation = %f", rotation);
+    //ROS_INFO("rotation = %f", rotation);
 }
 
 void Nav::resetToPosition(double x, double y, double heading) {

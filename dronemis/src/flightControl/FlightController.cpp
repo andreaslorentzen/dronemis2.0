@@ -173,6 +173,8 @@ void FlightController::run(){
         land();
         return;*/
 
+        hover(10);
+
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
             /*if(firstIteration) {
