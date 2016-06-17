@@ -15,6 +15,9 @@ QR::QR(CV_Handler *cv) {
 #define FRAME_COUNT 10
 
 DronePos QR::checkQR(void) {
+#ifdef DEBUG
+    ROS_INFO("inside the checkQR");
+#endif
     int frameCount = 0;
     int averageCount = 0;
     ImageScanner scanner;
@@ -50,13 +53,16 @@ DronePos QR::checkQR(void) {
         if (numberQR == 1)
             averageCount++;
 
+
+        ROS_INFO("QRs %d", numberQR);
         // cout << "Number of QR codes in the image is " << n << endl;
         int x0, x1, x2, x3, y0, y1, y2, y3, xsize, ysize, xmidt, QRsize;
         vector<Point> vp;
 
         // extract results
+        ROS_INFO("BEFORE LOOP");
         for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
-
+ROS_INFO("INSIDE LOOP");
 
             // do something useful with results
             //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
@@ -157,14 +163,14 @@ DronePos QR::checkQR(void) {
 #endif
             }
 #ifdef DEBUG
-            if (!vp.empty()) {
+           /* if (!vp.empty()) {
                 RotatedRect r = minAreaRect(vp);
                 Point2f pts[4];
                 r.points(pts);
                 for (int i = 0; i < 4; i++) {
                     line(img, pts[i], pts[(i + 1) % 4], Scalar(255, 0, 0), 3);
                 }
-            }
+            }*/
 #endif
         }
 #ifdef DEBUG

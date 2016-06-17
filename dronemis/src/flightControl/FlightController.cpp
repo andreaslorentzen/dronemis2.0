@@ -127,8 +127,16 @@ void FlightController::run(){
 
         bool turning = true;
         double amountTurned = 0;
-        double turnStepSize = 30;
+        double turnStepSize = 15;
         dronePos = qr->checkQR();
+
+
+        cmd.linear.z = 0.5;
+        pub_control.publish(cmd);
+        while(navData->position.z < 1400)
+            ros::Rate(LOOP_RATE).sleep();
+
+        hover(1);
 
         while(!dronePos.positionLocked){
 
@@ -165,25 +173,26 @@ void FlightController::run(){
         }
 
         navData->resetToPosition(dronePos.x*10, dronePos.y*10, dronePos.heading);
-
+#ifdef DEBUG
         ROS_INFO("X = %d", dronePos.x);
         ROS_INFO("Y = %d", dronePos.y);
         ROS_INFO("heading = %d", dronePos.heading);
 
         land();
-        //return;
-
+        return;
+#endif
+        /*
         hover(1);
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
-            /*if(firstIteration) {
+            *//*if(firstIteration) {
                 currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
                                                              navData->position.z);
                 firstIteration = false;
             }else {
                 currentCommand = myRoute.nextCommand();
-            }*/
+            }*//*
             currentCommand = myRoute.nextCommand();
 
             if (currentCommand.commandType == Command::goTo) {
@@ -197,7 +206,7 @@ void FlightController::run(){
 
         land();
 
-        break;
+        break;*/
     }
 
 
@@ -256,7 +265,9 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         d.z = newWaypoint.z - navData->position.z;
 
     }
+#ifdef DEBUG
     printf("Stopped at: %f\t%f \n", navData->position.x, navData->position.y);
+#endif
     /*
      * VERSION 2
      */
@@ -413,6 +424,9 @@ void FlightController::turnDegrees(double degrees){
 
     iterations = ((int)degrees/30)+1;
 
+    if(iterations == 0)
+        iterations = 2;
+
     float offset = 5;
 
 
@@ -433,7 +447,9 @@ void FlightController::turnDegrees(double degrees){
         } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
         hover(1);
     }
-ROS_INFO("ori_deg: %6.2f", ori_deg);
+#ifdef DEBUG
+    ROS_INFO("ori_deg: %6.2f", ori_deg);
+#endif
     hover(1);
 }
 
@@ -551,6 +567,8 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram(){
+    DronePos dronepos = qr->checkQR();
+    ROS_INFO("found : %d", dronepos.numberOfQRs);
     ROS_INFO("MANUEL RESET!");
     started = false;
     reset();

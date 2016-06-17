@@ -151,8 +151,8 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
         rotation = 360 + original_rotation;
     else
         rotation = original_rotation;
-    ROS_INFO("ORIGINAL = %f", original_rotation);
-    ROS_INFO("rotation = %f", rotation);
+    /*ROS_INFO("ORIGINAL = %f", original_rotation);
+    ROS_INFO("rotation = %f", rotation);*/
 
 }
 
