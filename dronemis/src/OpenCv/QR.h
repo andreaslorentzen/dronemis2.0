@@ -10,7 +10,7 @@
 #include <zbar.h>
 #include <iostream>
 #include "CV_Handler.h"
-#include "debug.h"
+#include "../debug.h"
 
 struct DronePos {
     int x;
