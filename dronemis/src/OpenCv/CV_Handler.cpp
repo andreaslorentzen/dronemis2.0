@@ -145,8 +145,8 @@ void CV_Handler::show(void) {
                         CV_8UC1,
                         storedImageBW.data());
         image = imageBW;
-    if (filterState == 3 || filterState == 4)
-        image = checkBox(CV_Handler::boxCordsStruct());
+        if (filterState == 3 || filterState == 4)
+            image = checkBox();
     } else {
         // Convert CVD byte array to OpenCV matrix (use CV_8UC3 format - unsigned 8 bit BGR 3 channel)
         cv::Mat imageBGR(storedImage.size().y,
@@ -232,14 +232,13 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
     return cubes;
 }
 
- cv::Mat CV_Handler::checkBox(CV_Handler::boxCordsStruct boxcords) {
+cv::Mat CV_Handler::checkBox(void) {
     Mat imgModded;
     std::vector<cv::Vec3f> circles;
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-    typedef std::vector<CV_Handler::boxCordsStruct> boxCordsArrayStruct;
-    std::vector<boxCordsArrayStruct> boxCordsArray;
     Scalar color = Scalar((255), (255), (255));
+    int median = 0;
 
     while (!imageReady);
     cascadeMutex.lock();
@@ -263,31 +262,50 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         drawContours(imgModded, contours, i, color, 2, 8, hierarchy, 0, Point());
 
     // Detect circles
-    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 20, 180);
+    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 1, 100);
 
-    // Draw circles
-    for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
-        Point center(circles[current_circle][0], circles[current_circle][1]);
-        boxcords.x = center.x;
-        boxcords.y = center.y;
-        boxcords.radius = (int)circles[current_circle][2];
-        if(boxcords.radius >=45) boxcords.boxIsTooClose = 1;
-        else boxcords.boxIsTooClose = 0;
+    if (!circles.empty()) {
+        missingBoxFrames = 0;
+        Point center(circles[0][0], circles[0][1]);
+        boxVector.push_back((int) circles[0][2]);
 
-        cout << "Boxistooclose = " << boxcords.boxIsTooClose << endl;
-
+        if (boxVector.size() == 15) {
+            median = (int) findMedian(boxVector);
 #ifdef DEBUG_CV_COUT
-        cout << "Found circle: " << center << ", radius: " << boxcords.radius << endl;
+            cout << median << endl;
 #endif
-        if (filterState == 4) {
-            circle(imageBW, center, circles[current_circle][2], Scalar(0, 0, 255), 3, 8, 0);
-            return imageBW;
+            boxVector.clear();
         }
-     }
-     if (filterState == 3)
-         return imgModded;
-     else if (filterState == 4)
-         return imageBW;
 
-     return cv::Mat();
+        if (filterState == 4)
+            circle(imageBW, center, circles[0][2], Scalar(0, 0, 255), 3, 8, 0);
+    } else if (++missingBoxFrames == 10) {
+        missingBoxFrames = 0;
+        boxVector.clear();
+    }
+
+    if (median >= 45) {
+#ifdef DEBUG_CV_COUT
+        cout << "Box is too close!" << endl;
+#endif
+    //                                              TODO Handle it!!
+    }
+    if (filterState == 3)
+        return imgModded;
+
+    return imageBW;
+}
+
+double CV_Handler::findMedian(std::vector<int> vec) {
+    typedef vector<int>::size_type vec_sz;
+
+    vec_sz size = vec.size();
+    if (size == 0)
+        return NULL;
+
+    sort(vec.begin(), vec.end());
+
+    vec_sz mid = size/2;
+
+    return size % 2 == 0 ? (vec[mid] + vec[mid-1]) / 2 : vec[mid];
 }

@@ -23,26 +23,22 @@
 class CV_Handler {
 
 private:
-    int thresh = 76;
+    int thresh = 154;
+    int missingBoxFrames = 0;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
     ros::Subscriber video_subscriber;
     std_srvs::Empty toggleCam_srv_srvs;
     std::string video_channel;
+    std::vector<int> boxVector;
 
+    double findMedian(std::vector<int> vec);
     void video(sensor_msgs::ImageConstPtr img);
     void show(void);
     void swapCam(bool frontCam);
     std::vector<Cascade::cubeInfo> calculatePosition(std::vector<Cascade::cubeInfo> cubes);
 
 public:
-    struct boxCordsStruct {
-        int x;
-        int y;
-        int radius;
-        bool boxIsTooClose = 0;
-    }boxCords;
-
     bool imageReady;
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;
@@ -54,7 +50,7 @@ public:
     virtual ~CV_Handler(void);
     void run(Nav *nav);
     std::vector<Cascade::cubeInfo> checkCubes(void);
-    cv::Mat checkBox(CV_Handler::boxCordsStruct boxcords);
+    cv::Mat checkBox(void);
 };
 
 #endif //PROJECT_CV_HANDLER_H
