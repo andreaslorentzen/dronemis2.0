@@ -206,16 +206,15 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         for (unsigned int i = 0; i < cascades.size(); i++) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
+#ifdef DEBUG_CV_COUT_EXPLICIT
+              std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
+              std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
+              std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
+              std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
+#endif
         }
         calculatePosition(cascades[biggestArray]);
-
-#ifdef DEBUG_CV_COUT
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
-        std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
-        std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
-        std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
-        std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
-#endif
     }
     return std::vector<Cascade::cubeInfo>();
 }
@@ -276,14 +275,12 @@ cv::Mat CV_Handler::checkBox(void) {
 #endif
             boxVector.clear();
         }
-
         if (filterState == 4)
             circle(imageBW, center, circles[0][2], Scalar(0, 0, 255), 3, 8, 0);
     } else if (++missingBoxFrames == 10) {
         missingBoxFrames = 0;
         boxVector.clear();
     }
-
     if (median >= 45) {
 #ifdef DEBUG_CV_COUT
         cout << "Box is too close!" << endl;

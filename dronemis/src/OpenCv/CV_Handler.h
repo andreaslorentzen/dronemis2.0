@@ -35,7 +35,6 @@ private:
     double findMedian(std::vector<int> vec);
     void video(sensor_msgs::ImageConstPtr img);
     void show(void);
-    void swapCam(bool frontCam);
     std::vector<Cascade::cubeInfo> calculatePosition(std::vector<Cascade::cubeInfo> cubes);
 
 public:
@@ -49,6 +48,7 @@ public:
     CV_Handler(void);
     virtual ~CV_Handler(void);
     void run(Nav *nav);
+    void swapCam(bool frontCam);
     std::vector<Cascade::cubeInfo> checkCubes(void);
     cv::Mat checkBox(void);
 };
