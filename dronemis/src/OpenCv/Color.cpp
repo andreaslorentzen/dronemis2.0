@@ -8,7 +8,7 @@ using namespace cv;
 using namespace std;
 
 Color::Color() {
-
+    kernel = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
 }
 
 Color::~Color() {

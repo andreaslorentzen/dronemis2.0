@@ -16,7 +16,7 @@ class Color {
 private:
 
 public:
-    int kernelState = 0;
+    int kernelState = 2;
     cv::Mat kernel;
 
     struct {
@@ -25,25 +25,25 @@ public:
     }data;
 
     struct {
-        int iLowH = 173;
-        int iHighH = 196;
+        int iLowH = 150;
+        int iHighH = 255;
 
-        int iLowS = 83;
-        int iHighS = 140;
+        int iLowS = 119;
+        int iHighS = 255;
 
-        int iLowV = 44;
-        int iHighV = 93;
+        int iLowV = 0;
+        int iHighV = 255;
     }redFilter;
 
     struct {
-        int iLowH = 32;
-        int iHighH = 50;
+        int iLowH = 0;
+        int iHighH = 118;
 
-        int iLowS = 21;
-        int iHighS = 63;
+        int iLowS = 134;
+        int iHighS = 255;
 
-        int iLowV = 31;
-        int iHighV = 67;
+        int iLowV = 0;
+        int iHighV = 129;
     }greenFilter;
 
     Color(void);
