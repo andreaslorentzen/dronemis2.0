@@ -138,7 +138,11 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
         rotoffset = drone_heading;
         rotinit = true;
     }
+    while(rotation < 0)
+        rotation += 360;
 
+    while(rotation > 360)
+        rotation -= 360;
 
     rotation = drone_heading - rotoffset;
 
@@ -149,7 +153,10 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
 }
 double Nav::getRotation() {
     double rot = QRoffset + rotation;
-    if(rot >= 360)
+    while(rot < 0)
+        rot += 360;
+
+    while(rot > 360)
         rot -= 360;
     return rot;
 }
@@ -160,7 +167,11 @@ void Nav::resetToPosition(double x, double y, double heading) {
     QRy = y;
     QRheading = heading;
     QRoffset = heading - rotation;
+    while(QRoffset < 0)
+        QRoffset += 360;
 
+    while(QRoffset > 360)
+        QRoffset -= 360;
     position.x = 0;
     position.y = 0;
 }
