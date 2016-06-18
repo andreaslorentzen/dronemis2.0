@@ -23,7 +23,7 @@
 class CV_Handler {
 
 private:
-    int thresh = 154;
+    int thresh = 135;
     int missingBoxFrames = 0;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
