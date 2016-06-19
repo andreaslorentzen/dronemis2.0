@@ -77,8 +77,7 @@ Command Route::findNearestWaypoint(double x, double y, double z) {
         if (commands[i].commandType == commands[i].goTo) {
             double diffX = commands[i].x - x;
             double diffY = commands[i].y - y;
-            double diffZ = commands[i].z - z;
-            double distance = diffX + diffY + diffZ;
+            double distance = diffX + diffY;
 
             if (distance < nearestDistance)
                 nearestWaypointNumber = i;
