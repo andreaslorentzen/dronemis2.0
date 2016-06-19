@@ -6,7 +6,7 @@
 #include "Color.h"
 #include "QR.h"
 
-#define CASCADE_FRAMES 10
+#define CASCADE_FRAMES 0
 
 Cascade *cascade;
 Color *color;
@@ -55,6 +55,7 @@ void CV_Handler::run(Nav *nav) {
     cvCreateButton("Kernel", setKernel, &color->data,CV_PUSH_BUTTON,0);
     cvCreateButton("Filter", setFilter, &color->data,CV_PUSH_BUTTON,0);
 
+    map = imread(map_name, CV_LOAD_IMAGE_UNCHANGED);
     ros::Rate r(25);
     while(nodeHandle.ok()) {
         ros::spinOnce();
@@ -234,6 +235,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         cubes[i].heading = (int) navData->getRotation();
         cubes[i].xDist = (xFactor / navData->getPosition().z) * cubes[i].x;
         cubes[i].yDist = (yFactor / navData->getPosition().z) * cubes[i].y;
+        paintCube(Point(cubes[i].x+100, cubes[i].y+100), cubes[i].color);           // TODO: CORRECT THIS WITH TRANSFORM
     }
 
     return cubes;
@@ -313,4 +315,15 @@ double CV_Handler::findMedian(std::vector<int> vec) {
     vec_sz mid = size/2;
 
     return size % 2 == 0 ? (vec[mid] + vec[mid-1]) / 2 : vec[mid];
+}
+
+void CV_Handler::paintCube(Point center, std::string type) {
+    int thickness = -1;
+    int lineType = 8;
+    if (!type.compare("Green"))
+        circle(map, center, 5, Scalar(0, 255, 0), thickness, lineType);
+    else if (!type.compare("Red"))
+        circle(map, center, 5, Scalar(0, 0, 255), thickness, lineType);
+    imshow("MapMis", map);
+    waitKey(10);
 }

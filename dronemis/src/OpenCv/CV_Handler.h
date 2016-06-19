@@ -31,10 +31,12 @@ private:
     std_srvs::Empty toggleCam_srv_srvs;
     std::string video_channel;
     std::vector<int> boxVector;
-
+    cv::String map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/map.jpg";
+    cv::Mat map;
     double findMedian(std::vector<int> vec);
     void video(sensor_msgs::ImageConstPtr img);
     void show(void);
+    void paintCube(cv::Point center, std::string type);
     std::vector<Cascade::cubeInfo> calculatePosition(std::vector<Cascade::cubeInfo> cubes);
 
 public:
