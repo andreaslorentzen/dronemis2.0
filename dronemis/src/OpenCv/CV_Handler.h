@@ -23,7 +23,7 @@
 class CV_Handler {
 
 private:
-    int thresh = 135;
+    int thresh = 64;
     int missingBoxFrames = 0;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
@@ -45,8 +45,6 @@ public:
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;
     CVD::Image<CVD::Rgb <float> > storedImage;
-    CVD::Image<CVD::byte> workImageBW;
-    CVD::Image<CVD::Rgb <float> > workImage;
 
     CV_Handler(void);
     virtual ~CV_Handler(void);

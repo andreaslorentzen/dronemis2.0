@@ -260,6 +260,12 @@ cv::Mat CV_Handler::checkBox(void) {
     // Add gaussian blur
     blur(imageBW, imgModded, Size(3,3));
 
+    //Morphological opening (remove small objects from the foreground)
+    //morphologyEx(imageBW,imageBW,MORPH_OPEN,getStructuringElement(MORPH_RECT, Size(5, 5)));
+
+    //Morphological closing (fill small holes in the foreground)
+    morphologyEx(imageBW,imageBW,MORPH_CLOSE,getStructuringElement(MORPH_RECT, Size(5, 5)));
+
     // Detect edges using canny
     Canny(imgModded, imgModded, thresh, thresh*2, 3);
 
@@ -271,14 +277,14 @@ cv::Mat CV_Handler::checkBox(void) {
         drawContours(imgModded, contours, i, color, 2, 8, hierarchy, 0, Point());
 
     // Detect circles
-    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 1, 100);
+    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 55, 30, 200);
 
     if (!circles.empty()) {
         missingBoxFrames = 0;
         Point center(circles[0][0], circles[0][1]);
         boxVector.push_back((int) circles[0][2]);
 
-        if (boxVector.size() == 15) {
+        if (boxVector.size() == 20) {
             median = (int) findMedian(boxVector);
 #ifdef DEBUG_CV_COUT
             cout << median << endl;
@@ -291,7 +297,7 @@ cv::Mat CV_Handler::checkBox(void) {
         missingBoxFrames = 0;
         boxVector.clear();
     }
-    if (median >= 45) {
+    if (median >= 60) {         // From 45
 #ifdef DEBUG_CV_COUT
         cout << "Box is too close!" << endl;
 #endif
