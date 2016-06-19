@@ -27,6 +27,7 @@ public:
         double yDist;
         double width;
         double height;
+        int heading;
         std::string color;
         cv::Mat image;
     };
