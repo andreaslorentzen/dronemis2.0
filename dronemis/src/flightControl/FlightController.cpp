@@ -176,6 +176,8 @@ void FlightController::run() {
 
 
 
+        cvHandler->swapCam(false);
+
         cvHandler->checkCubes();
 
 /*
