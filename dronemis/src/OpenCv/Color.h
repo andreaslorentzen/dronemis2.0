@@ -44,13 +44,24 @@ public:
 
         int iLowV = 0;
         int iHighV = 129;
+    }greenFilterDark;
+
+    struct {
+        int iLowH = 46;
+        int iHighH = 95;
+
+        int iLowS = 56;
+        int iHighS = 255;
+
+        int iLowV = 0;
+        int iHighV = 165;
     }greenFilter;
 
     Color(void);
     virtual ~Color(void);
-    cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
-    cv::Mat checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
-    std::vector<Cascade::cubeInfo> checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image);
+    cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
+    cv::Mat checkColorsGreen(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
+    std::vector<Cascade::cubeInfo> checkColors(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
 };
 
 

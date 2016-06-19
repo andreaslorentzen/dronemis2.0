@@ -34,6 +34,8 @@ void CV_Handler::run(Nav *nav) {
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
     namedWindow("FilterMis", CV_WINDOW_AUTOSIZE);
+    namedWindow("VideoMis", WINDOW_NORMAL);
+
     cvCreateTrackbar("Thresh", "FilterMis", &thresh, 255); //Hue (0 - 255)
 
     cvCreateTrackbar("LowH_R", "FilterMis", &(color->redFilter).iLowH, 255); //Hue (0 - 255)
@@ -152,12 +154,12 @@ void CV_Handler::show(void) {
         cv::Mat imageBGR(storedImage.size().y,
                          storedImage.size().x,
                          CV_8UC3,
-                 storedImage.data());
+                         storedImage.data());
         image = imageBGR;
         if (filterState == 1)
-            image = color->checkColorsRed(std::vector<Cascade::cubeInfo>(), image);
+            image = color->checkColorsRed(NULL, image);
         else if (filterState == 2)
-            image = color->checkColorsGreen(std::vector<Cascade::cubeInfo>(), image);
+            image = color->checkColorsGreen(NULL, image);
     }
     if (!image.empty())
         cv::imshow("VideoMis", image);
@@ -197,7 +199,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
 
         cascades.push_back(cascade->checkCascade(imageBW));
         if (!cascades[frameCount].empty())
-            color->checkColors(cascades[frameCount],image);
+            color->checkColors(&cascades[frameCount],image);
 
         if (++frameCount == CASCADE_FRAMES)
             break;
@@ -206,6 +208,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         for (unsigned int i = 0; i < cascades.size(); i++) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
+
 #ifdef DEBUG_CV_COUT_EXPLICIT
               std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
               std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
@@ -215,6 +218,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         }
         calculatePosition(cascades[biggestArray]);
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
+        std::cout << "color: " << cascades[biggestArray][0].color << std::endl;
     }
     return std::vector<Cascade::cubeInfo>();
 }
@@ -298,7 +302,7 @@ double CV_Handler::findMedian(std::vector<int> vec) {
 
     vec_sz size = vec.size();
     if (size == 0)
-        return NULL;
+        return double();
 
     sort(vec.begin(), vec.end());
 

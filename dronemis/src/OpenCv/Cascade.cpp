@@ -59,7 +59,9 @@ std::vector<Cascade::cubeInfo> Cascade::checkCascade(cv::Mat image) {
         cube.y = center.y;
         cube.width = cubes[i].width;
         cube.height = cubes[i].height;
+        cube.color = "";
         cascades.push_back(cube);
+
     }
     std::cout << cubes.size() << std::endl;
 
