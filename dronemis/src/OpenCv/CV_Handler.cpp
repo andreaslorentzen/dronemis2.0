@@ -198,25 +198,28 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         cascadeMutex.unlock();
 
         cascades.push_back(cascade->checkCascade(imageBW));
+
         if (!cascades[frameCount].empty())
             color->checkColors(&cascades[frameCount],image);
 
-        if (++frameCount == CASCADE_FRAMES)
+        if (frameCount == CASCADE_FRAMES)
             break;
+        frameCount++;
     }
+
     if (!cascades.empty()) {
         for (unsigned int i = 0; i < cascades.size(); i++) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
-
-#ifdef DEBUG_CV_COUT_EXPLICIT
-              std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
-              std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
-              std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
-              std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
-#endif
         }
         calculatePosition(cascades[biggestArray]);
+
+#ifdef DEBUG_CV_COUT_EXPLICIT
+            std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
+            std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
+            std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
+            std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
+#endif
         std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         //std::cout << "color: " << cascades[biggestArray][0].color << std::endl;
     }
@@ -228,8 +231,9 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
     double yFactor = 51.7 / 360;
 
     for (unsigned int i = 0; i < cubes.size(); i++) {
-        cubes[i].xDist = xFactor / navData->getPosition().z;
-        cubes[i].yDist = yFactor / navData->getPosition().z;
+        cubes[i].heading = (int) navData->getRotation();
+        cubes[i].xDist = (xFactor / navData->getPosition().z) * cubes[i].x;
+        cubes[i].yDist = (yFactor / navData->getPosition().z) * cubes[i].y;
     }
 
     return cubes;
