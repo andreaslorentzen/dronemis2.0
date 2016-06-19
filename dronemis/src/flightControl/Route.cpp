@@ -45,7 +45,7 @@ void Route::initRoute(bool useFile) {
 #endif
                     double degrees =  atof(input);
                     commands.push_back(Command(degrees));
-                } else if(strcmp(input, "hover") == 0) {
+                } else if(strcmp(input, "hoverDuration") == 0) {
                     flightPlan >> input;
                     int time = atof(input);
                     commands.push_back(time);
