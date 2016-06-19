@@ -119,14 +119,14 @@ void FlightController::run() {
         double turnStepSize = 30;
 
 
-        hover(5);
+        hoverDuration(5);
 
         cmd.linear.z = 0.5;
         pub_control.publish(cmd);
         while (navData->getPosition().z < 1200)
             ros::Rate(LOOP_RATE).sleep();
 
-        hover(1);
+        hoverDuration(1);
 
         Vector3 pos;
         while (!dronePossion.positionLocked) {
@@ -170,7 +170,7 @@ void FlightController::run() {
         return;
 #endif
 
-        hover(1);
+        hoverDuration(1);
 
         while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
@@ -186,7 +186,7 @@ void FlightController::run() {
             if (currentCommand.commandType == Command::goTo) {
                 goToWaypoint(currentCommand);
             } else if (currentCommand.commandType == Command::hover) {
-                hover(currentCommand.timeToHover);
+                hoverDuration(currentCommand.timeToHover);
             } else if (currentCommand.commandType == Command::turn) {
                 turnDegrees(currentCommand.degrees);
             }
@@ -238,7 +238,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     }
 
-    hover(2);
+    hoverDuration(2);
 
     /*while ((int) abs(d.y) > TOLERANCE){
 
@@ -284,7 +284,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
           //d.z = newWaypoint.z - navData->position.z;
       }
   */
-    hover(2);
+    hoverDuration(2);
 
 
 //    cmd.linear.y = getSpeed(dy);
@@ -311,7 +311,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     }
 
     if(moved)
-        hover(1);
+        hoverDuration(1);
 */
 
 
@@ -373,7 +373,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
         }
 
         if(moved)
-            hover(1);
+            hoverDuration(1);
 
     }
     */
@@ -464,7 +464,7 @@ void FlightController::turnDegrees(double degrees){
 #ifdef DEBUG
     //ROS_INFO("ori_deg: %6.2f", ori_deg);
 #endif
-    hover(1);
+    hoverDuration(1);
 }
 */
 
@@ -474,13 +474,16 @@ double formatAngle(double angle) {
         result += 360;
     else if (result > 360)
         result -= 360;
-   // ROS_INFO("FORMAT ANGLE: %6.2f\t RESULT ANGLE: %6.2f", angle, result);
+    // ROS_INFO("FORMAT ANGLE: %6.2f\t RESULT ANGLE: %6.2f", angle, result);
     return result;
 }
 
 double angleDifference(double a1, double a2) {
     double angle = a1 - a2;
-   // angle = sqrt(angle*angle);
+    if (angle < -180) {
+            angle = 360 + angle;
+    } else if (angle > 180)
+            angle = 360 - angle;
     if (angle < 0)
         angle *= -1;
     return angle;
@@ -502,9 +505,59 @@ double scaleValueTo(double value, double target) {
 void FlightController::turnDegrees(double degrees) {
     double orientation = navData->getRotation();
     double target = formatAngle(orientation + degrees);
-    double difference = angleDifference(orientation , target);
+    double difference = angleDifference(orientation, target);
+    double last_difference = difference;
+    int direction = angleDirection(orientation, target);
+   // int last_direction = direction;
+    ROS_INFO("Degrees: %3.1f\torientation: %3.1f\ttarget: %3.1f\tdifference: %3.1f\tdirection: %d\t",degrees, orientation,difference, direction  );
+    rotateDrone(direction * 0.5);
+    while (difference > 2) {
+        orientation = navData->getRotation();
+        direction = angleDirection(orientation, target);
+        difference = angleDifference(orientation, target);
+
+        ROS_INFO("LOOP orientation: %3.1f\tdifference: %3.1f\tlast_difference: %3.1f\tdirection: %d\trotation: %3.1f",orientation,difference,last_difference,direction, (last_difference-difference));
+
+        if (last_difference-difference > 25) {
+            last_difference = difference;
+            hoverDuration(3);
+            rotateDrone(direction * 0.5);
+        }
+    }
+    ROS_INFO("VICTORY! orientation: %6.1f\ttarget: %6.1f", orientation, target);
+    hoverDuration(5);
+}
+
+
+void FlightController::rotateDrone(double speed) {
+    cmd.linear.x = 0.0;
+    cmd.linear.y = 0.0;
+    cmd.linear.z = 0.0;
+    cmd.angular.x = 0.0;
+    cmd.angular.y = 0.0;
+    cmd.angular.z = speed;
+    pub_control.publish(cmd);
+
+}
+
+void FlightController::hoverDrone() {
+    cmd.linear.x = 0.0;
+    cmd.linear.y = 0.0;
+    cmd.linear.z = 0.0;
+    cmd.angular.x = 0.0;
+    cmd.angular.y = 0.0;
+    cmd.angular.z = 0.0;
+    pub_control.publish(cmd);
+}
+
+
+/*
+void FlightController::turnDegrees(double degrees) {
+    double orientation = navData->getRotation();
+    double target = formatAngle(orientation + degrees);
+    double difference = angleDifference(orientation, target);
     double precision = 3;
-    double slice_max = 25;
+    double slice_max = 30;
     double slice;
     int direction;
 
@@ -517,33 +570,43 @@ void FlightController::turnDegrees(double degrees) {
         else
             slice = difference;
 
-        double slice_target = formatAngle(orientation - slice * angleDirection(orientation,  target));
+        double slice_target = formatAngle(orientation - slice * angleDirection(orientation, target));
         double slice_difference = angleDifference(orientation, slice_target);
         double stop_prediction;
-        direction = angleDirection(orientation,  slice_target);
-        cmd.angular.z = 0.5*direction;
+        direction = angleDirection(orientation, slice_target);
+
 
         if (slice > slice_max)
             stop_prediction = 0;
         else
-            stop_prediction = 1+(slice_max-(slice_max-slice))/3;
-        ROS_INFO("BEFORE INNER:\tcounter: %d\tori: %3.0f\ttar: %3.0f\tdiff: %3.0f\ts_tar: %3.0f\ts_diff: %3.0f\tslice: %3.0f\tdir: %d", slice_counter, orientation, target, difference, slice_target, slice_difference, slice, direction );
+            stop_prediction = 1 + (slice_max - (slice_max - slice)) / 3;
+        ROS_INFO(
+                "BEFORE INNER:\tcounter: %d\tori: %3.0f\ttar: %3.0f\tdiff: %3.0f\ts_tar: %3.0f\ts_diff: %3.0f\tslice: %3.0f\tdir: %d",
+                slice_counter, orientation, target, difference, slice_target, slice_difference, slice, direction);
         while (slice_difference > stop_prediction) {
+            cmd.angular.z = 0.5 * direction;
             pub_control.publish(cmd);
+            if (difference < 10) {
+                ROS_INFO("SLEEP INNER");
+                cmd.angular.z = 0;
+                pub_control.publish(cmd);
+            }
             orientation = navData->getRotation();
             slice_difference = angleDifference(orientation, slice_target);
-            //ROS_INFO("INNER: tori: %3.0f\ttar: %3.0f\tdiff: %3.0f\ts_tar: %3.0f\ts_diff: %3.0f\tslice: %3.0f\tdir: %d\tdegrees: %6.1f", orientation, target, difference, slice_target, slice_difference, slice, direction, degrees);
-            //ros::Rate(100).sleep();
+            ROS_INFO("INNER:\tcounter: %d\tori: %3.0f\ttar: %3.0f\tdiff: %3.0f\ts_tar: %3.0f\ts_diff: %3.0f\tslice: %3.0f\tdir: %d",
+                     slice_counter, orientation, target, difference, slice_target, slice_difference, slice, direction);
         }
-        ROS_INFO("AFTER INNER:\tcounter: %d\tori: %3.0f\ttar: %3.0f\tdiff: %3.0f\ts_tar: %3.0f\ts_diff: %3.0f\tslice: %3.0f\tdir: %d", slice_counter, orientation, target, difference, slice_target, slice_difference, slice, direction );
+        ROS_INFO(
+                "AFTER INNER:\tcounter: %d\tori: %3.0f\ttar: %3.0f\tdiff: %3.0f\ts_tar: %3.0f\ts_diff: %3.0f\tslice: %3.0f\tdir: %d",
+                slice_counter, orientation, target, difference, slice_target, slice_difference, slice, direction);
         ROS_INFO("--------------------------");
         hover(3);
         orientation = navData->getRotation();
         difference = formatAngle(orientation - target);
     }
     ROS_INFO("VICTORY!!!!: ori: %3.0f\ttar: %3.0f\tdiff: %3.0f", orientation, target, difference);
-    hover(5);
-}
+    hoverDuration(5);
+}*/
 
 void FlightController::turnTowardsPoint(Command waypoint) {
 
@@ -610,7 +673,7 @@ double FlightController::getRotationalSpeed(double target_deg, double ori_deg) {
     return rot_speed;
 }
 
-void FlightController::hover(int time) {
+void FlightController::hoverDuration(int time) {
 
     cmd.linear.x = 0.0;
     cmd.linear.y = 0.0;
@@ -640,7 +703,7 @@ void FlightController::takeOff() {
         ros::Rate(LOOP_RATE).sleep();
     }
 
-    hover(2);
+    hoverDuration(2);
 }
 
 void FlightController::land() {
@@ -685,6 +748,7 @@ void FlightController::abortProgram() {
     started = false;
     land();
 }
+
 
 void *startNavdata(void *thread_arg) {
     struct thread_data *thread_data;

@@ -22,7 +22,7 @@ public:
     ~FlightController();
     void goToWaypoint(Command newWaypoint);
     void turnTowardsPoint(Command waypoint);
-    void hover(int time);
+    void hoverDuration(int time);
     void takeOff();
     void land();
     void reset();
@@ -61,6 +61,10 @@ private:
     double getSpeed(double distance);
     Vector3 getVelocity(Vector3 d);
     void turnDegrees(double degrees);
+
+    void rotateDrone(double d);
+
+    void hoverDrone();
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H

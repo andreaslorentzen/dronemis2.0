@@ -133,18 +133,19 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
 
     while(drone_heading > 360)
         drone_heading -= 360;
-
+   // ROS_INFO("drone_heading: %6.1f", drone_heading);
     if (!rotinit){
         rotoffset = drone_heading;
         rotinit = true;
     }
+
+
+    rotation = drone_heading - rotoffset;
     while(rotation < 0)
         rotation += 360;
 
     while(rotation > 360)
         rotation -= 360;
-
-    rotation = drone_heading - rotoffset;
 
 #ifdef DEBUG_NAV_COUT
     ROS_INFO("ORIGINAL = %f", drone_heading);
@@ -158,6 +159,7 @@ double Nav::getRotation() {
 
     while(rot > 360)
         rot -= 360;
+   // ROS_INFO("rot: %6.1f", rot);
     return rot;
 }
 
