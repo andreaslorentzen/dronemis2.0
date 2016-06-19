@@ -48,6 +48,7 @@ cv::Mat Color::checkColorsRed(std::vector<Cascade::cubeInfo> * cubes, cv::Mat im
         for (unsigned int i = 0; i < cubes->size(); i++) {
             if (nonZeros.at<Point>(j).x == (*cubes)[i].x && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
                 (*cubes)[i].color = "Red";
+                cout << "FOUND RED" << endl;
             }
         }
     }
@@ -80,6 +81,7 @@ cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> * cubes, cv::Mat 
         for (unsigned int i = 0; i < cubes->size(); i++) {
             if (nonZeros.at<Point>(j).x == (*cubes)[i].x && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
                 (*cubes)[i].color = "Green";
+                cout << "FOUND GREEN" << endl;
             }
         }
     }
