@@ -15,7 +15,7 @@ Color::~Color() {
 
 }
 
-std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image) {
 
     checkColorsRed(cubes,image);
     checkColorsGreen(cubes,image);
@@ -23,7 +23,7 @@ std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo>
 }
 
 
-cv::Mat Color::checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+cv::Mat Color::checkColorsRed(std::vector<Cascade::cubeInfo> * cubes, cv::Mat image) {
 
     Mat imgHSV;
     Mat nonZeros;
@@ -44,20 +44,18 @@ cv::Mat Color::checkColorsRed(std::vector<Cascade::cubeInfo> cubes, cv::Mat imag
     //Find white areas
     findNonZero(imgThresholded, nonZeros);
 
-    //int count;
-    for (unsigned int i = 0; i < cubes.size(); i++) {
-        for (unsigned int j = 0; j < nonZeros.total(); j++) {
-            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y) {
-                cubes[i].color = 'r';
-                cout << "Found red cube!!!" << endl;
+    for (unsigned int j = 0; j < nonZeros.total(); j++) {
+        for (unsigned int i = 0; i < cubes->size(); i++) {
+            if (nonZeros.at<Point>(j).x == (*cubes)[i].x && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
+                (*cubes)[i].color = "Red";
             }
         }
     }
-    
+
     return imgThresholded;
 }
 
-cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat image) {
+cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> * cubes, cv::Mat image) {
 
     Mat imgHSV;
     Mat nonZeros;
@@ -78,12 +76,10 @@ cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> cubes, cv::Mat im
     //Find white areas
     findNonZero(imgThresholded, nonZeros);
 
-    //int count;
-    for (unsigned int i = 0; i < cubes.size(); i++) {
-        for (unsigned int j = 0; j < nonZeros.total(); j++) {
-            if (nonZeros.at<Point>(j).x == cubes[i].x && nonZeros.at<Point>(j).y == cubes[i].y) {
-                cubes[i].color = 'g';
-                cout << "Found green cube!!!" << endl;
+    for (unsigned int j = 0; j < nonZeros.total(); j++) {
+        for (unsigned int i = 0; i < cubes->size(); i++) {
+            if (nonZeros.at<Point>(j).x == (*cubes)[i].x && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
+                (*cubes)[i].color = "Green";
             }
         }
     }
