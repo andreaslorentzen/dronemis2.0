@@ -62,6 +62,8 @@ public:
     cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
     cv::Mat checkColorsGreen(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
     std::vector<Cascade::cubeInfo> checkColors(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
+    cv::Mat TESTcheckColorsGreen(cv::Mat image);
+    cv::Mat TESTcheckColorsRed(cv::Mat image);
 };
 
 

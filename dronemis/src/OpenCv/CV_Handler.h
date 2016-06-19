@@ -32,6 +32,7 @@ private:
     std::string video_channel;
     std::vector<int> boxVector;
     cv::String map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/map.jpg";
+    cv::String output_map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/Output_map.jpg";
     cv::Mat map;
     double findMedian(std::vector<int> vec);
     void video(sensor_msgs::ImageConstPtr img);

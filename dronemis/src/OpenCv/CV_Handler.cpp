@@ -158,9 +158,9 @@ void CV_Handler::show(void) {
                          storedImage.data());
         image = imageBGR;
         if (filterState == 1)
-            image = color->checkColorsRed(NULL, image);
+            image = color->TESTcheckColorsRed(image);
         else if (filterState == 2)
-            image = color->checkColorsGreen(NULL, image);
+            image = color->TESTcheckColorsGreen(image);
     }
     if (!image.empty())
         cv::imshow("VideoMis", image);
@@ -320,10 +320,14 @@ double CV_Handler::findMedian(std::vector<int> vec) {
 void CV_Handler::paintCube(Point center, std::string type) {
     int thickness = -1;
     int lineType = 8;
-    if (!type.compare("Green"))
+    if (!type.compare("Green")) {
         circle(map, center, 5, Scalar(0, 255, 0), thickness, lineType);
-    else if (!type.compare("Red"))
+        imwrite(output_map_name, map);
+    }
+    else if (!type.compare("Red")){
         circle(map, center, 5, Scalar(0, 0, 255), thickness, lineType);
+        imwrite(output_map_name, map);
+    }
     imshow("MapMis", map);
     waitKey(10);
 }
