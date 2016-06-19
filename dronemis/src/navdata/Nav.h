@@ -63,6 +63,10 @@ public:
 
     Vector3 getPosition();
     double getRotation();
+
+    Vector3 getRawPosition();
+    double getRawRotation();
+    void resetRaw();
 };
 
 

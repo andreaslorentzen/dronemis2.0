@@ -236,3 +236,22 @@ Nav::Nav() {
     ups_last_time = 0;
 }
 
+
+Vector3 Nav::getRawPosition() {
+    return position;
+}
+double Nav::getRawRotation() {
+    return rotation;
+}
+
+void Nav::resetRaw() {
+    position.x = 0;
+    position.y = 0;
+}
+
+
+
+
+
+
+

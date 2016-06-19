@@ -31,6 +31,17 @@ public:
     void startProgram(void);
     void resetProgram(void);
     void abortProgram(void);
+
+
+
+
+
+    double formatAngle(double angle);
+
+    double angleDifference(double a1, double a2);
+    int angleDirection(double a1, double a2);
+    double scaleValueTo(double value, double target);
+
     bool lookingForQR = true;
     DronePos dronePossion;
     QR* getQr(){return qr;};

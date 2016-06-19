@@ -9,8 +9,7 @@ QR::QR(CV_Handler *cv) {
     cvHandler = cv;
 }
 
-//#define DEBUG 1
-#define DEBUG_COUT 1
+
 #define AVERAGE_COUNT 1
 #define FRAME_COUNT 1
 
@@ -110,13 +109,14 @@ DronePos QR::checkQR(void) {
             }
 
             yratio = yleft / yright;
-            cout << "yleft / yright = " << yleft << " / " << yright << endl;
+            //cout << "yleft / yright = " << yleft << " / " << yright << endl;
             yRatioTemp = yRatioTemp + yratio;
-            //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
+#ifdef DEBUG_COUT
+            cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
 
             cout << "yratio = " << yratio << endl;
             cout << "yratioTemp = " << yRatioTemp << endl;
-
+#endif
             if (averageCount == AVERAGE_COUNT) {
                 yRatioAverage = yRatioTemp / AVERAGE_COUNT;
                 //cout << "yRatioTemp = " << yRatioTemp << endl;
