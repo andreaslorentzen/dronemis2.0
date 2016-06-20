@@ -147,7 +147,7 @@ DronePos QR::checkQR(void) {
                 DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
                 bool positionLock;
-                if(yDiversionAngle < 25) positionLock = 1;
+                if(yDiversionAngle < 25 && yDiversionAngle > -25) positionLock = 1;
                 else positionLock = 0;
 
                 //**************************************

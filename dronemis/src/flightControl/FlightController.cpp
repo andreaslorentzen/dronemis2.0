@@ -177,12 +177,12 @@ void FlightController::run() {
         navData->resetToPosition(dronePossion.x * 10, dronePossion.y * 10, dronePossion.heading);
 
 */
-
+    ROS_INFO("end while");
     geometry_msgs::Twist cmd = getEmptyCmd();
     cmd.linear.x = 1;
     pub_control.publish(cmd);
-    for (int i = 0; i < 5; ++i) {
-        loop_rate.sleep();
+    for (int i = 0; i < LOOP_RATE*1; ++i) {
+        ros::Rate(LOOP_RATE).sleep();
     }
     hoverDuration(2);
 
@@ -788,9 +788,11 @@ void FlightController::startProgram() {
 void FlightController::resetProgram() {
     DronePos dronepos = qr->checkQR();
     ROS_INFO("found : %d", dronepos.numberOfQRs);
-    ROS_INFO("MANUEL RESET!");
-    started = false;
-    reset();
+    cout << "Relative position (x,y) = " << dronepos.relativeX << "," << dronepos.relativeY << endl;
+    cout << "Angle and positionLock" << dronepos.angle << " and " << dronepos.positionLocked << endl;
+    //ROS_INFO("MANUEL RESET!");
+    //started = false;
+    //reset();
 }
 
 void FlightController::abortProgram() {
