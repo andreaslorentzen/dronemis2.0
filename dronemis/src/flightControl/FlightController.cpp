@@ -117,8 +117,10 @@ void FlightController::run() {
 
     cmd.linear.z = 0.5;
     pub_control.publish(cmd);
-    while (navData->getPosition().z < 1000)
+    while (navData->getPosition().z < 1200)
         ros::Rate(LOOP_RATE).sleep();
+
+
 
     hoverDuration(1);
 
@@ -149,6 +151,12 @@ void FlightController::run() {
 
     ROS_INFO("end while");
     navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
+
+    cmd.linear.z = -0.5;
+    pub_control.publish(cmd);
+    while (navData->getPosition().z < 1000)
+        ros::Rate(LOOP_RATE).sleep();
+
 
     double rotation = navData->getRotation();
     double target;
