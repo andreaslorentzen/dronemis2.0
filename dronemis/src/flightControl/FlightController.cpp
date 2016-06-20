@@ -178,15 +178,32 @@ void FlightController::run() {
 
 */
 
-    geometry_msgs::Twist cmd = getEmptyCmd();
-    cmd.linear.x = 1;
-    pub_control.publish(cmd);
-    for (int i = 0; i < 5; ++i) {
-        loop_rate.sleep();
-    }
+    flyForward(0.25);
     hoverDuration(2);
 
+    turnDegrees(90);
+/*    double start_orientation = navData->getRawRotation();
+//    while(true){
+        rotateDrone(1);
+        for (int i = 0; i < LOOP_RATE*0.25; ++i) {
+            ros::Rate(LOOP_RATE).sleep();
+        }
+        if(abs(start_orientation - navData->getRawRotation()) > 90){
+            hoverDuration(2);
+         //   break;
+        }
+//    }
+*/
 
+//    flyForward(0.25);
+    /*hoverDuration(2);
+    flyForward(0.25);
+    hoverDuration(2);
+    flyForward(0.25);
+    */
+    hoverDuration(2);
+
+    hoverDuration(2);
 
 
 /*
@@ -533,7 +550,10 @@ double FlightController::scaleValueTo(double value, double target) {
     return (target / value) * value;
 }
 
-
+/*int last_ts = (int) (ros::Time::now().toNSec() / 1000000);
+int time = (int) (ros::Time::now().toNSec() / 1000000);
+time_counter += (time - last_ts);
+last_ts = time;*/
 void FlightController::turnDegrees(double degrees) {
     double orientation = navData->getRotation();
     double target = formatAngle(orientation + degrees);
@@ -545,7 +565,7 @@ void FlightController::turnDegrees(double degrees) {
     int time_counter = 0;
 
 
-    rotateDrone(direction * 0.5);
+    rotateDrone(direction * 1.0);
     int debug_counter = 0;
     while (true) {
 
@@ -808,6 +828,15 @@ geometry_msgs::Twist FlightController::getEmptyCmd() {
     cmd.angular.y = 0.0;
     cmd.angular.z = 0.0;
     return cmd;
+}
+
+void FlightController::flyForward(double time) {
+    geometry_msgs::Twist cmd = getEmptyCmd();
+    cmd.linear.x = 1;
+    pub_control.publish(cmd);
+    for (int i = 0; i < LOOP_RATE*time; ++i) {
+        ros::Rate(LOOP_RATE).sleep();
+    }
 }
 
 
