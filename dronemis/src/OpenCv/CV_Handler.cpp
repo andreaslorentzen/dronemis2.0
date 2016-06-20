@@ -228,7 +228,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
-        calculatePosition(&cascades[biggestArray]);
+        //calculatePosition(&cascades[biggestArray]);
 
 #ifdef DEBUG_CV_COUT_EXPLICIT
             std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
@@ -319,11 +319,13 @@ cv::Mat CV_Handler::checkBox(void) {
     // Add gaussian blur
     blur(imageBW, imgModded, Size(3,3));
 
-    //Morphological opening (remove small objects from the foreground)
-    //morphologyEx(imageBW,imageBW,MORPH_OPEN,getStructuringElement(MORPH_RECT, Size(5, 5)));
+    int erosion_size = 6;
+    Mat element = getStructuringElement(cv::MORPH_ELLIPSE,
+                                        cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+                                        cv::Point(erosion_size, erosion_size));
 
-    //Morphological closing (fill small holes in the foreground)
-    morphologyEx(imageBW,imageBW,MORPH_CLOSE,getStructuringElement(MORPH_RECT, Size(5, 5)));
+    // Apply erosion or dilation on the image
+    dilate(imageBW,imageBW,element);
 
     // Detect edges using canny
     Canny(imgModded, imgModded, thresh, thresh*2, 3);
@@ -386,7 +388,6 @@ void CV_Handler::paintCube(Point center, std::string type) {
     int thickness = -1;
     int lineType = 8;
     if (!type.compare("Green")) {
-
         circle(map, center, 7, Scalar(0, 255, 0), thickness, lineType);
         imwrite(output_map_name, map);
     }
