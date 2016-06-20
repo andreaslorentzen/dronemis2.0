@@ -43,17 +43,14 @@ DronePos QR::checkQR(void) {
         uchar *raw = (uchar *) grey.data;
 
         // wrap image data
-        Image image(width, height, "Y800", raw, width * height);
+        Image image((unsigned int)width, (unsigned int)height, "Y800", raw, (unsigned long)width * height);
 
 
         // scan the image for barcodes
-        int numberQR = scanner.scan(image);                    // Returns number of codes in the image.
+        int numberQR = scanner.scan(image);                                         // Returns number of codes in the image.
         if (numberQR == 1)
             averageCount++;
 
-
-
-        // cout << "Number of QR codes in the image is " << n << endl;
         int x0, x1, x2, x3, y0, y1, y2, y3, xsize, ysize, xmidt, QRsize;
         vector<Point> vp;
 
@@ -63,13 +60,10 @@ DronePos QR::checkQR(void) {
 
 
             // do something useful with results
-            //cout << "decoded " << symbol->get_type_name() << " symbol \"" << symbol->get_data() << '"' << " " << endl;
             int n = symbol->get_location_size();        // Returns 4 if QR code is scanned
             for (int i = 0; i < n; i++) {
-                vp.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));      //Update VP
-                //cout << "symbol->get_location_x = " << symbol->get_location_x(i) << endl;
-                //cout << "symbol->get_location_y = " << symbol->get_location_y(i) << endl;
-            }
+                vp.push_back(Point(symbol->get_location_x((unsigned int)i), symbol->get_location_y((unsigned int)i)));      //Update VP
+             }
 
             x0 = symbol->get_location_x(0);    //
             x1 = symbol->get_location_x(1);    //
@@ -79,19 +73,19 @@ DronePos QR::checkQR(void) {
             y1 = symbol->get_location_y(1);    //
             y2 = symbol->get_location_y(2);    //
             y3 = symbol->get_location_y(3);    //
-            xsize = (abs((x0 - x2)) + abs((x1 - x3))) / 2;      // Vertical size of the QR
-            ysize = (abs((y0 - y2)) + abs((y3 - y1))) / 2;      // Horizontal size of the QR
-            xmidt = (x0 + x1 + x2 + x3) / 4;           // The horizontal middle of the QR
+            xsize = (abs((x0 - x2)) + abs((x1 - x3))) / 2;                          // Calculate Vertical size of the QR
+            ysize = (abs((y0 - y2)) + abs((y3 - y1))) / 2;                          // Calculate Horizontal size of the QR
+            xmidt = (x0 + x1 + x2 + x3) / 4;                                        // The horizontal middle of the QR
 
-            QRsize = (xsize + ysize) / 2;            // The size of the QR
-            int distancetoQR = calculateDistanceToQR(QRsize);
+            QRsize = (xsize + ysize) / 2;                                           // The size of the QR
+            double distancetoQRdouble = calculateDistanceToQR(QRsize);               // To prevent errors when typecasting
+            int distancetoQR = (int)distancetoQRdouble; // double to int
             std::string QRName = symbol->get_data();
 
-            double yleft, yright, ytemp;
-            double yratio;
+            double yleft, yright, ytemp, yratio;
 
-            yleft = y1 - y0;
-            yright = y2 - y3;
+            yleft = y1 - y0;                                                        // calculate left side of QR
+            yright = y2 - y3;                                                       // Calculate right side of QR
 
             if (yleft > yright) {
                 direction = 1;                                                      // If direction is 1 - Drone is left of the QR code
@@ -109,7 +103,7 @@ DronePos QR::checkQR(void) {
             yratio = yleft / yright;
 
 
-#ifdef DEBUG_QR_COUT
+#ifdef DEBUG_QR_COUT                                                                // Debugging information
             //cout << "yleft / yright = " << yleft << " / " << yright << endl;
             //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
 
@@ -117,39 +111,38 @@ DronePos QR::checkQR(void) {
             //cout << "yratioTemp = " << yRatioTemp << endl;
 #endif
 
-
-            y1Diversion = (yratio * 360.0395) - 359.2821;
-            y2Diversion = (yratio * 637.3656) - 642.2072;
-#ifdef DEBUG_QR_COUT
-            cout << "distanceToQR = " << distancetoQR << "cm, with the text: "
-            << QRName << endl << endl;
-#endif
-
-            double xDistanceStatic = 3.61194; //
-            int xDistance = ((xmidt - 320) / xDistanceStatic * distancetoQR / 150);
-
+            y1Diversion = (yratio * 360.0395) - 359.2821;                           // Two different equations that sum up the angle of the QR
+            y2Diversion = (yratio * 637.3656) - 642.2072;                           //
 
 #ifdef DEBUG_QR_COUT
-            cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
-
+            cout << "distanceToQR = " << distancetoQR << "cm, with the text: " << QRName << endl << endl;
             //cout << "y1Diversion (Parallel) = " << y1Diversion << endl;
             //cout << "y2Diversion (Kig på QR)= " << y2Diversion << endl;
             //cout << "yratio = " << yratio << endl;
 #endif
-            if (yratio < 1.06) {
-                yDiversionAngle = (y1Diversion + y2Diversion) / 2 * direction;
-            }
-            else {
-                yDiversionAngle = y2Diversion * direction;
-            }
+
+            double xDistanceStatic = 3.61194;                                       // Calculated using 243 pixels for 67cm on 150cm distance.
+            double xDistancedouble = ((xmidt - 320) / xDistanceStatic * distancetoQR / 150); // Calculate in cm's where the center of the camera is, according to the center of the QR
+            int xDistance = (int) xDistancedouble;
+
+#ifdef DEBUG_QR_COUT
+            cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
 
 
-            DronePosition.relativeX = (distancetoQR/1.5 * std::sin(yDiversionAngle * (M_PI / 180))); // xDistance (Forskydning)
+#endif
+            double yDiversionAngledouble;
+            if (yratio < 1.06) yDiversionAngledouble = (y1Diversion + y2Diversion) / 2 * direction;
+            else yDiversionAngledouble = y2Diversion * direction;
+            yDiversionAngle = (int)yDiversionAngledouble;
+
+
+            DronePosition.relativeX = (distancetoQR/1.5 * std::sin(yDiversionAngle * (M_PI / 180)))*1.2; // xDistance (Forskydning)
             DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
-
+            //cout << "yDiversionAngle = " << abs(yDiversionAngle) << endl;
             bool positionLock;
-            if (yDiversionAngle < 25 && yDiversionAngle > -25) positionLock = 1;
+            if (abs(yDiversionAngle) < 25) positionLock = 1;
             else positionLock = 0;
+            //cout << "positionLock = " << positionLock << endl;
 
 
             //**************************************
@@ -165,7 +158,7 @@ DronePos QR::checkQR(void) {
             cout << "Droneposition relative (x,y) = " << DronePosition.relativeX << "," << DronePosition.relativeY <<
             endl;
             cout << "Angle = " << yDiversionAngle << endl;
-            cout << "PositionLock = " << DronePosition.positionLocked << " on QR code: " << QRName << endl << endl;
+            cout << "PositionLock = " << RoomDronePosition.positionLocked << " on QR code: " << QRName << endl << endl;
 
             //cout << "RoomAngle relative to QR =" << RoomDronePosition.angle << endl;
             //cout << symbol->get_data() << endl;
@@ -394,38 +387,38 @@ void QR::initializeQR() {
     distanceToQR[96] = 126;
     distanceToQR[97] = 125;
     distanceToQR[98] = 124;
-    distanceToQR[99] = 122;
-    distanceToQR[100] = 121;
-    distanceToQR[101] = 120;
-    distanceToQR[102] = 119;
-    distanceToQR[103] = 118;
-    distanceToQR[104] = 116;
-    distanceToQR[105] = 115;
-    distanceToQR[106] = 114;
-    distanceToQR[107] = 113;
-    distanceToQR[108] = 112;
-    distanceToQR[109] = 111;
-    distanceToQR[110] = 110;
-    distanceToQR[111] = 108;
-    distanceToQR[112] = 108;
-    distanceToQR[113] = 106;
-    distanceToQR[114] = 105;
-    distanceToQR[115] = 104;
-    distanceToQR[116] = 103;
-    distanceToQR[117] = 101;
-    distanceToQR[118] = 100;
-    distanceToQR[119] = 99;
-    distanceToQR[120] = 98;
-    distanceToQR[121] = 97;
-    distanceToQR[122] = 96;
-    distanceToQR[123] = 95;
-    distanceToQR[124] = 94;
-    distanceToQR[125] = 93;
-    distanceToQR[126] = 92;
-    distanceToQR[127] = 91;
-    distanceToQR[128] = 90;
-    distanceToQR[129] = 89;
-    distanceToQR[130] = 88;
+    distanceToQR[99] = 122+1;
+    distanceToQR[100] = 121+1;
+    distanceToQR[101] = 120+1;
+    distanceToQR[102] = 119+2;
+    distanceToQR[103] = 118+2;
+    distanceToQR[104] = 116+2;
+    distanceToQR[105] = 115+3;
+    distanceToQR[106] = 114+3;
+    distanceToQR[107] = 113+3;
+    distanceToQR[108] = 112+4;
+    distanceToQR[109] = 111+4;
+    distanceToQR[110] = 110+4;
+    distanceToQR[111] = 108+5;
+    distanceToQR[112] = 108+5;
+    distanceToQR[113] = 106+5;
+    distanceToQR[114] = 105+6;
+    distanceToQR[115] = 104+6;
+    distanceToQR[116] = 103+6;
+    distanceToQR[117] = 101+7;
+    distanceToQR[118] = 100+7;
+    distanceToQR[119] = 99+7;
+    distanceToQR[120] = 98+8;
+    distanceToQR[121] = 97+8;
+    distanceToQR[122] = 96+8;
+    distanceToQR[123] = 95+9;
+    distanceToQR[124] = 94+9;
+    distanceToQR[125] = 93+9;
+    distanceToQR[126] = 92+9;
+    distanceToQR[127] = 91+10;
+    distanceToQR[128] = 90+10;
+    distanceToQR[129] = 89+10;
+    distanceToQR[130] = 88+10;
 }
 
 

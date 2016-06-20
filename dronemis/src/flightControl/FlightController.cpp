@@ -6,6 +6,8 @@ void *startCV(void *thread_args);
 
 void *startController(void *thread_arg);
 
+void *startCascade(void *thread_arg);
+
 void *runQR(void *thread_arg);
 
 struct thread_data {
@@ -13,6 +15,7 @@ struct thread_data {
     CV_Handler *cvHandler;
     FlightController *controller;
     ros::NodeHandle *n;
+    QR *qr;
 } myThreadData;
 
 FlightController::FlightController() {
@@ -82,12 +85,12 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav) 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
     myThreadData.n = nh;
+    myThreadData.qr = qr;
 
-    pthread_t threads[2];
+    pthread_t threads[3];
     pthread_create(&threads[0], NULL, startCV, &myThreadData);
     pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
-
-
+    pthread_create(&threads[2], NULL, startCascade, &myThreadData);
 }
 
 // Destructor
@@ -577,13 +580,16 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    //DronePos dronepos = qr->checkQR();
-    //ROS_INFO("found : %d", dronepos.numberOfQRs);
 
     ROS_INFO("MANUEL RESET!");
     started = false;
     reset();
     cvHandler->checkCubes();
+
+    //ROS_INFO("MANUEL RESET!");
+    //started = false;
+    //reset();
+    //cvHandler->checkCubes();
 }
 
 void FlightController::abortProgram() {
@@ -664,3 +670,45 @@ void *runQR(void *thread_arg) {
     }
     pthread_exit(NULL);
 }
+
+void *startCascade(void *thread_arg) {
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+    ros::Rate r(1);
+    while (ros::ok()) {
+        //if (thread_data->qr->RoomDronePosition.positionLocked) {
+        //    thread_data->cvHandler->swapCam(false);
+        //    thread_data->cvHandler->checkCubes();
+        //    thread_data->cvHandler->swapCam(true);
+        //}
+        r.sleep();
+    }
+    pthread_exit(NULL);
+}
+
+
+void FlightController::test1(void) {
+    DronePos dronepos = qr->checkQR();
+    ROS_INFO("found : %d", dronepos.numberOfQRs);
+}
+
+void FlightController::test2(void) {
+
+}
+
+void FlightController::test3(void) {
+
+}
+
+void FlightController::test4(void) {
+
+}
+
+void FlightController::test5(void) {
+
+}
+
+void FlightController::test6(void) {
+
+}
+
