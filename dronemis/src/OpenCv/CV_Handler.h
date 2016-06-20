@@ -23,6 +23,11 @@
 class CV_Handler {
 
 private:
+    struct plottedCube{
+        double x;
+        double y;
+    };
+
     int thresh = 64;
     int missingBoxFrames = 0;
     ros::NodeHandle nodeHandle;
@@ -31,7 +36,7 @@ private:
     std_srvs::Empty toggleCam_srv_srvs;
     std::string video_channel;
     std::vector<int> boxVector;
-    std::vector<Cascade::cubeInfo> plottedCubes;
+    std::vector<plottedCube> plottedCubes;
     cv::String map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/map.png";
     cv::String output_map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/output_map.jpg";
     cv::Mat map;
@@ -39,7 +44,7 @@ private:
     void video(sensor_msgs::ImageConstPtr img);
     void show(void);
     void paintCube(cv::Point center, std::string type);
-    std::vector<Cascade::cubeInfo> calculatePosition(std::vector<Cascade::cubeInfo> cubes);
+    void calculatePosition(std::vector<Cascade::cubeInfo> *cubes);
 
 public:
     bool imageReady;

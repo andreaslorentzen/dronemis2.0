@@ -228,7 +228,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
-        calculatePosition(cascades[biggestArray]);
+        calculatePosition(&cascades[biggestArray]);
 
 #ifdef DEBUG_CV_COUT_EXPLICIT
             std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
@@ -242,20 +242,20 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     return std::vector<Cascade::cubeInfo>();
 }
 
-std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> cubes) {
+void CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> *cubes) {
     double xFactor = 95.8 / 640;
     double yFactor = 51.7 / 360;
 
-    for (unsigned int i = 0; i < cubes.size(); i++) {
-        cubes[i].heading = (int) navData->getRotation();
+    for (unsigned int i = 0; i < cubes->size(); i++) {
+        (*cubes)[i].heading = (int) navData->getRotation();
 
-        double x = cubes[i].x - 320;
-        double y = 180 - cubes[i].y;
+        double x = (*cubes)[i].x - 320;
+        double y = 180 - (*cubes)[i].y;
 
-        cubes[i].xDist = (xFactor / (navData->getPosition().z/10)) * x;
-        cubes[i].yDist = (yFactor / (navData->getPosition().z/10)) * y;
+        (*cubes)[i].xDist = (xFactor / (navData->getPosition().z/10)) * x;
+        (*cubes)[i].yDist = (yFactor / (navData->getPosition().z/10)) * y;
 
-        double temp_rotation = (cubes[i].heading - 90) * (-1);
+        double temp_rotation = ((*cubes)[i].heading - 90) * (-1);
 
         if (temp_rotation >= 360)
             temp_rotation -= 360;
@@ -267,23 +267,37 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
         rotationMatrix[1] = Vector3(sin(temp_rotation), cos(temp_rotation), 0);
         rotationMatrix[2] = Vector3(0, 0, 1);
 
-        Vector3 position_vector(cubes[i].xDist, cubes[i].yDist, 0);
-        Vector3 qr_vector(navData->getPosition().x, navData->getPosition().y, 0);
+        Vector3 cubes_vector((*cubes)[i].xDist, (*cubes)[i].yDist, 0);
+        Vector3 position_vector(navData->getPosition().x, navData->getPosition().y, 0);
 
-        Vector3 resultVector(rotationMatrix[0].x * position_vector.x + rotationMatrix[0].y * position_vector.y +
-                             rotationMatrix[0].z * position_vector.z,
-                             rotationMatrix[1].x * position_vector.x + rotationMatrix[1].y * position_vector.y +
-                             rotationMatrix[1].z * position_vector.z,
-                             rotationMatrix[2].x * position_vector.x + rotationMatrix[2].y * position_vector.y +
-                             rotationMatrix[2].z * position_vector.z);
+        Vector3 resultVector(rotationMatrix[0].x * cubes_vector.x + rotationMatrix[0].y * cubes_vector.y +
+                             rotationMatrix[0].z * cubes_vector.z,
+                             rotationMatrix[1].x * cubes_vector.x + rotationMatrix[1].y * cubes_vector.y +
+                             rotationMatrix[1].z * cubes_vector.z,
+                             rotationMatrix[2].x * cubes_vector.x + rotationMatrix[2].y * cubes_vector.y +
+                             rotationMatrix[2].z * cubes_vector.z);
 
-        resultVector.x += qr_vector.x;
-        resultVector.y += qr_vector.y;
+        resultVector.x += position_vector.x;
+        resultVector.y += position_vector.y;
 
-        paintCube(Point(resultVector.x, resultVector.y), cubes[i].color);
+        if (!plottedCubes.empty()) {
+            for (unsigned int i = 0; i < plottedCubes.size(); i++) {
+                if (!(abs(plottedCubes[i].x - resultVector.x) < 20 && abs(plottedCubes[i].y - resultVector.y) < 20)) {
+                    plottedCube cube;
+                    cube.x = resultVector.x;
+                    cube.y = resultVector.x;
+                    plottedCubes.push_back(cube);
+                    paintCube(Point(resultVector.x, resultVector.y), (*cubes)[i].color);
+                }
+            }
+        } else {
+            plottedCube cube;
+            cube.x = resultVector.x;
+            cube.y = resultVector.x;
+            plottedCubes.push_back(cube);
+            paintCube(Point(resultVector.x, resultVector.y), (*cubes)[i].color);
+        }
     }
-
-    return cubes;
 }
 
 cv::Mat CV_Handler::checkBox(void) {
