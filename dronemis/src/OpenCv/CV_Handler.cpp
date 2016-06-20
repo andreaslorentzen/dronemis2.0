@@ -193,7 +193,7 @@ void CV_Handler::swapCam(bool frontCam) {
 
 void CV_Handler::checkCubes(void) {
     int frameCount = 0;
-    int biggestArray = 0;
+   // int biggestArray = 0;
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
     std::vector<cascadeArray> cascades;
 
