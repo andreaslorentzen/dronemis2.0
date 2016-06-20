@@ -236,7 +236,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
             std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
             std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
 #endif
-        std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
+       // std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         //std::cout << "color: " << cascades[biggestArray][0].color << std::endl;
     }
     return std::vector<Cascade::cubeInfo>();
@@ -342,11 +342,11 @@ void CV_Handler::paintCube(Point center, std::string type) {
     int thickness = -1;
     int lineType = 8;
     if (!type.compare("Green")) {
-        circle(map, center, 5, Scalar(0, 255, 0), thickness, lineType);
+        circle(map, center, 7, Scalar(0, 255, 0), thickness, lineType);
         imwrite(output_map_name, map);
     }
     else if (!type.compare("Red")){
-        circle(map, center, 5, Scalar(0, 0, 255), thickness, lineType);
+        circle(map, center, 7, Scalar(0, 0, 255), thickness, lineType);
         imwrite(output_map_name, map);
     }
     imshow("MapMis", map);
