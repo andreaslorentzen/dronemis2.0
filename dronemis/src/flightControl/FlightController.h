@@ -43,7 +43,8 @@ public:
     double scaleValueTo(double value, double target);
 
     bool lookingForQR = true;
-    DronePos dronePossion;
+    bool shutdownQR = false;
+    DronePos dronePossision;
     QR* getQr(){return qr;};
 private:
     bool started;
@@ -80,6 +81,7 @@ private:
     geometry_msgs::Twist getEmptyCmd();
 
     void flyForward(double time);
+    void strafe(double direction, double time);
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H
