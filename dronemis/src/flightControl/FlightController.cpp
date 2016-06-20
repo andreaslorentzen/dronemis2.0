@@ -227,7 +227,7 @@ void FlightController::run() {
         }
 
 
-    if()
+    //if(navData->getPosition().x < )
 
     land();
     return;
