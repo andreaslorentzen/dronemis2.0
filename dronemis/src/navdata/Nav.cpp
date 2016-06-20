@@ -67,9 +67,9 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     }
     lastvX = avx;
     float ups = updateUPS();
-    last_ts = ts;
+    last_ts = ts;*/
     position.z = msg->altd;
-
+/*
     position.x += avx * interval;//+ 0.5 * ax * INTERVAL * INTERVAL;
     position.y += vy * interval;//+ 0.5 * ay * INTERVAL * INTERVAL;
     x += vx * interval;
