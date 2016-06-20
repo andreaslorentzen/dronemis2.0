@@ -107,8 +107,7 @@ void FlightController::run() {
 
     DronePos dronePos;
 
-    while (ros::ok()) {
-        takeOff();
+    takeOff();
 
         bool turning = true;
         double amountTurned = 0;
@@ -128,6 +127,7 @@ void FlightController::run() {
         double starting_orientation = navData->getRawRotation();
         ROS_INFO("Start while");
 
+/*
        while (!dronePossion.positionLocked) {
             ROS_INFO("in while");
 
@@ -154,7 +154,8 @@ void FlightController::run() {
             }
 
 
-           /* do {
+           */
+/* do {
                 double targetHeading = navData->getRotation() - dronePossion.angle;
 
                 if (dronePossion.relativeY > 150 && dronePossion.relativeY < 225) {
@@ -165,7 +166,8 @@ void FlightController::run() {
                         currentHeading = 360 + currentHeading;
                     turnDegrees(targetHeading - currentHeading);
                 }
-            } while ((dronePossion.numberOfQRs > 2 && !dronePossion.positionLocked));*/
+            } while ((dronePossion.numberOfQRs > 2 && !dronePossion.positionLocked));*//*
+
 
 
 
@@ -174,6 +176,15 @@ void FlightController::run() {
 
         navData->resetToPosition(dronePossion.x * 10, dronePossion.y * 10, dronePossion.heading);
 
+*/
+
+    geometry_msgs::Twist cmd = getEmptyCmd();
+    cmd.linear.x = 1;
+    pub_control.publish(cmd);
+    for (int i = 0; i < 5; ++i) {
+        loop_rate.sleep();
+    }
+    hoverDuration(2);
 
 
 
@@ -215,11 +226,7 @@ void FlightController::run() {
             }
         }
 */
-
-        land();
-
-        break;
-    }
+    land();
 
 
     return;
@@ -790,6 +797,17 @@ void FlightController::abortProgram() {
     ROS_INFO("MANUEL ABORT!");
     started = false;
     land();
+}
+
+geometry_msgs::Twist FlightController::getEmptyCmd() {
+    geometry_msgs::Twist cmd;
+    cmd.linear.x = 0.0;
+    cmd.linear.y = 0.0;
+    cmd.linear.z = 0.0;
+    cmd.angular.x = 0.0;
+    cmd.angular.y = 0.0;
+    cmd.angular.z = 0.0;
+    return cmd;
 }
 
 

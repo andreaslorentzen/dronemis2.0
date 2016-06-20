@@ -76,6 +76,8 @@ private:
     void rotateDrone(double d);
 
     void hoverDrone();
+
+    geometry_msgs::Twist getEmptyCmd();
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H
