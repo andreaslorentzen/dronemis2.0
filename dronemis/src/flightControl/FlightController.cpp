@@ -97,6 +97,8 @@ FlightController::~FlightController() {
 }
 
 void FlightController::run() {
+    double yLimit = 9300;
+    double xLimit = 8100;
     Route myRoute;
     myRoute.initRoute(true);
 
@@ -189,16 +191,40 @@ void FlightController::run() {
     cvHandler->checkCubes();
     cvHandler->swapCam(true);
 
-    while(navData->getPosition().y +1000 < 9300) {
-        flyForward(0.7);
-        navData->addToY(1000);
+    if(target == 0)
+        while(navData->getPosition().y +1000 < 9300) {
+            flyForward(0.7);
+            navData->addToY(1000);
 
-        hoverDuration(2);
-        cvHandler->swapCam(false);
-        cvHandler->checkCubes();
-        cvHandler->swapCam(true);
-    }
+            hoverDuration(4);
+            cvHandler->swapCam(false);
+            cvHandler->checkCubes();
+            cvHandler->swapCam(true);
+            if(navData->getRotation() != target){
+                difference = angleDifference(rotation, target);
+                direction = angleDirection(rotation, target);
+                ROS_INFO("Difference = %f", difference);
+                ROS_INFO("Direction = %f", direction);
+                turnDegrees(difference*direction);
+            }
+        }
+    else if(target == 180)
+        while(navData->getPosition().y -1000 > 1500) {
+            flyForward(0.7);
+            navData->addToY(-1000);
 
+            hoverDuration(4);
+            cvHandler->swapCam(false);
+            cvHandler->checkCubes();
+            cvHandler->swapCam(true);
+            if(navData->getRotation() != target){
+                difference = angleDifference(rotation, target);
+                direction = angleDirection(rotation, target);
+                ROS_INFO("Difference = %f", difference);
+                ROS_INFO("Direction = %f", direction);
+                turnDegrees(difference*direction);
+            }
+        }
 
 
     land();
