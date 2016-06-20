@@ -249,63 +249,67 @@ void CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> *cubes) {
 
 
     for (unsigned int i = 0; i < cubes->size(); i++) {
-        (*cubes)[i].heading = (int) navData->getRotation();
+        if ((*cubes)[i].color.size() != 0) {
 
-        double x = (*cubes)[i].x - 320;
-        double y = 180 - (*cubes)[i].y;
+            (*cubes)[i].heading = (int) navData->getRotation();
 
-        (*cubes)[i].xDist = (xFactor / (navData->getPosition().z/10)) * x;
-        (*cubes)[i].yDist = (yFactor / (navData->getPosition().z/10)) * y;
+            double x = (*cubes)[i].x - 320;
+            double y = 180 - (*cubes)[i].y;
 
-        double temp_rotation = ((*cubes)[i].heading - 90) * (-1);
+            (*cubes)[i].xDist = (xFactor / (navData->getPosition().z / 10)) * x;
+            (*cubes)[i].yDist = (yFactor / (navData->getPosition().z / 10)) * y;
 
-        if (temp_rotation >= 360)
-            temp_rotation -= 360;
+            double temp_rotation = ((*cubes)[i].heading - 90) * (-1);
 
-        temp_rotation = temp_rotation / 180 * M_PI;
+            if (temp_rotation >= 360)
+                temp_rotation -= 360;
 
-        Vector3 rotationMatrix[3];
-        rotationMatrix[0] = Vector3(cos(temp_rotation), -sin(temp_rotation), 0);
-        rotationMatrix[1] = Vector3(sin(temp_rotation), cos(temp_rotation), 0);
-        rotationMatrix[2] = Vector3(0, 0, 1);
+            temp_rotation = temp_rotation / 180 * M_PI;
 
-        Vector3 cubes_vector((*cubes)[i].xDist, (*cubes)[i].yDist, 0);
-        Vector3 position_vector(navData->getPosition().x, navData->getPosition().y, 0);
+            Vector3 rotationMatrix[3];
+            rotationMatrix[0] = Vector3(cos(temp_rotation), -sin(temp_rotation), 0);
+            rotationMatrix[1] = Vector3(sin(temp_rotation), cos(temp_rotation), 0);
+            rotationMatrix[2] = Vector3(0, 0, 1);
 
-        Vector3 resultVector(rotationMatrix[0].x * cubes_vector.x + rotationMatrix[0].y * cubes_vector.y +
-                             rotationMatrix[0].z * cubes_vector.z,
-                             rotationMatrix[1].x * cubes_vector.x + rotationMatrix[1].y * cubes_vector.y +
-                             rotationMatrix[1].z * cubes_vector.z,
-                             rotationMatrix[2].x * cubes_vector.x + rotationMatrix[2].y * cubes_vector.y +
-                             rotationMatrix[2].z * cubes_vector.z);
+            Vector3 cubes_vector((*cubes)[i].xDist, (*cubes)[i].yDist, 0);
+            Vector3 position_vector(navData->getPosition().x, navData->getPosition().y, 0);
 
-        resultVector.x += position_vector.x;
-        resultVector.y += position_vector.y;
-        resultVector.x = resultVector.x;
-        resultVector.y = resultVector.y;
+            Vector3 resultVector(rotationMatrix[0].x * cubes_vector.x + rotationMatrix[0].y * cubes_vector.y +
+                                 rotationMatrix[0].z * cubes_vector.z,
+                                 rotationMatrix[1].x * cubes_vector.x + rotationMatrix[1].y * cubes_vector.y +
+                                 rotationMatrix[1].z * cubes_vector.z,
+                                 rotationMatrix[2].x * cubes_vector.x + rotationMatrix[2].y * cubes_vector.y +
+                                 rotationMatrix[2].z * cubes_vector.z);
 
-        if (!plottedCubes.empty()) {
-            for (unsigned int i = 0; i < plottedCubes.size(); i++) {
-                if (!(abs(plottedCubes[i].x - resultVector.x) < 20) && !(abs(plottedCubes[i].y - resultVector.y) < 20)) {
+            resultVector.x += position_vector.x;
+            resultVector.y += position_vector.y;
+
+            bool isOK = true;
+            if (!plottedCubes.empty()) {
+                for (unsigned int i = 0; i < plottedCubes.size(); i++) {
+                    if (abs(plottedCubes[i].x - resultVector.x) <= 20 && abs(plottedCubes[i].y - resultVector.y) <= 20) {
+                        ROS_INFO("Cube discarded: Duplicate found");
+                        isOK = false;
+                    }
+                }
+                if (isOK) {
                     plottedCube cube;
                     cube.x = resultVector.x;
                     cube.y = resultVector.y;
                     plottedCubes.push_back(cube);
                     std::cout << "Color: " << (*cubes)[i].color << std::endl;
-                    paintCube(Point(resultVector.x/10, resultVector.y/10), (*cubes)[i].color);
-                } else
-                    ROS_INFO("Cube discarded");
+                    paintCube(Point(resultVector.x / 10, resultVector.y / 10), (*cubes)[i].color);
+                }
+            } else {
+                plottedCube cube;
+                cube.x = resultVector.x;
+                cube.y = resultVector.y;
+                plottedCubes.push_back(cube);
+                std::cout << "Color: " << (*cubes)[i].color << std::endl;
+                paintCube(Point(resultVector.x / 10, resultVector.y / 10), (*cubes)[i].color);
             }
-        } else {
-            if ((*cubes)[i].color.size() == 0)
-                return;
-            plottedCube cube;
-            cube.x = resultVector.x;
-            cube.y = resultVector.y;
-            plottedCubes.push_back(cube);
-            std::cout << "Color: " << (*cubes)[i].color << std::endl;
-            paintCube(Point(resultVector.x/10, resultVector.y/10), (*cubes)[i].color);
-        }
+        } else
+            ROS_INFO("Cube discarded: Missing color");
     }
 }
 
