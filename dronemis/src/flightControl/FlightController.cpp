@@ -179,55 +179,72 @@ void FlightController::run() {
 
     ROS_INFO("Target = %f", target);
 
-    double difference = angleDifference(rotation, target);
-    int direction = angleDirection(rotation, target);
-    ROS_INFO("Difference = %f", difference);
-    ROS_INFO("Direction = %f", direction);
-    turnDegrees(difference*direction);
 
-    lookingForQR = true;
 
-    cvHandler->swapCam(false);
-    cvHandler->checkCubes();
-    cvHandler->swapCam(true);
+    int i = 0;
+    while(i < 4) {
+        double difference = angleDifference(rotation, target);
+        int direction = angleDirection(rotation, target);
+        ROS_INFO("Difference = %f", difference);
+        ROS_INFO("Direction = %f", direction);
+        turnDegrees(difference*direction);
 
-    if(target == 0)
-        while(navData->getPosition().y +1000 < 9300) {
-            flyForward(0.7);
-            navData->addToY(1000);
+        lookingForQR = true;
 
-            hoverDuration(4);
-            cvHandler->swapCam(false);
-            cvHandler->checkCubes();
-            cvHandler->swapCam(true);
-            if(navData->getRotation() != target){
-                difference = angleDifference(rotation, target);
-                direction = angleDirection(rotation, target);
-                ROS_INFO("Difference = %f", difference);
-                ROS_INFO("Direction = %f", direction);
-                turnDegrees(difference*direction);
+        cvHandler->swapCam(false);
+        cvHandler->checkCubes();
+        cvHandler->swapCam(true);
+        if (target == 0)
+            while (navData->getPosition().y + 1000 < 9300) {
+                flyForward(0.7);
+                navData->addToY(1000);
+
+                hoverDuration(4);
+                cvHandler->swapCam(false);
+                cvHandler->checkCubes();
+                cvHandler->swapCam(true);
+                if (navData->getRotation() != target) {
+                    difference = angleDifference(rotation, target);
+                    direction = angleDirection(rotation, target);
+                    ROS_INFO("Difference = %f", difference);
+                    ROS_INFO("Direction = %f", direction);
+                    turnDegrees(difference * direction);
+                }
             }
-        }
-    else if(target == 180)
-        while(navData->getPosition().y -1000 > 1500) {
-            flyForward(0.7);
-            navData->addToY(-1000);
+        else if (target == 180)
+            while (navData->getPosition().y - 1000 > 1500) {
+                flyForward(0.7);
+                navData->addToY(-1000);
 
-            hoverDuration(4);
-            cvHandler->swapCam(false);
-            cvHandler->checkCubes();
-            cvHandler->swapCam(true);
-            if(navData->getRotation() != target){
-                difference = angleDifference(rotation, target);
-                direction = angleDirection(rotation, target);
-                ROS_INFO("Difference = %f", difference);
-                ROS_INFO("Direction = %f", direction);
-                turnDegrees(difference*direction);
+                hoverDuration(4);
+                cvHandler->swapCam(false);
+                cvHandler->checkCubes();
+                cvHandler->swapCam(true);
+                if (navData->getRotation() != target) {
+                    difference = angleDifference(rotation, target);
+                    direction = angleDirection(rotation, target);
+                    ROS_INFO("Difference = %f", difference);
+                    ROS_INFO("Direction = %f", direction);
+                    turnDegrees(difference * direction);
+                }
             }
+
+
+        if (target == 180) {
+            strafe(1, 0.7);
+            navData->addToX(1000);
+        } else if (target == 0) {
+            strafe(-1, 0.7);
+            navData->addToX(-1000);
         }
 
+        if(target == 180)
+            target = 0;
+        else if (target == 0)
+            target = 180;
 
-    //if(navData->getPosition().x < )
+        i++;
+    }
 
     land();
     return;
