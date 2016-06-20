@@ -150,7 +150,7 @@ void FlightController::run() {
     Vector3 position = navData->getPosition();
 
     goToWaypoint(myRoute.findNearestWaypoint(position.x, position.y));
-    
+
     land();
     return;
 }
