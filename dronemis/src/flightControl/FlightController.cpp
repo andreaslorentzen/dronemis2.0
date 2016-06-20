@@ -13,6 +13,7 @@ struct thread_data {
     CV_Handler *cvHandler;
     FlightController *controller;
     ros::NodeHandle *n;
+    QR *qr;
 } myThreadData;
 
 FlightController::FlightController() {
@@ -82,12 +83,12 @@ FlightController::FlightController(int loopRate, ros::NodeHandle *nh, Nav *nav) 
     myThreadData.cvHandler = cvHandler;
     myThreadData.navData = navData;
     myThreadData.n = nh;
+    myThreadData.qr = qr;
 
-    pthread_t threads[2];
+    pthread_t threads[3];
     pthread_create(&threads[0], NULL, startCV, &myThreadData);
     pthread_create(&threads[1], NULL, startNavdata, &myThreadData);
-
-
+    pthread_create(&threads[2], NULL, startCascade, &myThreadData);
 }
 
 // Destructor
@@ -594,7 +595,7 @@ void FlightController::startProgram() {
 void FlightController::resetProgram() {
     //DronePos dronepos = qr->checkQR();
     //ROS_INFO("found : %d", dronepos.numberOfQRs);
-
+/*
     ROS_INFO("MANUEL RESET!");
     started = false;
     reset();*/
@@ -676,6 +677,21 @@ void *runQR(void *thread_arg) {
         if(thread_data->controller->lookingForQR)
             thread_data->controller->dronePossision = thread_data->controller->getQr()->checkQR();
         ros::Rate(25).sleep();
+    }
+    pthread_exit(NULL);
+}
+
+void *startCascade(void *thread_arg) {
+    struct thread_data *thread_data;
+    thread_data = (struct thread_data *) thread_arg;
+    ros::Rate r(1);
+    while (ros::ok()) {
+        if (thread_data->qr->RoomDronePosition.positionLocked) {
+            thread_data->cvHandler->swapCam(false);
+            thread_data->cvHandler->checkCubes();
+            thread_data->cvHandler->swapCam(true);
+        }
+        r.sleep();
     }
     pthread_exit(NULL);
 }
