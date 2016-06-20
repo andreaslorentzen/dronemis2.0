@@ -107,15 +107,15 @@ void FlightController::run() {
 
     DronePos dronePos;
 
-    while (ros::ok()) {
-        takeOff();
+    takeOff();
 
         bool turning = true;
         double amountTurned = 0;
         double turnStepSize = 30;
 
-
-        hoverDuration(5);
+        hoverDuration(3);
+        navData->resetRawRotation();
+        hoverDuration(2);
 
         cmd.linear.z = 0.5;
         pub_control.publish(cmd);
@@ -130,12 +130,9 @@ void FlightController::run() {
 
        while (!dronePossion.positionLocked) {
             ROS_INFO("in while");
-
             if (turning) {
                 turnDegrees(turnStepSize);
-
                 double orientation = navData->getRawRotation();
-
                 amountTurned += angleDifference(starting_orientation,orientation);
                 ROS_INFO("AMOUNTTURNED: %f",amountTurned);
                 starting_orientation = orientation;
@@ -143,264 +140,45 @@ void FlightController::run() {
                     turning = false;
             } else {
                 navData->resetRaw();
-                Command tempWaypoint(500, 0);
-
-
-                goToWaypoint(tempWaypoint);
-
+                flyForward(0.4);
                 turning = true;
                 amountTurned = 0;
-
             }
-
-
-           /* do {
-                double targetHeading = navData->getRotation() - dronePossion.angle;
-
-                if (dronePossion.relativeY > 150 && dronePossion.relativeY <     225) {
-                    pos = navData->getPosition();
-                    goToWaypoint(Command(pos.x, pos.y + (dronePos.relativeX)));
-                    double currentHeading = navData->getRotation();
-                    if (currentHeading < 0)
-                        currentHeading = 360 + currentHeading;
-                    turnDegrees(targetHeading - currentHeading);
-                }
-            } while ((dronePossion.numberOfQRs > 2 && !dronePossion.positionLocked));*/
-
-
-
         }
         ROS_INFO("end while");
-
         navData->resetToPosition(dronePossion.x * 10, dronePossion.y * 10, dronePossion.heading);
+    Vector3 position = navData->getPosition();
 
+    goToWaypoint(myRoute.findNearestWaypoint(position.x, position.y));
 
-
-        cvHandler->swapCam(false);
-
-        cvHandler->checkCubes();
-
-/*
-        lookingForQR = false;
-#ifdef DEBUG
-        ROS_INFO("X = %d", dronePossion.x);
-        ROS_INFO("Y = %d", dronePossion.y);
-        ROS_INFO("heading = %d", dronePossion.heading);
-
-        land();
-        return;
-#endif
-
-        hoverDuration(1);
-*/
-        /*while (!myRoute.hasAllBeenVisited()) {
-            Command currentCommand;
-
-            if(firstIteration) {
-                currentCommand = myRoute.findNearestWaypoint(navData->getPosition().x, navData->getPosition().y,
-                                                             navData->getPosition().z);
-                firstIteration = false;
-            }else {
-                currentCommand = myRoute.nextCommand();
-            }
-
-            if (currentCommand.commandType == Command::goTo) {
-                goToWaypoint(currentCommand);
-            } else if (currentCommand.commandType == Command::hover) {
-                hoverDuration(currentCommand.timeToHover);
-            } else if (currentCommand.commandType == Command::turn) {
-
-                turnDegrees(currentCommand.degrees);
-            }
-        }*/
-
-
-        land();
-
-        break;
-    }
-
-
+    land();
     return;
 }
 
 void FlightController::goToWaypoint(Command newWaypoint) {
-
     Vector3 pos = navData->getPosition();
-
     Vector3 d(newWaypoint.x - pos.x,
-              newWaypoint.y - pos.y,
-            //newWaypoint.z - navData->position.z);
-              0);
-
+              newWaypoint.y - pos.y,0);
     Vector3 v_vec(0.0, 0.0, 0.0);
-    printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", newWaypoint.x, newWaypoint.y, d.x, d.y);
-
-
-    /*
-     * VERSION 1
-     */
+    printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", pos.x, pos.y, d.x, d.y);
 
     turnTowardsPoint(newWaypoint);
-
-    while (d.distance() > TOLERANCE) {
-
+    while (d.x > TOLERANCE) {
         v_vec.x = getSpeed(d.distance());
-
         if (v_vec.x != cmd.linear.x) {
             printf("vx: %f\tdx: %f \n", v_vec.x, d.distance());
             cmd.linear.x = v_vec.x;
             pub_control.publish(cmd);
         }
-
         control_loop.sleep();
-
         pos = navData->getPosition();
         d.x = newWaypoint.x - pos.x;
         d.y = newWaypoint.y - pos.y;
         d.z = newWaypoint.z - pos.z;
-
     }
-
-    hoverDuration(2);
-
-    /*while ((int) abs(d.y) > TOLERANCE){
-
-        v_vec.y = getSpeed(d.y);
-
-        if(v_vec.y != cmd.linear.y){
-            printf("vx: %f\tdx: %f \n", v_vec.y, d.y);
-            cmd.linear.y = v_vec.y;
-            pub_control.publish(cmd);
-        }
-
-        control_loop.sleep();
-
-        pos = navData->getPosition();
-        d.x = newWaypoint.x - pos.x;
-        d.y = newWaypoint.y - pos.y;
-        d.z = newWaypoint.z - pos.z;
-
-    }*/
-#ifdef DEBUG
-    printf("Stopped at: %f\t%f \n", navData->getPosition().x, navData->getPosition().y);
-#endif
-    /*
-     * VERSION 2
-     */
-    //while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE || (int) abs(d.z) > TOLERANCE){
-    /* while (((int) abs(d.x)) > TOLERANCE || ((int) abs(d.y)) > TOLERANCE ){
-
-          v_vec = getVelocity(d);
-          //    ROS_INFO("vx: %f\tvy: %f\n",v_vec.x,v_vec.y);
-          //    ROS_INFO("dx: %f\tdy: %f\n",d.x,d.y);
-        // if(v_vec.x != cmd.linear.x || v_vec.y != cmd.linear.y || v_vec.z != cmd.linear.z){
-          if(v_vec.x != cmd.linear.x || v_vec.y != cmd.linear.y ){
-              cmd.linear.x = v_vec.x;
-              cmd.linear.y = v_vec.y;
-              //cmd.linear.z = v_vec.z;
-              ROS_INFO("SEND: vx: %f\tvy: %f\n",v_vec.x,v_vec.y);
-              pub_control.publish(cmd);
-          }
-          control_loop.sleep();
-          d.x = newWaypoint.x - navData->position.x;
-          d.y = newWaypoint.y - navData->position.y;
-          //d.z = newWaypoint.z - navData->position.z;
-      }
-  */
     hoverDuration(2);
 
 
-//    cmd.linear.y = getSpeed(dy);
-//    cmd.linear.z = getSpeed(dz);
-
-
-
-
-
-
-
-/*
-    while(abs(dz) > TOLERANCE){
-        cmd.linear.z = getSpeed(dz);
-
-        pub_control.publish(cmd);
-        dz = newWaypoint.z - navData->position.z;
-
-#ifdef DEBUG
-        ROS_INFO("dz = %F", dz);
-#endif
-        ros::Rate(LOOP_RATE).sleep();
-        moved = true;
-    }
-
-    if(moved)
-        hoverDuration(1);
-*/
-
-
-/*
-
-
-
-
-    int timer = 0;
-    int time_limit = 200;
-    if (!straightFlight) {
-        // TODO decide if this should be implemented or{ not
-    } else{
-
-        while(timer < time_limit){
-            if ((int) abs(dx) < TOLERANCE){
-                timer++;
-                cmd.linear.x = 0.0;
-            }
-            else {
-                timer = 0;
-
-            }
-
-            ROS_INFO("dx = %f  speed = %f\n", d.x, cmd.linear.x);
-            ROS_INFO("timer = %d  distance = %d\n", timer, (int) abs(d.x));
-
-
-
-
-            dx = newWaypoint.x - navData->position.x;
-
-        #ifdef DEBUG
-            ROS_INFO("newpoint = %F", newWaypoint.x);
-            ROS_INFO("navData = %F", navData->position.x);
-            ROS_INFO("dx = %F", dx);
-            ROS_INFO("Speed = %F", cmd.linear.x);
-            ROS_INFO("rotation = %F", navData->rotation);
-        #endif
-            ros::Rate(10).sleep();
-            moved = true;
-        }
-        ROS_INFO("Position is: %f\n", navData->position.x);
-*/
-/*
-        moved = false;
-        while(abs(dy) > TOLERANCE){
-
-            cmd.linear.y = getSpeed(dy);
-
-            pub_control.publish(cmd);
-            dy = newWaypoint.y - navData->position.y;
-
-        #ifdef DEBUG
-            ROS_INFO("dy = %F", dy);
-        #endif
-            ros::Rate(LOOP_RATE).sleep();
-            moved = t150rue;
-        }
-
-        if(moved)
-            hoverDuration(1);
-
-    }
-    */
 }
 
 double FlightController::getSpeed(double distance) {
@@ -441,57 +219,6 @@ Vector3 FlightController::getVelocity(Vector3 d) {
     return v_vec;
 }
 
-
-/*
-void FlightController::turnDegrees(double degrees){
-    double ori_deg = navData->getRotation();
-    double target_deg = ori_deg+degrees;;
-    int iterations;
-
-    iterations = abs(((int)degrees/30))+1;
-
-    ROS_INFO("iterations = %d", iterations);
-
-    if(iterations ==1)
-        iterations = 2;
-
-    float offset = 1;
-
-
-
-    for(int i = 1; i < iterations; i++){
-        ROS_INFO("Now inside the loop: %d",i);
-        if(i == iterations-1 && ((int)degrees % 30) != 0)
-            if(degrees > 0)
-                target_deg = ori_deg + ((int)degrees%30);
-            else
-                target_deg = ori_deg - ((int)degrees%30);
-        else
-            if(degrees > 0)
-                target_deg = ori_deg + 30;
-            else
-                target_deg = ori_deg -30;
-
-        if (target_deg > 360)
-            target_deg = target_deg - 360;
-
-        if (target_deg < 0)
-            target_deg = target_deg + 360;
-
-        do {
-            ori_deg = navData->getRotation();
-            cmd.angular.z = getRotationalSpeed(target_deg, ori_deg);
-            pub_control.publish(cmd);
-        } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
-        hover(1);
-    }
-#ifdef DEBUG
-    //ROS_INFO("ori_deg: %6.2f", ori_deg);
-#endif
-    hoverDuration(1);
-}
-*/
-
 double FlightController::formatAngle(double angle) {
     double result = angle;
     if (result < 0)
@@ -525,7 +252,10 @@ double FlightController::scaleValueTo(double value, double target) {
     return (target / value) * value;
 }
 
-
+/*int last_ts = (int) (ros::Time::now().toNSec() / 1000000);
+int time = (int) (ros::Time::now().toNSec() / 1000000);
+time_counter += (time - last_ts);
+last_ts = time;*/
 void FlightController::turnDegrees(double degrees) {
     double orientation = navData->getRotation();
     double target = formatAngle(orientation + degrees);
@@ -537,7 +267,7 @@ void FlightController::turnDegrees(double degrees) {
     int time_counter = 0;
 
 
-    rotateDrone(direction * 0.5);
+    rotateDrone(direction * 1.0);
     int debug_counter = 0;
     while (true) {
 
@@ -551,14 +281,14 @@ void FlightController::turnDegrees(double degrees) {
 
         //if(debug_counter % 100 == 0)
            // ROS_INFO("LOOP orientation: %3.1f\tdifference: %3.1f\tdirection: %d\ttime_counter: %d\ttarget: %3.0f",orientation,difference,direction, time_counter, target);
-        if (time_counter > 350) {
+        if (time_counter > 100) {
             hoverDuration(1);
             time_counter = 0;
             last_ts = (int) (ros::Time::now().toNSec() / 1000000);
             rotateDrone(direction * 1.0);
         }
 
-        if( difference < (time_counter*time_counter)/20000+4){
+        if( difference < (time_counter*time_counter)/2000+4){
             //hoverDuration(3);
             break;
         }
@@ -658,8 +388,8 @@ void FlightController::turnTowardsPoint(Command waypoint) {
     ROS_INFO("X = %f ", pos.x);
     ROS_INFO("Y = %f ", pos.y);
 
-    double target_angle = atan2(waypoint.x - pos.x,waypoint.y - pos.y); // angle towards waypoint position
-    double target_deg = target_angle * 180 / M_PI; // conversion to degrees
+    double target_angle = atan2(waypoint.y - pos.y, waypoint.x - pos.x); // angle towards waypoint position
+    double target_deg = target_angle / 180 * M_PI; // conversion to degrees
 
     ROS_INFO("Target angle  = %f", target_angle);
     ROS_INFO("Target degrees = %f", target_deg);
@@ -778,17 +508,39 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    DronePos dronepos = qr->checkQR();
-    ROS_INFO("found : %d", dronepos.numberOfQRs);
+    //DronePos dronepos = qr->checkQR();
+    //ROS_INFO("found : %d", dronepos.numberOfQRs);
+    //cout << "Relative position (x,y) = " << dronepos.relativeX << "," << dronepos.relativeY << endl;
+    //cout << "Angle and positionLock" << dronepos.angle << " and " << dronepos.positionLocked << endl;
     ROS_INFO("MANUEL RESET!");
     started = false;
-    reset();
+        reset();
 }
 
 void FlightController::abortProgram() {
     ROS_INFO("MANUEL ABORT!");
     started = false;
     land();
+}
+
+geometry_msgs::Twist FlightController::getEmptyCmd() {
+    geometry_msgs::Twist cmd;
+    cmd.linear.x = 0.0;
+    cmd.linear.y = 0.0;
+    cmd.linear.z = 0.0;
+    cmd.angular.x = 0.0;
+    cmd.angular.y = 0.0;
+    cmd.angular.z = 0.0;
+    return cmd;
+}
+
+void FlightController::flyForward(double time) {
+    geometry_msgs::Twist cmd = getEmptyCmd();
+    cmd.linear.x = 1;
+    pub_control.publish(cmd);
+    for (int i = 0; i < LOOP_RATE*time; ++i) {
+        ros::Rate(LOOP_RATE).sleep();
+    }
 }
 
 
