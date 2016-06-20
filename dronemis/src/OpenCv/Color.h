@@ -20,11 +20,6 @@ public:
     cv::Mat kernel;
 
     struct {
-        int state;
-        int kernel;
-    }data;
-
-    struct {
         int iLowH = 150;
         int iHighH = 255;
 

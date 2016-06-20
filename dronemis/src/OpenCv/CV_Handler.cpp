@@ -13,6 +13,12 @@ Color *color;
 Nav *navData;
 int filterState = 0;
 
+struct buttonData{
+    int state;
+    int kernel;
+    CV_Handler *cv;
+}data;
+
 using namespace std;
 using namespace cv;
 bool frontCamSelected = true;
@@ -35,6 +41,7 @@ void CV_Handler::run(Nav *nav) {
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
     namedWindow("FilterMis", CV_WINDOW_AUTOSIZE);
     namedWindow("VideoMis", WINDOW_NORMAL);
+    namedWindow("MapMis", WINDOW_NORMAL);
 
     cvCreateTrackbar("Thresh", "FilterMis", &thresh, 255); //Hue (0 - 255)
 
@@ -51,9 +58,9 @@ void CV_Handler::run(Nav *nav) {
     cvCreateTrackbar("HighS_G", "FilterMis", &(color->greenFilter).iHighS, 255);
     cvCreateTrackbar("LowV_G", "FilterMis", &(color->greenFilter).iLowV, 255); //Value (0 - 255)
     cvCreateTrackbar("HighV_G", "FilterMis", &(color->greenFilter).iHighV, 255);
-
-    cvCreateButton("Kernel", setKernel, &color->data,CV_PUSH_BUTTON,0);
-    cvCreateButton("Filter", setFilter, &color->data,CV_PUSH_BUTTON,0);
+    data.cv = this;
+    cvCreateButton("Kernel", setKernel, &data,CV_PUSH_BUTTON,0);
+    cvCreateButton("Filter", setFilter, &data,CV_PUSH_BUTTON,0);
 
     map = imread(map_name, CV_LOAD_IMAGE_UNCHANGED);
     ros::Rate r(25);
@@ -83,27 +90,35 @@ void setKernel(int state, void* userdata) {
 }
 
 void setFilter(int state, void* userdata) {
+    struct buttonData *data;
+    data = (struct buttonData *) userdata;
+
     if (++filterState > 4)
         filterState = 0;
     if (filterState == 0) {
         ROS_INFO("Standard video-feed");
         graySelected = false;
+        data->cv->swapCam(true);
     }
     if (filterState == 1) {
         ROS_INFO("Red video-feed");
         graySelected = false;
+        data->cv->swapCam(false);
     }
     if (filterState == 2) {
         ROS_INFO("Green video-feed");
         graySelected = false;
+        data->cv->swapCam(false);
     }
     if (filterState == 3) {
         ROS_INFO("Circle threshold video-feed");
         graySelected = true;
+        data->cv->swapCam(true);
     }
     if (filterState == 4) {
         ROS_INFO("Circle painted video-feed");
         graySelected = true;
+        data->cv->swapCam(true);
     }
 }
 
