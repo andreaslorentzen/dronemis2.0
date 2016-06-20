@@ -590,13 +590,13 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    //DronePos dronepos = qr->checkQR();
-    //ROS_INFO("found : %d", dronepos.numberOfQRs);
+    DronePos dronepos = qr->checkQR();
+    ROS_INFO("found : %d", dronepos.numberOfQRs);
 
-    ROS_INFO("MANUEL RESET!");
-    started = false;
-    reset();*/
-    cvHandler->checkCubes();
+    //ROS_INFO("MANUEL RESET!");
+    //started = false;
+    //reset();
+    //cvHandler->checkCubes();
 }
 
 void FlightController::abortProgram() {
