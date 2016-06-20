@@ -688,11 +688,11 @@ void *startCascade(void *thread_arg) {
     thread_data = (struct thread_data *) thread_arg;
     ros::Rate r(1);
     while (ros::ok()) {
-        if (thread_data->qr->RoomDronePosition.positionLocked) {
-            thread_data->cvHandler->swapCam(false);
-            thread_data->cvHandler->checkCubes();
-            thread_data->cvHandler->swapCam(true);
-        }
+        //if (thread_data->qr->RoomDronePosition.positionLocked) {
+        //    thread_data->cvHandler->swapCam(false);
+        //    thread_data->cvHandler->checkCubes();
+        //    thread_data->cvHandler->swapCam(true);
+        //}
         r.sleep();
     }
     pthread_exit(NULL);
