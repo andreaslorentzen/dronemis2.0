@@ -595,8 +595,7 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    DronePos dronepos = qr->checkQR();
-    ROS_INFO("found : %d", dronepos.numberOfQRs);
+
 
     //ROS_INFO("MANUEL RESET!");
     //started = false;
@@ -700,7 +699,8 @@ void *startCascade(void *thread_arg) {
 
 
 void FlightController::test1(void) {
-
+    DronePos dronepos = qr->checkQR();
+    ROS_INFO("found : %d", dronepos.numberOfQRs);
 }
 
 void FlightController::test2(void) {
