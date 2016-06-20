@@ -154,7 +154,7 @@ void FlightController::run() {
 
     cmd.linear.z = -0.5;
     pub_control.publish(cmd);
-    while (navData->getPosition().z < 1000)
+    while (navData->getPosition().z > 1000)
         ros::Rate(LOOP_RATE).sleep();
 
 
