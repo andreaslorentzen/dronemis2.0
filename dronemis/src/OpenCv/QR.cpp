@@ -147,14 +147,17 @@ DronePos QR::checkQR(void) {
                 }
 
 
-                DronePosition.relativeX = ((distancetoQR * (1/(1+(yDiversionAngle/100))) * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
-                cout << "New x position = " << DronePosition.relativeX << endl;
+                //DronePosition.relativeX = ((distancetoQR * (1/(1+(yDiversionAngle/100))) * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
+                //cout << "New x position = " << DronePosition.relativeX << endl;
                 DronePosition.relativeX = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
+                //cout << "Old x position = " << DronePosition.relativeX << endl;
                 DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
                 bool positionLock;
                 if(yDiversionAngle < 25 && yDiversionAngle > -25) positionLock = 1;
                 else positionLock = 0;
+                //cout << "PositionLock = " << DronePosition.positionLocked << endl << endl;
+
 
                 //**************************************
                 //**** Match up with QR coordinates ****
@@ -186,6 +189,7 @@ void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int rela
     RoomDronePosition.cameraPointing = cameraPointing;
     RoomDronePosition.angle = angle;
     if (QRname.find("W00") == 0) {       // Wall 0 has been found
+        RoomDronePosition.wallNumber = 0;
         if (QRname.find("W00.00") == 0) {     // Code W00.00
             RoomDronePosition.x = (QRWallCode[0].x - relativeX);
             RoomDronePosition.y = (QRWallCode[0].y - relativeY);
@@ -215,6 +219,7 @@ void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int rela
     }
 
     else if (QRname.find("W01.") == 0) {       // Wall 1 has been found
+        RoomDronePosition.wallNumber = 1;
         if (QRname.find("W01.00") == 0) {     // Code W01.00
             RoomDronePosition.x = (QRWallCode[5].x - relativeY);
             RoomDronePosition.y = (QRWallCode[5].y + relativeX);
@@ -243,6 +248,7 @@ void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int rela
     }
 
     else if (QRname.find("W02.") == 0) {       // Wall 2 has been found
+        RoomDronePosition.wallNumber = 2;
         if (QRname.find("W02.00") == 0) {     // Code W02.00
             RoomDronePosition.x = (QRWallCode[10].x + relativeX);
             RoomDronePosition.y = (QRWallCode[10].y + relativeY);
@@ -271,6 +277,7 @@ void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int rela
     }
 
     else if (QRname.find("W03.") == 0) {       // Wall 3 has been found
+        RoomDronePosition.wallNumber = 3;
         if (QRname.find("W03.00") == 0) {     // Code W03.00
             RoomDronePosition.x = (QRWallCode[15].x + relativeY);
             RoomDronePosition.y = (QRWallCode[15].y - relativeX);

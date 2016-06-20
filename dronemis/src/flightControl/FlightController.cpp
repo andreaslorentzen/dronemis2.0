@@ -424,6 +424,7 @@ void FlightController::turnDegrees(double degrees) {
 
 void FlightController::turnTowardsPoint(Command waypoint) {
 
+
     Vector3 pos = navData->getPosition();
 
     ROS_INFO("X = %f ", pos.x);
