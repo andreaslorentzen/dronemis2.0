@@ -508,13 +508,13 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    //DronePos dronepos = qr->checkQR();
+    DronePos dronepos = qr->checkQR();
     //ROS_INFO("found : %d", dronepos.numberOfQRs);
     //cout << "Relative position (x,y) = " << dronepos.relativeX << "," << dronepos.relativeY << endl;
-    //cout << "Angle and positionLock" << dronepos.angle << " and " << dronepos.positionLocked << endl;
-    ROS_INFO("MANUEL RESET!");
-    started = false;
-        reset();
+    cout << "Angle and positionLock" << dronepos.angle << " and " << dronepos.positionLocked << endl;
+    //ROS_INFO("MANUEL RESET!");
+    //started = false;
+        //reset();
 }
 
 void FlightController::abortProgram() {

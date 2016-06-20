@@ -166,7 +166,7 @@ double Nav::getRotation() {
 
     while(rot > 360)
         rot -= 360;
-   ROS_INFO("GETROTATION rot: %6.1f \t QRoffset: %6.1f \t rotation: %6.1f", rot, QRoffset, rotation);
+   //ROS_INFO("GETROTATION rot: %6.1f \t QRoffset: %6.1f \t rotation: %6.1f", rot, QRoffset, rotation);
     return rot;
 }
 

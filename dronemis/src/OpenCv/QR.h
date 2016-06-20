@@ -23,7 +23,8 @@ struct DronePos {
     double cameraPointing;
     double angle;
     int wallNumber;
-    void resetCoordinates(){
+
+    void resetCoordinates() {
         x = 0;
         y = 0;
         relativeX = 0;
@@ -32,14 +33,17 @@ struct DronePos {
         positionLocked = 0;
         heading = 0;
         cameraPointing = 0;
-        angle = 0;wallNumber = 0;
+        angle = 0;
+        wallNumber = 0;
     }
 };
 
 class QR {
 public:
     QR(CV_Handler *cv);
+
     DronePos checkQR(void);
+
     struct DronePos RoomDronePosition;
 
 
@@ -63,8 +67,10 @@ private:
     float distanceToQR[200];
 
     void initializeQR(void);
+
     void calculateRoomDronePostition(std::string QRname, int relativeX, int relativeY, bool positionLocked,
                                      int numberOfQRs, double cameraPointing, double angle);
+
     double calculateDistanceToQR(int pixel);
 };
 
