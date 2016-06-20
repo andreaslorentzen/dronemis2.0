@@ -117,7 +117,7 @@ void FlightController::run() {
 
     cmd.linear.z = 0.5;
     pub_control.publish(cmd);
-    while (navData->getPosition().z < 1200)
+    while (navData->getPosition().z < 1000)
         ros::Rate(LOOP_RATE).sleep();
 
     hoverDuration(1);
@@ -190,6 +190,8 @@ void FlightController::run() {
         cvHandler->checkCubes();
         cvHandler->swapCam(true);
     }
+
+
 
     land();
     return;
@@ -283,10 +285,10 @@ double FlightController::angleDifference(double a1, double a2) {
 }
 
 int FlightController::angleDirection(double a1, double a2) {
-    int direction = 1;
+    int direction = -1;
     double difference = a2 - a1; // calculate difference
     if ((difference < 180 && difference > 0) || (difference < -180))
-        direction = -1;
+        direction = 1;
     return direction;
 }
 
