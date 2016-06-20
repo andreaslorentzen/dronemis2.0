@@ -88,3 +88,43 @@ cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> * cubes, cv::Mat 
 
     return imgThresholded;
 }
+
+cv::Mat Color::TESTcheckColorsGreen(cv::Mat image) {
+
+    Mat imgHSV;
+    Mat imgThresholded;
+
+    //Convert from BGR to HSV
+    cvtColor(image, imgHSV, COLOR_BGR2HSV);
+
+    //Threshold the image to match filter-values
+    inRange(imgHSV, Scalar(greenFilter.iLowH, greenFilter.iLowS, greenFilter.iLowV), Scalar(greenFilter.iHighH, greenFilter.iHighS, greenFilter.iHighV), imgThresholded);
+
+    //Morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Morphological closing (fill small holes in the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
+
+    return imgThresholded;
+}
+
+cv::Mat Color::TESTcheckColorsRed(cv::Mat image) {
+
+    Mat imgHSV;
+    Mat imgThresholded;
+
+    //Convert from BGR to HSV
+    cvtColor(image, imgHSV, COLOR_BGR2HSV);
+
+    //Threshold the image to match filter-values
+    inRange(imgHSV, Scalar(redFilter.iLowH, redFilter.iLowS, redFilter.iLowV), Scalar(redFilter.iHighH, redFilter.iHighS, redFilter.iHighV), imgThresholded);
+
+    //Morphological opening (remove small objects from the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_OPEN,kernel);
+
+    //Morphological closing (fill small holes in the foreground)
+    morphologyEx(imgThresholded,imgThresholded,MORPH_CLOSE,kernel);
+
+    return imgThresholded;
+}

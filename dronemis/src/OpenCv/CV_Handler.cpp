@@ -6,12 +6,18 @@
 #include "Color.h"
 #include "QR.h"
 
-#define CASCADE_FRAMES 10
+#define CASCADE_FRAMES 0
 
 Cascade *cascade;
 Color *color;
 Nav *navData;
 int filterState = 0;
+
+struct buttonData{
+    int state;
+    int kernel;
+    CV_Handler *cv;
+}data;
 
 using namespace std;
 using namespace cv;
@@ -35,6 +41,7 @@ void CV_Handler::run(Nav *nav) {
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
     namedWindow("FilterMis", CV_WINDOW_AUTOSIZE);
     namedWindow("VideoMis", WINDOW_NORMAL);
+    namedWindow("MapMis", WINDOW_NORMAL);
 
     cvCreateTrackbar("Thresh", "FilterMis", &thresh, 255); //Hue (0 - 255)
 
@@ -51,10 +58,11 @@ void CV_Handler::run(Nav *nav) {
     cvCreateTrackbar("HighS_G", "FilterMis", &(color->greenFilter).iHighS, 255);
     cvCreateTrackbar("LowV_G", "FilterMis", &(color->greenFilter).iLowV, 255); //Value (0 - 255)
     cvCreateTrackbar("HighV_G", "FilterMis", &(color->greenFilter).iHighV, 255);
+    data.cv = this;
+    cvCreateButton("Kernel", setKernel, &data,CV_PUSH_BUTTON,0);
+    cvCreateButton("Filter", setFilter, &data,CV_PUSH_BUTTON,0);
 
-    cvCreateButton("Kernel", setKernel, &color->data,CV_PUSH_BUTTON,0);
-    cvCreateButton("Filter", setFilter, &color->data,CV_PUSH_BUTTON,0);
-
+    map = imread(map_name, CV_LOAD_IMAGE_UNCHANGED);
     ros::Rate r(25);
     while(nodeHandle.ok()) {
         ros::spinOnce();
@@ -82,27 +90,35 @@ void setKernel(int state, void* userdata) {
 }
 
 void setFilter(int state, void* userdata) {
+    struct buttonData *data;
+    data = (struct buttonData *) userdata;
+
     if (++filterState > 4)
         filterState = 0;
     if (filterState == 0) {
         ROS_INFO("Standard video-feed");
         graySelected = false;
+        data->cv->swapCam(true);
     }
     if (filterState == 1) {
         ROS_INFO("Red video-feed");
         graySelected = false;
+        data->cv->swapCam(false);
     }
     if (filterState == 2) {
         ROS_INFO("Green video-feed");
         graySelected = false;
+        data->cv->swapCam(false);
     }
     if (filterState == 3) {
         ROS_INFO("Circle threshold video-feed");
         graySelected = true;
+        data->cv->swapCam(true);
     }
     if (filterState == 4) {
         ROS_INFO("Circle painted video-feed");
         graySelected = true;
+        data->cv->swapCam(true);
     }
 }
 
@@ -157,9 +173,9 @@ void CV_Handler::show(void) {
                          storedImage.data());
         image = imageBGR;
         if (filterState == 1)
-            image = color->checkColorsRed(NULL, image);
+            image = color->TESTcheckColorsRed(image);
         else if (filterState == 2)
-            image = color->checkColorsGreen(NULL, image);
+            image = color->TESTcheckColorsGreen(image);
     }
     if (!image.empty())
         cv::imshow("VideoMis", image);
@@ -198,26 +214,29 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
         cascadeMutex.unlock();
 
         cascades.push_back(cascade->checkCascade(imageBW));
+
         if (!cascades[frameCount].empty())
             color->checkColors(&cascades[frameCount],image);
 
-        if (++frameCount == CASCADE_FRAMES)
+        if (frameCount == CASCADE_FRAMES)
             break;
+        frameCount++;
     }
+
     if (!cascades.empty()) {
         for (unsigned int i = 0; i < cascades.size(); i++) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
-
-#ifdef DEBUG_CV_COUT_EXPLICIT
-              std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
-              std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
-              std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
-              std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
-#endif
         }
         calculatePosition(cascades[biggestArray]);
-        std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
+
+#ifdef DEBUG_CV_COUT_EXPLICIT
+            std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
+            std::cout << "xDist: " << cascades[biggestArray][0].xDist << std::endl;
+            std::cout << "y: " << cascades[biggestArray][0].y << std::endl;
+            std::cout << "yDist: " << cascades[biggestArray][0].yDist << std::endl;
+#endif
+       // std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         //std::cout << "color: " << cascades[biggestArray][0].color << std::endl;
     }
     return std::vector<Cascade::cubeInfo>();
@@ -228,8 +247,10 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
     double yFactor = 51.7 / 360;
 
     for (unsigned int i = 0; i < cubes.size(); i++) {
-        cubes[i].xDist = xFactor / navData->getPosition().z;
-        cubes[i].yDist = yFactor / navData->getPosition().z;
+        cubes[i].heading = (int) navData->getRotation();
+        cubes[i].xDist = (xFactor / navData->getPosition().z) * cubes[i].x;
+        cubes[i].yDist = (yFactor / navData->getPosition().z) * cubes[i].y;
+        paintCube(Point(cubes[i].x+100, cubes[i].y+100), cubes[i].color);           // TODO: CORRECT THIS WITH TRANSFORM
     }
 
     return cubes;
@@ -254,6 +275,12 @@ cv::Mat CV_Handler::checkBox(void) {
     // Add gaussian blur
     blur(imageBW, imgModded, Size(3,3));
 
+    //Morphological opening (remove small objects from the foreground)
+    //morphologyEx(imageBW,imageBW,MORPH_OPEN,getStructuringElement(MORPH_RECT, Size(5, 5)));
+
+    //Morphological closing (fill small holes in the foreground)
+    morphologyEx(imageBW,imageBW,MORPH_CLOSE,getStructuringElement(MORPH_RECT, Size(5, 5)));
+
     // Detect edges using canny
     Canny(imgModded, imgModded, thresh, thresh*2, 3);
 
@@ -265,14 +292,14 @@ cv::Mat CV_Handler::checkBox(void) {
         drawContours(imgModded, contours, i, color, 2, 8, hierarchy, 0, Point());
 
     // Detect circles
-    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 40, 1, 100);
+    cv::HoughCircles(imgModded, circles, CV_HOUGH_GRADIENT, 1, imgModded.rows/8, 100, 55, 30, 200);
 
     if (!circles.empty()) {
         missingBoxFrames = 0;
         Point center(circles[0][0], circles[0][1]);
         boxVector.push_back((int) circles[0][2]);
 
-        if (boxVector.size() == 15) {
+        if (boxVector.size() == 20) {
             median = (int) findMedian(boxVector);
 #ifdef DEBUG_CV_COUT
             cout << median << endl;
@@ -285,7 +312,7 @@ cv::Mat CV_Handler::checkBox(void) {
         missingBoxFrames = 0;
         boxVector.clear();
     }
-    if (median >= 45) {
+    if (median >= 60) {         // From 45
 #ifdef DEBUG_CV_COUT
         cout << "Box is too close!" << endl;
 #endif
@@ -309,4 +336,19 @@ double CV_Handler::findMedian(std::vector<int> vec) {
     vec_sz mid = size/2;
 
     return size % 2 == 0 ? (vec[mid] + vec[mid-1]) / 2 : vec[mid];
+}
+
+void CV_Handler::paintCube(Point center, std::string type) {
+    int thickness = -1;
+    int lineType = 8;
+    if (!type.compare("Green")) {
+        circle(map, center, 7, Scalar(0, 255, 0), thickness, lineType);
+        imwrite(output_map_name, map);
+    }
+    else if (!type.compare("Red")){
+        circle(map, center, 7, Scalar(0, 0, 255), thickness, lineType);
+        imwrite(output_map_name, map);
+    }
+    imshow("MapMis", map);
+    waitKey(10);
 }

@@ -23,7 +23,7 @@
 class CV_Handler {
 
 private:
-    int thresh = 135;
+    int thresh = 64;
     int missingBoxFrames = 0;
     ros::NodeHandle nodeHandle;
     ros::ServiceClient cam_service;
@@ -31,10 +31,13 @@ private:
     std_srvs::Empty toggleCam_srv_srvs;
     std::string video_channel;
     std::vector<int> boxVector;
-
+    cv::String map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/map.jpg";
+    cv::String output_map_name = "../workspaces/dronemis_ws/src/dronemis/src/OpenCv/Output_map.jpg";
+    cv::Mat map;
     double findMedian(std::vector<int> vec);
     void video(sensor_msgs::ImageConstPtr img);
     void show(void);
+    void paintCube(cv::Point center, std::string type);
     std::vector<Cascade::cubeInfo> calculatePosition(std::vector<Cascade::cubeInfo> cubes);
 
 public:
@@ -42,8 +45,6 @@ public:
     std::mutex cascadeMutex;
     CVD::Image<CVD::byte> storedImageBW;
     CVD::Image<CVD::Rgb <float> > storedImage;
-    CVD::Image<CVD::byte> workImageBW;
-    CVD::Image<CVD::Rgb <float> > workImage;
 
     CV_Handler(void);
     virtual ~CV_Handler(void);

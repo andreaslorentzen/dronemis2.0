@@ -20,11 +20,6 @@ public:
     cv::Mat kernel;
 
     struct {
-        int state;
-        int kernel;
-    }data;
-
-    struct {
         int iLowH = 150;
         int iHighH = 255;
 
@@ -62,6 +57,8 @@ public:
     cv::Mat checkColorsRed(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
     cv::Mat checkColorsGreen(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
     std::vector<Cascade::cubeInfo> checkColors(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image);
+    cv::Mat TESTcheckColorsGreen(cv::Mat image);
+    cv::Mat TESTcheckColorsRed(cv::Mat image);
 };
 
 
