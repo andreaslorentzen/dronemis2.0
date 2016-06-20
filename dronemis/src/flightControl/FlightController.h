@@ -73,6 +73,7 @@ private:
     double getSpeed(double distance);
     Vector3 getVelocity(Vector3 d);
     void turnDegrees(double degrees);
+    void turnTowardsAngle(double target, double hoverTime);
 
     void rotateDrone(double d);
 
