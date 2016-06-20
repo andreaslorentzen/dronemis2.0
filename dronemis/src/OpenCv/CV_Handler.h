@@ -56,7 +56,7 @@ public:
     virtual ~CV_Handler(void);
     void run(Nav *nav);
     void swapCam(bool frontCam);
-    std::vector<Cascade::cubeInfo> checkCubes(void);
+    void checkCubes(void);
     cv::Mat checkBox(void);
 };
 

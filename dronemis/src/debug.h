@@ -9,6 +9,8 @@
 //#define DEBUG_COUT 1
 //#define DEBUG_CV_COUT 1
 //#define DEBUG_CV_COUT_EXPLICIT 1
+#define DEBUG_QR_COUT 1
+
 //#define DEBUG_NAV_COUT 1
 //#define DEBUG_NAV_LOG 1
 
