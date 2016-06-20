@@ -67,9 +67,9 @@ void Route::initRoute(bool useFile) {
     }
 }
 
-Command Route::findNearestWaypoint(double x, double y, double z) {
+Command Route::findNearestWaypoint(double x, double y) {
     // THIS METHOD IS CURRENTLY NOT WORKING
-    double nearestDistance = 1000;
+    double nearestDistance = 100000;
     int nearestWaypointNumber = 0;
 
 
@@ -77,9 +77,7 @@ Command Route::findNearestWaypoint(double x, double y, double z) {
         if (commands[i].commandType == commands[i].goTo) {
             double diffX = commands[i].x - x;
             double diffY = commands[i].y - y;
-            double diffZ = commands[i].z - z;
-            double distance = diffX + diffY + diffZ;
-
+            double distance = diffX + diffY;
             if (distance < nearestDistance)
                 nearestWaypointNumber = i;
         }
