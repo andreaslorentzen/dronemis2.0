@@ -144,12 +144,13 @@ DronePos QR::checkQR(void) {
             }
 
 
-            DronePosition.relativeX = (distancetoQR/1.5 * std::sin(yDiversionAngle * (M_PI / 180))); // xDistance (Forskydning)
+            DronePosition.relativeX = (distancetoQR/1.5 * std::sin(yDiversionAngle * (M_PI / 180)))*1.2; // xDistance (Forskydning)
             DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
-
+            //cout << "yDiversionAngle = " << abs(yDiversionAngle) << endl;
             bool positionLock;
-            if (yDiversionAngle < 25 && yDiversionAngle > -25) positionLock = 1;
+            if (abs(yDiversionAngle) < 25) positionLock = 1;
             else positionLock = 0;
+            //cout << "positionLock = " << positionLock << endl;
 
 
             //**************************************
@@ -165,7 +166,7 @@ DronePos QR::checkQR(void) {
             cout << "Droneposition relative (x,y) = " << DronePosition.relativeX << "," << DronePosition.relativeY <<
             endl;
             cout << "Angle = " << yDiversionAngle << endl;
-            cout << "PositionLock = " << DronePosition.positionLocked << " on QR code: " << QRName << endl << endl;
+            cout << "PositionLock = " << RoomDronePosition.positionLocked << " on QR code: " << QRName << endl << endl;
 
             //cout << "RoomAngle relative to QR =" << RoomDronePosition.angle << endl;
             //cout << symbol->get_data() << endl;
