@@ -129,6 +129,11 @@ DronePos QR::checkQR(void) {
 #endif
 
                 double xDistanceStatic = 4.208955224; //
+                cout << "xmidt before alteration " << xmidt << endl;
+                if(yDiversionAngle > 20 ) xmidt = xmidt - (xmidt-320) * 3 / 10;
+                cout << "xmidt after alteration " << xmidt << endl;
+
+
                 int xDistance = ((xmidt - 320) * 0.7 / xDistanceStatic * distancetoQR / 100);
 #ifdef DEBUG_COUT
                 cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
@@ -143,7 +148,8 @@ DronePos QR::checkQR(void) {
                     yDiversionAngle = y2Diversion * direction;
                 }
 
-                DronePosition.relativeX = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
+                DronePosition.relativeX = ((distancetoQR * (1/(1+(yDiversionAngle/100))) * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
+                //DronePosition.relativeX = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
                 DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
                 bool positionLock;
