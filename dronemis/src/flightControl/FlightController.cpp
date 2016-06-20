@@ -365,11 +365,13 @@ void FlightController::turnDegrees(double degrees) {
             hoverDuration(1);
             time_counter = 0;
             last_ts = (int) (ros::Time::now().toNSec() / 1000000);
+            orientation = navData->getRotation();
+            direction = angleDirection(orientation, target);
+            difference = angleDifference(orientation, target);
             rotateDrone(direction * 1.0);
         }
 
         if( difference < (time_counter*time_counter)/2000+4){
-            //hoverDuration(3);
             break;
         }
 
