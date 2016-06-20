@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>331</width>
-    <height>107</height>
+    <width>332</width>
+    <height>170</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>ControlPanel</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton_Stop">
+   <widget class="QPushButton" name="pushButton_shutdown">
     <property name="geometry">
      <rect>
       <x>221</x>
@@ -30,7 +30,7 @@
      </size>
     </property>
     <property name="text">
-     <string>STOP</string>
+     <string>Shutdown</string>
     </property>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -58,9 +58,9 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QPushButton" name="pushButton_shutdown">
+      <widget class="QPushButton" name="pushButton_Stop">
        <property name="text">
-        <string>Shutdown</string>
+        <string>Stop</string>
        </property>
       </widget>
      </item>
@@ -76,25 +76,6 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="1">
-      <widget class="QLCDNumber" name="lcdNumber_Right">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
-       </property>
-       <property name="segmentStyle">
-        <enum>QLCDNumber::Filled</enum>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QLCDNumber" name="lcdNumber_Left">
        <property name="font">
@@ -135,8 +116,8 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="QLCDNumber" name="lcdNumber_Position">
+     <item row="0" column="1">
+      <widget class="QLCDNumber" name="lcdNumber_Right">
        <property name="font">
         <font>
          <weight>75</weight>
@@ -146,10 +127,11 @@
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
-       </property>
-       <property name="numDigits">
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QLCDNumber" name="lcdNumber_Position">
+       <property name="digitCount">
         <number>20</number>
        </property>
        <property name="segmentStyle">
@@ -158,6 +140,84 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Test1">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Test1</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Test3">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>100</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Test3</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Test2">
+    <property name="geometry">
+     <rect>
+      <x>115</x>
+      <y>100</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Test2</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Test4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Test4</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Test5">
+    <property name="geometry">
+     <rect>
+      <x>115</x>
+      <y>130</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Test5</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Test6">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>130</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Test6</string>
+    </property>
    </widget>
   </widget>
  </widget>
