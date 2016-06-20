@@ -22,8 +22,17 @@ struct DronePos {
     int numberOfQRs;
     double cameraPointing;
     double angle;
+    int wallNumber;
     void resetCoordinates(){
-        x, y, relativeX, relativeY, numberOfQRs, positionLocked, heading, cameraPointing, angle = 0;
+        x = 0;
+        y = 0;
+        relativeX = 0;
+        relativeY = 0;
+        numberOfQRs = 0;
+        positionLocked = 0;
+        heading = 0;
+        cameraPointing = 0;
+        angle = 0;wallNumber = 0;
     }
 };
 
@@ -31,6 +40,8 @@ class QR {
 public:
     QR(CV_Handler *cv);
     DronePos checkQR(void);
+    struct DronePos RoomDronePosition;
+
 
 private:
     int direction;
@@ -49,7 +60,6 @@ private:
 
     struct QRCodes QRWallCode[25];
     struct DronePos DronePosition;
-    struct DronePos RoomDronePosition;
     float distanceToQR[200];
 
     void initializeQR(void);

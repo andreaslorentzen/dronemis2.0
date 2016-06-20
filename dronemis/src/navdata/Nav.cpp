@@ -126,7 +126,7 @@ float Nav::updateUPS() {
 
 void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg) {
     float drone_heading = msg->heading_fusion_unwrapped;
-
+    //ROS_INFO("rotoffset drone_heading: %6.1f", drone_heading);
 
     while(drone_heading < 0)
         drone_heading += 360;
@@ -136,6 +136,13 @@ void Nav::magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg
    // ROS_INFO("drone_heading: %6.1f", drone_heading);
     if (!rotinit){
         rotoffset = drone_heading;
+        rotation = drone_heading - rotoffset;
+        while(rotation < 0)
+            rotation += 360;
+
+        while(rotation > 360)
+            rotation -= 360;
+       // ROS_INFO("rotoffset drone_heading: %6.1f \trotoffset: %6.1f \trotation %6.1f ", drone_heading, rotoffset, rotation);
         rotinit = true;
     }
 
@@ -159,7 +166,6 @@ double Nav::getRotation() {
 
     while(rot > 360)
         rot -= 360;
-   // ROS_INFO("rot: %6.1f", rot);
     return rot;
 }
 
@@ -169,6 +175,7 @@ void Nav::resetToPosition(double x, double y, double heading) {
     QRy = y;
     QRheading = heading;
     QRoffset = heading - rotation;
+    //ROS_INFO("GETROTATION rot: %6.1f", rot);
     while(QRoffset < 0)
         QRoffset += 360;
 
@@ -248,6 +255,12 @@ void Nav::resetRaw() {
     position.x = 0;
     position.y = 0;
 }
+
+void Nav::resetRawRotation() {
+    rotinit = false;
+}
+
+
 
 
 

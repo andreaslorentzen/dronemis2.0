@@ -67,6 +67,8 @@ public:
     Vector3 getRawPosition();
     double getRawRotation();
     void resetRaw();
+
+    void resetRawRotation();
 };
 
 
