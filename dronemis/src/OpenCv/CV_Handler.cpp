@@ -75,15 +75,15 @@ void setKernel(int state, void* userdata) {
     switch (color->kernelState++) {
         case 0 :
             color->kernel = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
-            cout << "kernel changed to ELLIPSE" << endl;
+            //cout << "kernel changed to ELLIPSE" << endl;
             break;
         case 1:
             color->kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
-            cout << "kernel changed to RECT" << endl;
+            //cout << "kernel changed to RECT" << endl;
             break;
         case 2:
             color->kernel = getStructuringElement(MORPH_CROSS, Size(5, 5));
-            cout << "kernel changed to CROSS" << endl;
+            //cout << "kernel changed to CROSS" << endl;
             color->kernelState = 0;
             break;
     }

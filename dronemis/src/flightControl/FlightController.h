@@ -46,7 +46,7 @@ public:
 
     bool lookingForQR = true;
     bool shutdownQR = false;
-    DronePos dronePossision;
+    DronePos dronePosition;
     QR* getQr(){return qr;};
 private:
     bool started;

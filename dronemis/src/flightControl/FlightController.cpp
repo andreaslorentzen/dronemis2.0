@@ -133,7 +133,7 @@ void FlightController::run() {
     double starting_orientation = navData->getRawRotation();
     //ROS_INFO("Start while");
 
-    while (!dronePossision.positionLocked) {
+    while (!dronePosition.positionLocked) {
         //ROS_INFO("in while");
         if (turning) {
             turnDegrees(turnStepSize);
@@ -155,19 +155,19 @@ void FlightController::run() {
     lookingForQR = false;
 
     //ROS_INFO("end while");
-    navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
+    navData->resetToPosition(dronePosition.x * 10, dronePosition.y * 10, dronePosition.heading);
 
-    cmd.linear.z = -0.5;
+ /*   cmd.linear.z = -0.5;
     pub_control.publish(cmd);
     while (navData->getPosition().z > 1000)
         ros::Rate(LOOP_RATE).sleep();
-
+    cmd.linear.z = 0;*/
 
     double rotation = navData->getRotation();
     double target;
-    int wallNumber = dronePossision.wallNumber;
+    int wallNumber = dronePosition.wallNumber;
     ROS_INFO("WALL NUMBER RECEIVED START: %d", wallNumber);
-    switch(dronePossision.wallNumber) {
+    switch(dronePosition.wallNumber) {
         case 0:
             target = 180;
             break;
@@ -182,7 +182,14 @@ void FlightController::run() {
             break;
     }
 
-    target = 270;
+    // thomas & marcus -> QR centering
+    dronePosition.relativeX
+    dronePosition.relativeY
+dronePosition.angle;
+
+    if ()
+
+    // target = 270;
     //ROS_INFO("Target = %f", target);
 
 
@@ -665,7 +672,7 @@ void *runQR(void *thread_arg) {
 #endif
     while (!thread_data->controller->shutdownQR) {
         if(thread_data->controller->lookingForQR)
-            thread_data->controller->dronePossision = thread_data->controller->getQr()->checkQR();
+            thread_data->controller->dronePosition = thread_data->controller->getQr()->checkQR();
         ros::Rate(25).sleep();
     }
     pthread_exit(NULL);

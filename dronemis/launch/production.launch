@@ -1,4 +1,4 @@
 <launch>
-  <include file="$(find dronemis)/launch/ardrone.launch"/>
+  <include file="$(find dronemis)/launch/ardrone_driver.launch"/>
   <node pkg="dronemis" type="blindFlight" name="blindFlight" output="screen" ></node>
 </launch>
