@@ -82,6 +82,7 @@ private:
 
     void flyForward(double time);
     void strafe(double direction, double time);
+    void flyBackward(double time);
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H

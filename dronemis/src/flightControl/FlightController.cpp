@@ -154,13 +154,46 @@ void FlightController::run() {
     ROS_INFO("end while");
     navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
 
-    cmd.linear.z = -0.5;
-    pub_control.publish(cmd);
-    while (navData->getPosition().z > 1000)
-        ros::Rate(LOOP_RATE).sleep();
+    int i = 0;
+        //while (navData->getPosition().y - 1000 > 1500) {
+          while (i < 6){
+            flyBackward(0.7);
+            navData->addToY(-1000);
+
+            hoverDuration(3);
+            cvHandler->swapCam(false);
+            cvHandler->checkCubes();
+            cvHandler->swapCam(true);
+              i++;
+        }
+    strafe(1, 0.7);
+    i = 0;
+    while (i < 6){
+        flyForward(0.7);
+        navData->addToY(1000);
+
+        hoverDuration(3);
+        cvHandler->swapCam(false);
+        cvHandler->checkCubes();
+        cvHandler->swapCam(true);
+        i++;
+    }
+   /* else if(dronePossision.wallNumber == 1){
+        while (navData->getPosition().y - 1000 > 1500) {
+            flyForward(0.7);
+            navData->addToY(-1000);
+
+            hoverDuration(3);
+            cvHandler->swapCam(false);
+            cvHandler->checkCubes();
+            cvHandler->swapCam(true);
+        }
+    }*/
 
 
-    double rotation = navData->getRotation();
+
+
+    /*double rotation = navData->getRotation();
     double target;
     switch(dronePossision.wallNumber) {
         case 0:
@@ -177,17 +210,22 @@ void FlightController::run() {
             break;
     }
 
-    ROS_INFO("Target = %f", target);
+    ROS_INFO("Target = %f", target);*/
 
 
 
-    int i = 0;
+    /*int i = 0;
     while(i < 4) {
         double difference = angleDifference(rotation, target);
         int direction = angleDirection(rotation, target);
         ROS_INFO("Difference = %f", difference);
         ROS_INFO("Direction = %f", direction);
-        turnDegrees(difference*direction);
+        //turnDegrees(difference*direction);
+
+        cmd.angular.z = 1;
+        pub_control.publish(cmd);
+        while(navData->getRotation() > 190 || navData->getRotation() < 170 )
+            ros::Rate(50).sleep();
 
         lookingForQR = true;
 
@@ -244,7 +282,7 @@ void FlightController::run() {
             target = 180;
 
         i++;
-    }
+    }*/
 
     land();
     return;
@@ -633,6 +671,15 @@ geometry_msgs::Twist FlightController::getEmptyCmd() {
 void FlightController::flyForward(double time) {
     geometry_msgs::Twist cmd = getEmptyCmd();
     cmd.linear.x = 1;
+    pub_control.publish(cmd);
+    for (int i = 0; i < LOOP_RATE*time; ++i) {
+        ros::Rate(LOOP_RATE).sleep();
+    }
+}
+
+void FlightController::flyBackward(double time){
+    geometry_msgs::Twist cmd = getEmptyCmd();
+    cmd.linear.x = -1;
     pub_control.publish(cmd);
     for (int i = 0; i < LOOP_RATE*time; ++i) {
         ros::Rate(LOOP_RATE).sleep();
