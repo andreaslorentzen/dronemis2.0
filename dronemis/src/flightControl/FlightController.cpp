@@ -6,6 +6,8 @@ void *startCV(void *thread_args);
 
 void *startController(void *thread_arg);
 
+void *startCascade(void *thread_arg);
+
 void *runQR(void *thread_arg);
 
 struct thread_data {
