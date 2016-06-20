@@ -39,9 +39,9 @@ void CV_Handler::run(Nav *nav) {
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
+    namedWindow("MapMis", WINDOW_NORMAL);
     namedWindow("FilterMis", CV_WINDOW_AUTOSIZE);
     namedWindow("VideoMis", WINDOW_NORMAL);
-    namedWindow("MapMis", WINDOW_NORMAL);
 
     cvCreateTrackbar("Thresh", "FilterMis", &thresh, 255); //Hue (0 - 255)
 
@@ -248,9 +248,39 @@ std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade
 
     for (unsigned int i = 0; i < cubes.size(); i++) {
         cubes[i].heading = (int) navData->getRotation();
-        cubes[i].xDist = (xFactor / navData->getPosition().z) * cubes[i].x;
-        cubes[i].yDist = (yFactor / navData->getPosition().z) * cubes[i].y;
-        paintCube(Point(cubes[i].x+100, cubes[i].y+100), cubes[i].color);           // TODO: CORRECT THIS WITH TRANSFORM
+
+        double x = cubes[i].x - 320;
+        double y = 180 - cubes[i].y;
+
+        cubes[i].xDist = (xFactor / (navData->getPosition().z/10)) * x;
+        cubes[i].yDist = (yFactor / (navData->getPosition().z/10)) * y;
+
+        double temp_rotation = (cubes[i].heading - 90) * (-1);
+
+        if (temp_rotation >= 360)
+            temp_rotation -= 360;
+
+        temp_rotation = temp_rotation / 180 * M_PI;
+
+        Vector3 rotationMatrix[3];
+        rotationMatrix[0] = Vector3(cos(temp_rotation), -sin(temp_rotation), 0);
+        rotationMatrix[1] = Vector3(sin(temp_rotation), cos(temp_rotation), 0);
+        rotationMatrix[2] = Vector3(0, 0, 1);
+
+        Vector3 position_vector(cubes[i].xDist, cubes[i].yDist, 0);
+        Vector3 qr_vector(navData->getPosition().x, navData->getPosition().y, 0);
+
+        Vector3 resultVector(rotationMatrix[0].x * position_vector.x + rotationMatrix[0].y * position_vector.y +
+                             rotationMatrix[0].z * position_vector.z,
+                             rotationMatrix[1].x * position_vector.x + rotationMatrix[1].y * position_vector.y +
+                             rotationMatrix[1].z * position_vector.z,
+                             rotationMatrix[2].x * position_vector.x + rotationMatrix[2].y * position_vector.y +
+                             rotationMatrix[2].z * position_vector.z);
+
+        resultVector.x += qr_vector.x;
+        resultVector.y += qr_vector.y;
+
+        paintCube(Point(resultVector.x, resultVector.y), cubes[i].color);
     }
 
     return cubes;
@@ -342,6 +372,7 @@ void CV_Handler::paintCube(Point center, std::string type) {
     int thickness = -1;
     int lineType = 8;
     if (!type.compare("Green")) {
+
         circle(map, center, 7, Scalar(0, 255, 0), thickness, lineType);
         imwrite(output_map_name, map);
     }
