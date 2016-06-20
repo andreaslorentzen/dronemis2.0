@@ -124,15 +124,15 @@ void FlightController::run() {
 
     Vector3 pos;
     double starting_orientation = navData->getRawRotation();
-    ROS_INFO("Start while");
+    //ROS_INFO("Start while");
 
     while (!dronePossision.positionLocked) {
-        ROS_INFO("in while");
+        //ROS_INFO("in while");
         if (turning) {
             turnDegrees(turnStepSize);
             double orientation = navData->getRawRotation();
             amountTurned += angleDifference(starting_orientation,orientation);
-            ROS_INFO("AMOUNTTURNED: %f",amountTurned);
+            //ROS_INFO("AMOUNTTURNED: %f",amountTurned);
             starting_orientation = orientation;
             if (amountTurned >= 360)
                 turning = false;
@@ -147,7 +147,7 @@ void FlightController::run() {
 
     lookingForQR = false;
 
-    ROS_INFO("end while");
+    //ROS_INFO("end while");
     navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
 
     double rotation = navData->getRotation();
@@ -168,12 +168,12 @@ void FlightController::run() {
     }*/
 
     target = 270;
-    ROS_INFO("Target = %f", target);
+    //ROS_INFO("Target = %f", target);
 
     double difference = angleDifference(rotation, target);
     int direction = angleDirection(rotation, target);
-    ROS_INFO("Difference = %f", difference);
-    ROS_INFO("Direction = %f", direction);
+    //ROS_INFO("Difference = %f", difference);
+    //ROS_INFO("Direction = %f", direction);
     turnDegrees(difference*direction);
 
     lookingForQR = true;
@@ -208,7 +208,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     Vector3 d(newWaypoint.x - pos.x,
               newWaypoint.y - pos.y,0);
     Vector3 v_vec(0.0, 0.0, 0.0);
-    printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", pos.x, pos.y, d.x, d.y);
+    //printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", pos.x, pos.y, d.x, d.y);
 
     turnTowardsPoint(newWaypoint);
 
@@ -560,9 +560,9 @@ void FlightController::startProgram() {
 void FlightController::resetProgram() {
     DronePos dronepos = qr->checkQR();
     ROS_INFO("found : %d", dronepos.numberOfQRs);
-    ROS_INFO("MANUEL RESET!");
-    started = false;
-    reset();
+    //ROS_INFO("MANUEL RESET!");
+    //started = false;
+    //reset();
 }
 
 void FlightController::abortProgram() {
