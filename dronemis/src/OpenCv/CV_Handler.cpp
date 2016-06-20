@@ -191,7 +191,7 @@ void CV_Handler::swapCam(bool frontCam) {
     }
 }
 
-std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
+void CV_Handler::checkCubes(void) {
     int frameCount = 0;
     int biggestArray = 0;
     typedef std::vector<Cascade::cubeInfo> cascadeArray;
@@ -215,20 +215,22 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
 
         cascades.push_back(cascade->checkCascade(imageBW));
 
-        if (!cascades[frameCount].empty())
-            color->checkColors(&cascades[frameCount],image);
+        if (!cascades[frameCount].empty()) {
+            color->checkColors(&cascades[frameCount], image);
+            calculatePosition(&cascades[frameCount]);
+        }
 
         if (frameCount == CASCADE_FRAMES)
             break;
         frameCount++;
     }
-
+/*
     if (!cascades.empty()) {
         for (unsigned int i = 0; i < cascades.size(); i++) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
-        //calculatePosition(&cascades[biggestArray]);
+       // calculatePosition(&cascades[biggestArray]);
 
 #ifdef DEBUG_CV_COUT_EXPLICIT
             std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
@@ -238,13 +240,13 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
 #endif
        // std::cout << "The biggest array is Nr. " << biggestArray << std::endl;
         //std::cout << "color: " << cascades[biggestArray][0].color << std::endl;
-    }
-    return std::vector<Cascade::cubeInfo>();
+    }*/
 }
 
 void CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> *cubes) {
     double xFactor = 95.8 / 640;
     double yFactor = 51.7 / 360;
+
 
     for (unsigned int i = 0; i < cubes->size(); i++) {
         (*cubes)[i].heading = (int) navData->getRotation();
@@ -279,23 +281,30 @@ void CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> *cubes) {
 
         resultVector.x += position_vector.x;
         resultVector.y += position_vector.y;
+        resultVector.x = resultVector.x;
+        resultVector.y = resultVector.y;
 
         if (!plottedCubes.empty()) {
             for (unsigned int i = 0; i < plottedCubes.size(); i++) {
-                if (!(abs(plottedCubes[i].x - resultVector.x) < 20 && abs(plottedCubes[i].y - resultVector.y) < 20)) {
+                if (!(abs(plottedCubes[i].x - resultVector.x) < 20) && !(abs(plottedCubes[i].y - resultVector.y) < 20)) {
                     plottedCube cube;
                     cube.x = resultVector.x;
-                    cube.y = resultVector.x;
+                    cube.y = resultVector.y;
                     plottedCubes.push_back(cube);
-                    paintCube(Point(resultVector.x, resultVector.y), (*cubes)[i].color);
-                }
+                    std::cout << "Color: " << (*cubes)[i].color << std::endl;
+                    paintCube(Point(resultVector.x/10, resultVector.y/10), (*cubes)[i].color);
+                } else
+                    ROS_INFO("Cube discarded");
             }
         } else {
+            if ((*cubes)[i].color.size() == 0)
+                return;
             plottedCube cube;
             cube.x = resultVector.x;
-            cube.y = resultVector.x;
+            cube.y = resultVector.y;
             plottedCubes.push_back(cube);
-            paintCube(Point(resultVector.x, resultVector.y), (*cubes)[i].color);
+            std::cout << "Color: " << (*cubes)[i].color << std::endl;
+            paintCube(Point(resultVector.x/10, resultVector.y/10), (*cubes)[i].color);
         }
     }
 }
