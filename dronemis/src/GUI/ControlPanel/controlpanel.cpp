@@ -117,3 +117,34 @@ void ControlPanel::on_pushButton_shutdown_clicked(void)
     exit (EXIT_SUCCESS);
 }
 
+void ControlPanel::on_pushButton_Test1_clicked()
+{
+    controller->test1();
+}
+
+void ControlPanel::on_pushButton_Test2_clicked()
+{
+    controller->test2();
+}
+
+void ControlPanel::on_pushButton_Test3_clicked()
+{
+    controller->test3();
+}
+
+void ControlPanel::on_pushButton_Test4_clicked()
+{
+    controller->test4();
+}
+
+void ControlPanel::on_pushButton_Test5_clicked()
+{
+    controller->test5();
+}
+
+void ControlPanel::on_pushButton_Test6_clicked()
+{
+    controller->test6();
+}
+
+

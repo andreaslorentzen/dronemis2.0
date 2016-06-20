@@ -697,3 +697,29 @@ void *startCascade(void *thread_arg) {
     }
     pthread_exit(NULL);
 }
+
+
+void FlightController::test1(void) {
+
+}
+
+void FlightController::test2(void) {
+
+}
+
+void FlightController::test3(void) {
+
+}
+
+void FlightController::test4(void) {
+
+}
+
+void FlightController::test5(void) {
+
+}
+
+void FlightController::test6(void) {
+
+}
+
