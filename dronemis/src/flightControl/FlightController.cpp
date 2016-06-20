@@ -212,6 +212,9 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     turnTowardsPoint(newWaypoint);
     while (d.x > TOLERANCE) {
+
+    while (d.distance() > TOLERANCE) {
+
         v_vec.x = getSpeed(d.distance());
         if (v_vec.x != cmd.linear.x) {
             printf("vx: %f\tdx: %f \n", v_vec.x, d.distance());
@@ -435,8 +438,8 @@ void FlightController::turnTowardsPoint(Command waypoint) {
     ROS_INFO("X = %f ", pos.x);
     ROS_INFO("Y = %f ", pos.y);
 
-    double target_angle = atan2(waypoint.y - pos.y, waypoint.x - pos.x); // angle towards waypoint position
-    double target_deg = target_angle / 180 * M_PI; // conversion to degrees
+    double target_angle = atan2(waypoint.x - pos.x,waypoint.y - pos.y); // angle towards waypoint position
+    double target_deg = target_angle * 180 / M_PI; // conversion to degrees
 
     ROS_INFO("Target angle  = %f", target_angle);
     ROS_INFO("Target degrees = %f", target_deg);
@@ -555,14 +558,11 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    //DronePos dronepos = qr->checkQR();
-    //ROS_INFO("found : %d", dronepos.numberOfQRs);
-    //cout << "Relative position (x,y) = " << dronepos.relativeX << "," << dronepos.relativeY << endl;
-    //cout << "Angle and positionLock" << dronepos.angle << " and " << dronepos.positionLocked << endl;
+    DronePos dronepos = qr->checkQR();
+    ROS_INFO("found : %d", dronepos.numberOfQRs);
     ROS_INFO("MANUEL RESET!");
     started = false;
     reset();
-   // cvHandler->checkCubes();
 }
 
 void FlightController::abortProgram() {

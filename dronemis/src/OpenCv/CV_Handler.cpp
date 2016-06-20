@@ -39,9 +39,9 @@ void CV_Handler::run(Nav *nav) {
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
     video_subscriber = nodeHandle.subscribe(video_channel,10, &CV_Handler::video, this);
+    namedWindow("MapMis", WINDOW_NORMAL);
     namedWindow("FilterMis", CV_WINDOW_AUTOSIZE);
     namedWindow("VideoMis", WINDOW_NORMAL);
-    namedWindow("MapMis", WINDOW_NORMAL);
 
     cvCreateTrackbar("Thresh", "FilterMis", &thresh, 255); //Hue (0 - 255)
 
@@ -228,7 +228,7 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
            if (!cascades[i].empty() && cascades[i].size() > cascades[biggestArray].size())
               biggestArray = i;
         }
-        calculatePosition(cascades[biggestArray]);
+        calculatePosition(&cascades[biggestArray]);
 
 #ifdef DEBUG_CV_COUT_EXPLICIT
             std::cout << "x: " << cascades[biggestArray][0].x << std::endl;
@@ -242,18 +242,62 @@ std::vector<Cascade::cubeInfo> CV_Handler::checkCubes(void) {
     return std::vector<Cascade::cubeInfo>();
 }
 
-std::vector<Cascade::cubeInfo> CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> cubes) {
+void CV_Handler::calculatePosition(std::vector<Cascade::cubeInfo> *cubes) {
     double xFactor = 95.8 / 640;
     double yFactor = 51.7 / 360;
 
-    for (unsigned int i = 0; i < cubes.size(); i++) {
-        cubes[i].heading = (int) navData->getRotation();
-        cubes[i].xDist = (xFactor / navData->getPosition().z) * cubes[i].x;
-        cubes[i].yDist = (yFactor / navData->getPosition().z) * cubes[i].y;
-        paintCube(Point(cubes[i].x+100, cubes[i].y+100), cubes[i].color);           // TODO: CORRECT THIS WITH TRANSFORM
-    }
+    for (unsigned int i = 0; i < cubes->size(); i++) {
+        (*cubes)[i].heading = (int) navData->getRotation();
 
-    return cubes;
+        double x = (*cubes)[i].x - 320;
+        double y = 180 - (*cubes)[i].y;
+
+        (*cubes)[i].xDist = (xFactor / (navData->getPosition().z/10)) * x;
+        (*cubes)[i].yDist = (yFactor / (navData->getPosition().z/10)) * y;
+
+        double temp_rotation = ((*cubes)[i].heading - 90) * (-1);
+
+        if (temp_rotation >= 360)
+            temp_rotation -= 360;
+
+        temp_rotation = temp_rotation / 180 * M_PI;
+
+        Vector3 rotationMatrix[3];
+        rotationMatrix[0] = Vector3(cos(temp_rotation), -sin(temp_rotation), 0);
+        rotationMatrix[1] = Vector3(sin(temp_rotation), cos(temp_rotation), 0);
+        rotationMatrix[2] = Vector3(0, 0, 1);
+
+        Vector3 cubes_vector((*cubes)[i].xDist, (*cubes)[i].yDist, 0);
+        Vector3 position_vector(navData->getPosition().x, navData->getPosition().y, 0);
+
+        Vector3 resultVector(rotationMatrix[0].x * cubes_vector.x + rotationMatrix[0].y * cubes_vector.y +
+                             rotationMatrix[0].z * cubes_vector.z,
+                             rotationMatrix[1].x * cubes_vector.x + rotationMatrix[1].y * cubes_vector.y +
+                             rotationMatrix[1].z * cubes_vector.z,
+                             rotationMatrix[2].x * cubes_vector.x + rotationMatrix[2].y * cubes_vector.y +
+                             rotationMatrix[2].z * cubes_vector.z);
+
+        resultVector.x += position_vector.x;
+        resultVector.y += position_vector.y;
+
+        if (!plottedCubes.empty()) {
+            for (unsigned int i = 0; i < plottedCubes.size(); i++) {
+                if (!(abs(plottedCubes[i].x - resultVector.x) < 20 && abs(plottedCubes[i].y - resultVector.y) < 20)) {
+                    plottedCube cube;
+                    cube.x = resultVector.x;
+                    cube.y = resultVector.x;
+                    plottedCubes.push_back(cube);
+                    paintCube(Point(resultVector.x, resultVector.y), (*cubes)[i].color);
+                }
+            }
+        } else {
+            plottedCube cube;
+            cube.x = resultVector.x;
+            cube.y = resultVector.x;
+            plottedCubes.push_back(cube);
+            paintCube(Point(resultVector.x, resultVector.y), (*cubes)[i].color);
+        }
+    }
 }
 
 cv::Mat CV_Handler::checkBox(void) {
@@ -342,6 +386,7 @@ void CV_Handler::paintCube(Point center, std::string type) {
     int thickness = -1;
     int lineType = 8;
     if (!type.compare("Green")) {
+
         circle(map, center, 7, Scalar(0, 255, 0), thickness, lineType);
         imwrite(output_map_name, map);
     }
