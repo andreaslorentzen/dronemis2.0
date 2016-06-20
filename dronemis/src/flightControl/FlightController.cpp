@@ -178,10 +178,14 @@ void FlightController::run() {
 
 */
 
-    flyForward(0.25);
+    flyForward(0.8);
+    hoverDuration(2);
+    flyForward(0.8);
+    hoverDuration(2);
+    turnDegrees(90);
+    flyForward(0.8);
     hoverDuration(2);
 
-    turnDegrees(90);
 /*    double start_orientation = navData->getRawRotation();
 //    while(true){
         rotateDrone(1);
@@ -201,7 +205,6 @@ void FlightController::run() {
     hoverDuration(2);
     flyForward(0.25);
     */
-    hoverDuration(2);
 
     hoverDuration(2);
 
@@ -579,7 +582,7 @@ void FlightController::turnDegrees(double degrees) {
 
         //if(debug_counter % 100 == 0)
            // ROS_INFO("LOOP orientation: %3.1f\tdifference: %3.1f\tdirection: %d\ttime_counter: %d\ttarget: %3.0f",orientation,difference,direction, time_counter, target);
-        if (time_counter > 350) {
+        if (time_counter > 100) {
             hoverDuration(1);
             time_counter = 0;
             last_ts = (int) (ros::Time::now().toNSec() / 1000000);
