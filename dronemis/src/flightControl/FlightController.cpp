@@ -152,7 +152,7 @@ void FlightController::run() {
 
     double rotation = navData->getRotation();
     double target;
-    /*switch(dronePossision.wallNumber) {
+    switch(dronePossision.wallNumber) {
         case 0:
             target = 180;
             break;
@@ -165,9 +165,8 @@ void FlightController::run() {
         case 3:
             target = 90;
             break;
-    }*/
+    }
 
-    target = 270;
     ROS_INFO("Target = %f", target);
 
     double difference = angleDifference(rotation, target);
@@ -178,26 +177,19 @@ void FlightController::run() {
 
     lookingForQR = true;
 
-
     cvHandler->swapCam(false);
     cvHandler->checkCubes();
     cvHandler->swapCam(true);
 
-    flyForward(0.7);
+    while(navData->getPosition().y +1000 < 9300) {
+        flyForward(0.7);
+        navData->addToY(1000);
 
-    hoverDuration(2);
-    cvHandler->swapCam(false);
-    cvHandler->checkCubes();
-    cvHandler->swapCam(true);
-
-
-    flyForward(0.7);
-
-
-    hoverDuration(2);
-    cvHandler->swapCam(false);
-    cvHandler->checkCubes();
-    cvHandler->swapCam(true);
+        hoverDuration(2);
+        cvHandler->swapCam(false);
+        cvHandler->checkCubes();
+        cvHandler->swapCam(true);
+    }
 
     land();
     return;
@@ -211,7 +203,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", pos.x, pos.y, d.x, d.y);
 
     turnTowardsPoint(newWaypoint);
-    
+
     while (d.distance() > TOLERANCE) {
 
         v_vec.x = getSpeed(d.distance());
@@ -557,11 +549,12 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    DronePos dronepos = qr->checkQR();
+    /*DronePos dronepos = qr->checkQR();
     ROS_INFO("found : %d", dronepos.numberOfQRs);
     ROS_INFO("MANUEL RESET!");
     started = false;
-    reset();
+    reset();*/
+    cvHandler->checkCubes();
 }
 
 void FlightController::abortProgram() {

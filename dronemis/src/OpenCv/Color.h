@@ -42,7 +42,7 @@ public:
     }greenFilterDark;
 
     struct {
-        int iLowH = 46;
+        int iLowH = 28;
         int iHighH = 95;
 
         int iLowS = 56;
