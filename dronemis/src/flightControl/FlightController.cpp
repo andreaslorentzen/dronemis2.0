@@ -105,51 +105,99 @@ void FlightController::run() {
 
     bool firstIteration = true;
 
-    DronePos dronePos;
-
     takeOff();
 
-        bool turning = true;
-        double amountTurned = 0;
-        double turnStepSize = 30;
+    bool turning = true;
+    double amountTurned = 0;
+    double turnStepSize = 30;
 
-        hoverDuration(3);
-        navData->resetRawRotation();
-        hoverDuration(2);
+    hoverDuration(3);
+    navData->resetRawRotation();
+    hoverDuration(2);
 
-        cmd.linear.z = 0.5;
-        pub_control.publish(cmd);
-        while (navData->getPosition().z < 1200)
-            ros::Rate(LOOP_RATE).sleep();
+    cmd.linear.z = 0.5;
+    pub_control.publish(cmd);
+    while (navData->getPosition().z < 1200)
+        ros::Rate(LOOP_RATE).sleep();
 
-        hoverDuration(1);
+    hoverDuration(1);
 
-        Vector3 pos;
-        double starting_orientation = navData->getRawRotation();
-        ROS_INFO("Start while");
+    Vector3 pos;
+    double starting_orientation = navData->getRawRotation();
+    ROS_INFO("Start while");
 
-       while (!dronePossion.positionLocked) {
-            ROS_INFO("in while");
-            if (turning) {
-                turnDegrees(turnStepSize);
-                double orientation = navData->getRawRotation();
-                amountTurned += angleDifference(starting_orientation,orientation);
-                ROS_INFO("AMOUNTTURNED: %f",amountTurned);
-                starting_orientation = orientation;
-                if (amountTurned >= 360)
-                    turning = false;
-            } else {
-                navData->resetRaw();
-                flyForward(0.4);
-                turning = true;
-                amountTurned = 0;
-            }
+    while (!dronePossision.positionLocked) {
+        ROS_INFO("in while");
+        if (turning) {
+            turnDegrees(turnStepSize);
+            double orientation = navData->getRawRotation();
+            amountTurned += angleDifference(starting_orientation,orientation);
+            ROS_INFO("AMOUNTTURNED: %f",amountTurned);
+            starting_orientation = orientation;
+            if (amountTurned >= 360)
+                turning = false;
+        } else {
+            navData->resetRaw();
+            flyForward(0.4);
+            turning = true;
+            amountTurned = 0;
         }
-        ROS_INFO("end while");
-        navData->resetToPosition(dronePossion.x * 10, dronePossion.y * 10, dronePossion.heading);
-    Vector3 position = navData->getPosition();
 
-    goToWaypoint(myRoute.findNearestWaypoint(position.x, position.y));
+    }
+
+    lookingForQR = false;
+
+    ROS_INFO("end while");
+    navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
+
+    double rotation = navData->getRotation();
+    double target;
+    /*switch(dronePossision.wallNumber) {
+        case 0:
+            target = 180;
+            break;
+        case 1:
+            target = 270;
+            break;
+        case 2:
+            target = 0;
+            break;
+        case 3:
+            target = 90;
+            break;
+    }*/
+
+    target = 270;
+    ROS_INFO("Target = %f", target);
+
+    double difference = angleDifference(rotation, target);
+    int direction = angleDirection(rotation, target);
+    ROS_INFO("Difference = %f", difference);
+    ROS_INFO("Direction = %f", direction);
+    turnDegrees(difference*direction);
+
+    lookingForQR = true;
+
+
+    cvHandler->swapCam(false);
+    cvHandler->checkCubes();
+    cvHandler->swapCam(true);
+
+    flyForward(0.7);
+
+    hoverDuration(2);
+    cvHandler->swapCam(false);
+    cvHandler->checkCubes();
+    cvHandler->swapCam(true);
+
+
+    flyForward(0.7);
+
+
+    hoverDuration(2);
+    cvHandler->swapCam(false);
+    cvHandler->checkCubes();
+    cvHandler->swapCam(true);
 
     land();
     return;
@@ -382,7 +430,6 @@ void FlightController::turnDegrees(double degrees) {
 
 void FlightController::turnTowardsPoint(Command waypoint) {
 
-
     Vector3 pos = navData->getPosition();
 
     ROS_INFO("X = %f ", pos.x);
@@ -514,7 +561,8 @@ void FlightController::resetProgram() {
     //cout << "Angle and positionLock" << dronepos.angle << " and " << dronepos.positionLocked << endl;
     ROS_INFO("MANUEL RESET!");
     started = false;
-        reset();
+    reset();
+   // cvHandler->checkCubes();
 }
 
 void FlightController::abortProgram() {
@@ -543,6 +591,14 @@ void FlightController::flyForward(double time) {
     }
 }
 
+void FlightController::strafe(double direction, double time) {
+    geometry_msgs::Twist cmd = getEmptyCmd();
+    cmd.linear.y = 1*direction;
+    pub_control.publish(cmd);
+    for (int i = 0; i < LOOP_RATE*time; ++i) {
+        ros::Rate(LOOP_RATE).sleep();
+    }
+}
 
 void *startNavdata(void *thread_arg) {
     struct thread_data *thread_data;
@@ -580,8 +636,9 @@ void *runQR(void *thread_arg) {
 #ifdef DEBUG
     ROS_INFO("Inside the thread");
 #endif
-    while (thread_data->controller->lookingForQR) {
-        thread_data->controller->dronePossion = thread_data->controller->getQr()->checkQR();
+    while (!thread_data->controller->shutdownQR) {
+        if(thread_data->controller->lookingForQR)
+            thread_data->controller->dronePossision = thread_data->controller->getQr()->checkQR();
         ros::Rate(25).sleep();
     }
     pthread_exit(NULL);
