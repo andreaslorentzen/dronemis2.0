@@ -211,8 +211,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
     printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", pos.x, pos.y, d.x, d.y);
 
     turnTowardsPoint(newWaypoint);
-    while (d.x > TOLERANCE) {
-
+    
     while (d.distance() > TOLERANCE) {
 
         v_vec.x = getSpeed(d.distance());
