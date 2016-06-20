@@ -32,8 +32,7 @@ struct DronePos {
         positionLocked = 0;
         heading = 0;
         cameraPointing = 0;
-        angle = 0;
-            wallNumber = 0;
+        angle = 0;wallNumber = 0;
     }
 };
 

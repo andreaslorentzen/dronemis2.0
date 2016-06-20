@@ -146,9 +146,9 @@ DronePos QR::checkQR(void) {
                     yDiversionAngle = y2Diversion * direction;
                 }
 
-                cout
+
                 DronePosition.relativeX = ((distancetoQR * (1/(1+(yDiversionAngle/100))) * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
-                cout << "New x position = " << DronePosition.relativeX <<
+                cout << "New x position = " << DronePosition.relativeX << endl;
                 DronePosition.relativeX = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
                 DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
 
