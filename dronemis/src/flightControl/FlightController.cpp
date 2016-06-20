@@ -157,7 +157,7 @@ void FlightController::run() {
            /* do {
                 double targetHeading = navData->getRotation() - dronePossion.angle;
 
-                if (dronePossion.relativeY > 150 && dronePossion.relativeY < 225) {
+                if (dronePossion.relativeY > 150 && dronePossion.relativeY <     225) {
                     pos = navData->getPosition();
                     goToWaypoint(Command(pos.x, pos.y + (dronePos.relativeX)));
                     double currentHeading = navData->getRotation();
@@ -176,7 +176,9 @@ void FlightController::run() {
 
 
 
+        cvHandler->swapCam(false);
 
+        cvHandler->checkCubes();
 
 /*
         lookingForQR = false;
@@ -190,21 +192,18 @@ void FlightController::run() {
 #endif
 
         hoverDuration(1);
-
-        while (!myRoute.hasAllBeenVisited()) {
+*/
+        /*while (!myRoute.hasAllBeenVisited()) {
             Command currentCommand;
-            */
-/*if(firstIteration) {
-                currentCommand = myRoute.findNearestWaypoint(navData->position.x, navData->position.y,
-                                                             navData->position.z);
+
+            if(firstIteration) {
+                currentCommand = myRoute.findNearestWaypoint(navData->getPosition().x, navData->getPosition().y,
+                                                             navData->getPosition().z);
                 firstIteration = false;
             }else {
                 currentCommand = myRoute.nextCommand();
-            }*//*
+            }
 
-            currentCommand = myRoute.nextCommand();
-            for (int i = 0; i < 100; i++)
-                ROS_INFO("IT IS HERE!!!!!!!!!!!!!!");
             if (currentCommand.commandType == Command::goTo) {
                 goToWaypoint(currentCommand);
             } else if (currentCommand.commandType == Command::hover) {
@@ -213,8 +212,8 @@ void FlightController::run() {
 
                 turnDegrees(currentCommand.degrees);
             }
-        }
-*/
+        }*/
+
 
         land();
 
@@ -235,7 +234,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
               0);
 
     Vector3 v_vec(0.0, 0.0, 0.0);
-    printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", pos.x, pos.y, d.x, d.y);
+    printf("goto: pos: %3.f\t%3.f, d:%3.f\t%3.f  \n", newWaypoint.x, newWaypoint.y, d.x, d.y);
 
 
     /*
@@ -244,7 +243,7 @@ void FlightController::goToWaypoint(Command newWaypoint) {
 
     turnTowardsPoint(newWaypoint);
 
-    while (d.x > TOLERANCE) {
+    while (d.distance() > TOLERANCE) {
 
         v_vec.x = getSpeed(d.distance());
 
@@ -659,8 +658,8 @@ void FlightController::turnTowardsPoint(Command waypoint) {
     ROS_INFO("X = %f ", pos.x);
     ROS_INFO("Y = %f ", pos.y);
 
-    double target_angle = atan2(waypoint.y - pos.y, waypoint.x - pos.x); // angle towards waypoint position
-    double target_deg = target_angle / 180 * M_PI; // conversion to degrees
+    double target_angle = atan2(waypoint.x - pos.x,waypoint.y - pos.y); // angle towards waypoint position
+    double target_deg = target_angle * 180 / M_PI; // conversion to degrees
 
     ROS_INFO("Target angle  = %f", target_angle);
     ROS_INFO("Target degrees = %f", target_deg);
