@@ -52,7 +52,8 @@ public:
 
     double x, y;
 
-
+    void addToX(int);
+    void addToY(int);
     void navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg);
     void magnetoCallback(const ardrone_autonomy::navdata_magneto::ConstPtr &msg);
 // void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);

@@ -97,6 +97,8 @@ FlightController::~FlightController() {
 }
 
 void FlightController::run() {
+    double yLimit = 9300;
+    double xLimit = 8100;
     Route myRoute;
     myRoute.initRoute(true);
 
@@ -119,6 +121,8 @@ void FlightController::run() {
     pub_control.publish(cmd);
     while (navData->getPosition().z < 1200)
         ros::Rate(LOOP_RATE).sleep();
+
+
 
     hoverDuration(1);
 
@@ -150,9 +154,15 @@ void FlightController::run() {
     //ROS_INFO("end while");
     navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
 
+    cmd.linear.z = -0.5;
+    pub_control.publish(cmd);
+    while (navData->getPosition().z > 1000)
+        ros::Rate(LOOP_RATE).sleep();
+
+
     double rotation = navData->getRotation();
     double target;
-    /*switch(dronePossision.wallNumber) {
+    switch(dronePossision.wallNumber) {
         case 0:
             target = 180;
             break;
@@ -165,7 +175,7 @@ void FlightController::run() {
         case 3:
             target = 90;
             break;
-    }*/
+    }
 
     target = 270;
     //ROS_INFO("Target = %f", target);
@@ -183,21 +193,43 @@ void FlightController::run() {
     cvHandler->checkCubes();
     cvHandler->swapCam(true);
 
-    flyForward(0.7);
+    if(target == 0)
+        while(navData->getPosition().y +1000 < 9300) {
+            flyForward(0.7);
+            navData->addToY(1000);
 
-    hoverDuration(2);
-    cvHandler->swapCam(false);
-    cvHandler->checkCubes();
-    cvHandler->swapCam(true);
+            hoverDuration(4);
+            cvHandler->swapCam(false);
+            cvHandler->checkCubes();
+            cvHandler->swapCam(true);
+            if(navData->getRotation() != target){
+                difference = angleDifference(rotation, target);
+                direction = angleDirection(rotation, target);
+                ROS_INFO("Difference = %f", difference);
+                ROS_INFO("Direction = %f", direction);
+                turnDegrees(difference*direction);
+            }
+        }
+    else if(target == 180)
+        while(navData->getPosition().y -1000 > 1500) {
+            flyForward(0.7);
+            navData->addToY(-1000);
+
+            hoverDuration(4);
+            cvHandler->swapCam(false);
+            cvHandler->checkCubes();
+            cvHandler->swapCam(true);
+            if(navData->getRotation() != target){
+                difference = angleDifference(rotation, target);
+                direction = angleDirection(rotation, target);
+                ROS_INFO("Difference = %f", difference);
+                ROS_INFO("Direction = %f", direction);
+                turnDegrees(difference*direction);
+            }
+        }
 
 
-    flyForward(0.7);
-
-
-    hoverDuration(2);
-    cvHandler->swapCam(false);
-    cvHandler->checkCubes();
-    cvHandler->swapCam(true);
+    //if(navData->getPosition().x < )
 
     land();
     return;
@@ -291,10 +323,10 @@ double FlightController::angleDifference(double a1, double a2) {
 }
 
 int FlightController::angleDirection(double a1, double a2) {
-    int direction = 1;
+    int direction = -1;
     double difference = a2 - a1; // calculate difference
     if ((difference < 180 && difference > 0) || (difference < -180))
-        direction = -1;
+        direction = 1;
     return direction;
 }
 
@@ -558,11 +590,13 @@ void FlightController::startProgram() {
 }
 
 void FlightController::resetProgram() {
-    DronePos dronepos = qr->checkQR();
-    ROS_INFO("found : %d", dronepos.numberOfQRs);
-    //ROS_INFO("MANUEL RESET!");
-    //started = false;
-    //reset();
+    //DronePos dronepos = qr->checkQR();
+    //ROS_INFO("found : %d", dronepos.numberOfQRs);
+
+    ROS_INFO("MANUEL RESET!");
+    started = false;
+    reset();*/
+    cvHandler->checkCubes();
 }
 
 void FlightController::abortProgram() {

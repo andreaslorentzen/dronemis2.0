@@ -43,7 +43,7 @@ int counter = 0;
 float ticksum = 0;
 int ticklist[100];*/
 void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
-    state = msg->state;
+    /*state = msg->state;
     float ts = msg->tm;
     float vx = msg->vx;
     float vy = msg->vy;
@@ -67,9 +67,9 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     }
     lastvX = avx;
     float ups = updateUPS();
-    last_ts = ts;
+    last_ts = ts;*/
     position.z = msg->altd;
-
+/*
     position.x += avx * interval;//+ 0.5 * ax * INTERVAL * INTERVAL;
     position.y += vy * interval;//+ 0.5 * ay * INTERVAL * INTERVAL;
     x += vx * interval;
@@ -84,9 +84,9 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     filename.append(".csv");
     std::ofstream file;
     file.open(filename, std::ios::app);
-/*
+*//*
     file << ts;
-    file << ";";*/
+    file << ";";*//*
     file << msg->tm;
     file << ";";
     file << state;
@@ -104,7 +104,7 @@ void Nav::navdataCallback(const ardrone_autonomy::Navdata::ConstPtr &msg) {
     file << msg->vy;
     file << "\n";
     file.close();
-#endif
+#endif*/
 }
 
 float Nav::updateUPS() {
@@ -260,11 +260,10 @@ void Nav::resetRawRotation() {
     rotinit = false;
 }
 
+void Nav::addToX(int increase) {
+    position.x += increase;
+}
 
-
-
-
-
-
-
-
+void Nav::addToY(int increase) {
+    position.y += increase;
+}
