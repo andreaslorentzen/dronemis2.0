@@ -9,8 +9,6 @@ QR::QR(CV_Handler *cv) {
     cvHandler = cv;
 }
 
-
-#define AVERAGE_COUNT 1
 #define FRAME_COUNT 1
 
 DronePos QR::checkQR(void) {
@@ -27,7 +25,7 @@ DronePos QR::checkQR(void) {
 
     while (frameCount++ != FRAME_COUNT) {
 
-        while (!cvHandler->imageReady) ;
+        while (!cvHandler->imageReady);
 
         cvHandler->cascadeMutex.lock();
 
@@ -109,79 +107,80 @@ DronePos QR::checkQR(void) {
             }
 
             yratio = yleft / yright;
+
+
+#ifdef DEBUG_QR_COUT
             //cout << "yleft / yright = " << yleft << " / " << yright << endl;
-            yRatioTemp = yRatioTemp + yratio;
-#ifdef DEBUG_COUT
-            cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
+            //cout << "averageCount = " << averageCount << " and yratio = " << yratio << endl;
 
-            cout << "yratio = " << yratio << endl;
-            cout << "yratioTemp = " << yRatioTemp << endl;
-#endif
-            if (averageCount == AVERAGE_COUNT) {
-                yRatioAverage = yRatioTemp / AVERAGE_COUNT;
-                //cout << "yRatioTemp = " << yRatioTemp << endl;
-                yRatioTemp = 0;
-                y1Diversion = (yRatioAverage * 360.0395) - 359.2821;
-                y2Diversion = (yRatioAverage * 637.3656) - 642.2072;
-#ifdef DEBUG_COUT
-                cout << "Distance = " << distancetoQR << "cm, with the text: "
-                << QRName << endl << endl;
+            //cout << "yratio = " << yratio << endl;
+            //cout << "yratioTemp = " << yRatioTemp << endl;
 #endif
 
-                double xDistanceStatic = 4.208955224; //
 
-
-
-                int xDistance = ((xmidt - 320) * 0.7 / xDistanceStatic * distancetoQR / 100);
-#ifdef DEBUG_COUT
-                cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
-                //cout << "y1Diversion (Parallel) = " << y1Diversion << endl;
-                //cout << "y2Diversion (Kig på QR)= " << y2Diversion << endl;
-                cout << "yRatioAverage = " << yRatioAverage << endl;
+            y1Diversion = (yratio * 360.0395) - 359.2821;
+            y2Diversion = (yratio * 637.3656) - 642.2072;
+#ifdef DEBUG_QR_COUT
+            cout << "distanceToQR = " << distancetoQR << "cm, with the text: "
+            << QRName << endl << endl;
 #endif
-                if (yRatioAverage < 1.06) {
-                    yDiversionAngle = (y1Diversion + y2Diversion) / 2 * direction;
-                }
-                else {
-                    yDiversionAngle = y2Diversion * direction;
-                }
+
+            double xDistanceStatic = 3.61194; //
+            int xDistance = ((xmidt - 320) / xDistanceStatic * distancetoQR / 150);
 
 
-                //DronePosition.relativeX = ((distancetoQR * (1/(1+(yDiversionAngle/100))) * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
-                //cout << "New x position = " << DronePosition.relativeX << endl;
-                DronePosition.relativeX = ((distancetoQR * 0.8 * std::sin(yDiversionAngle * (M_PI / 180))) + xDistance); // xDistance (Forskydning)
-                //cout << "Old x position = " << DronePosition.relativeX << endl;
-                DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
+#ifdef DEBUG_QR_COUT
+            cout << "Kamera center er: " << xDistance << "cm til venstre for QR-koden" << endl;
 
-                bool positionLock;
-                if(yDiversionAngle < 25 && yDiversionAngle > -25) positionLock = 1;
-                else positionLock = 0;
-                //cout << "PositionLock = " << DronePosition.positionLocked << endl << endl;
-
-
-                //**************************************
-                //**** Match up with QR coordinates ****
-                //**************************************
-
-                calculateRoomDronePostition(QRName, DronePosition.relativeX, DronePosition.relativeY, positionLock, averageCount,
-                                            xDistance, yDiversionAngle);
-#ifdef DEBUG_COUT
-                ROS_INFO("TESTMODE ACTIVE");
-                cout << "Droneposition relative (x,y) = " << DronePosition.relativeX << "," << DronePosition.relativeY << endl;
-                
-                cout << "RoomAngle relative to QR =" << RoomDronePosition.angle << endl;
-                //cout << symbol->get_data() << endl;
-                cout << "RoomDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
-                cout << "RoomDroneHeading = " << RoomDronePosition.heading << endl;
+            //cout << "y1Diversion (Parallel) = " << y1Diversion << endl;
+            //cout << "y2Diversion (Kig på QR)= " << y2Diversion << endl;
+            //cout << "yratio = " << yratio << endl;
 #endif
+            if (yratio < 1.06) {
+                yDiversionAngle = (y1Diversion + y2Diversion) / 2 * direction;
             }
+            else {
+                yDiversionAngle = y2Diversion * direction;
+            }
+
+
+            DronePosition.relativeX = (distancetoQR/1.5 * std::sin(yDiversionAngle * (M_PI / 180))); // xDistance (Forskydning)
+            DronePosition.relativeY = (distancetoQR * std::cos(yDiversionAngle * (M_PI / 180)));
+
+            bool positionLock;
+            if (yDiversionAngle < 25 && yDiversionAngle > -25) positionLock = 1;
+            else positionLock = 0;
+
+
+            //**************************************
+            //**** Match up with QR coordinates ****
+            //**************************************
+
+            calculateRoomDronePostition(QRName, DronePosition.relativeX, DronePosition.relativeY, positionLock,
+                                        averageCount,
+                                        xDistance, yDiversionAngle);
+
+#ifdef DEBUG_QR_COUT
+            //ROS_INFO("TESTMODE ACTIVE");
+            cout << "Droneposition relative (x,y) = " << DronePosition.relativeX << "," << DronePosition.relativeY <<
+            endl;
+            cout << "Angle = " << yDiversionAngle << endl;
+            cout << "PositionLock = " << DronePosition.positionLocked << " on QR code: " << QRName << endl << endl;
+
+            //cout << "RoomAngle relative to QR =" << RoomDronePosition.angle << endl;
+            //cout << symbol->get_data() << endl;
+            //cout << "RoomDroneposition(x,y) = " << RoomDronePosition.x << "," << RoomDronePosition.y << endl;
+            //cout << "RoomDroneHeading = " << RoomDronePosition.heading << endl;
+#endif
         }
     }
     return RoomDronePosition;
 }
 
 
-void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int relativeY, bool positionLocked, int numberOfQRs, double cameraPointing, double angle) {
+
+void QR::calculateRoomDronePostition(std::string QRname, int relativeX, int relativeY, bool positionLocked,
+                                     int numberOfQRs, double cameraPointing, double angle) {
     RoomDronePosition.relativeX = relativeX;
     RoomDronePosition.relativeY = relativeY;
     RoomDronePosition.positionLocked = positionLocked;
