@@ -31,10 +31,12 @@ public:
     void startProgram(void);
     void resetProgram(void);
     void abortProgram(void);
-
-
-
-
+    void test1(void);
+    void test2(void);
+    void test3(void);
+    void test4(void);
+    void test5(void);
+    void test6(void);
 
     double formatAngle(double angle);
 
@@ -73,6 +75,7 @@ private:
     double getSpeed(double distance);
     Vector3 getVelocity(Vector3 d);
     void turnDegrees(double degrees);
+    void turnTowardsAngle(double target, double hoverTime);
 
     void rotateDrone(double d);
 

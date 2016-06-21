@@ -16,9 +16,9 @@ Color::~Color() {
 }
 
 std::vector<Cascade::cubeInfo> Color::checkColors(std::vector<Cascade::cubeInfo> *cubes, cv::Mat image) {
-
-    checkColorsRed(cubes,image);
     checkColorsGreen(cubes,image);
+    checkColorsRed(cubes,image);
+
     return std::vector<Cascade::cubeInfo>();
 }
 
@@ -46,9 +46,16 @@ cv::Mat Color::checkColorsRed(std::vector<Cascade::cubeInfo> * cubes, cv::Mat im
 
     for (unsigned int j = 0; j < nonZeros.total(); j++) {
         for (unsigned int i = 0; i < cubes->size(); i++) {
-            if (nonZeros.at<Point>(j).x == (*cubes)[i].x && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
+            for (int h = -5; h < 5; h++) {
+                if (nonZeros.at<Point>(j).x == (*cubes)[i].x + h && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
+                    (*cubes)[i].found++;
+                }
+                if (nonZeros.at<Point>(j).x == (*cubes)[i].x + h && nonZeros.at<Point>(j).y == (*cubes)[i].y+h) {
+                    (*cubes)[i].found++;
+                }
+            }
+            if ((*cubes)[i].found >= 2 && (*cubes)[i].color.size() == 0) {
                 (*cubes)[i].color = "Red";
-                cout << "FOUND RED" << endl;
             }
         }
     }
@@ -79,9 +86,16 @@ cv::Mat Color::checkColorsGreen(std::vector<Cascade::cubeInfo> * cubes, cv::Mat 
 
     for (unsigned int j = 0; j < nonZeros.total(); j++) {
         for (unsigned int i = 0; i < cubes->size(); i++) {
-            if (nonZeros.at<Point>(j).x == (*cubes)[i].x && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
+            for (int h = -5; h < 5; h++) {
+                if (nonZeros.at<Point>(j).x == (*cubes)[i].x + h && nonZeros.at<Point>(j).y == (*cubes)[i].y) {
+                    (*cubes)[i].found++;
+                }
+                if (nonZeros.at<Point>(j).x == (*cubes)[i].x + h && nonZeros.at<Point>(j).y == (*cubes)[i].y+h) {
+                    (*cubes)[i].found++;
+                }
+            }
+            if ((*cubes)[i].found >= 2 && (*cubes)[i].color.size() == 0) {
                 (*cubes)[i].color = "Green";
-                cout << "FOUND GREEN" << endl;
             }
         }
     }

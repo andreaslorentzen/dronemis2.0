@@ -50,10 +50,10 @@ public:
 private:
     int direction;
     double yRatioTemp;
-    double yRatioAverage;
+    double yratio;
     double y1Diversion;
     double y2Diversion;
-    double yDiversionAngle;
+    int yDiversionAngle;
 
     CV_Handler *cvHandler;
     struct QRCodes {

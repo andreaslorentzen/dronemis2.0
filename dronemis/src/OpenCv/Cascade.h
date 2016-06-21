@@ -30,6 +30,7 @@ public:
         int heading;
         std::string color;
         cv::Mat image;
+        int found;
     };
 
     Cascade(void);

@@ -20,7 +20,7 @@ public:
     cv::Mat kernel;
 
     struct {
-        int iLowH = 150;
+        int iLowH = 0;
         int iHighH = 255;
 
         int iLowS = 119;

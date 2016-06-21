@@ -1,95 +1,143 @@
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 /* demo.c:  My first C program on a Linux */
 
-float radiansBetweenTwoPoints(float x0, float y0, float x1, float y1);
-double getRotaionalSpeed(double target_deg, double ori_deg);
 
 using namespace std;
 
+int angleDirection(double a1, double a2);
+
+double angleDifference(double a1, double a2);
+
+double formatAngle(double angle);
+
+void turnDegrees(double orientation , double degrees);
+
 int main(void) {
-    double degrees = 90;
-    double ori_deg = 60.0123;// navData->rotation;
-    double target_deg = ori_deg+degrees;;
-    int iterations;
-
-    iterations = ((int)degrees/30)+1;
-
-    cout << "iterations = " << iterations << endl;
-
-    float offset = 5;
-
-
-
-    for(int i = 1; i < iterations; i++){
-
-        if(i == iterations-1 && ((int)degrees % 30) != 0)
-            target_deg = ori_deg + ((int)degrees%30);
-        else
-            target_deg = ori_deg + 30;
-
-        if (target_deg > 360)
-            target_deg = target_deg - 360;
-
-        cout << "target deg = " << target_deg << endl;
-
-
-        ori_deg = target_deg;
-
-        /*do {
-            ori_deg = navData->rotation;
-            cmd.angular.z = getRotationalSpeed(target_deg, ori_deg);
-            pub_control.publish(cmd);
-        } while (ori_deg < target_deg - offset or ori_deg > target_deg + offset);
-        hover(1);*/
-    }
-
-
+    turnDegrees(90, 270);
 }
 
-/*double getRotaionalSpeed(double target_deg, double ori_deg) {
-    float dir; // direction
-    float rot_speed; // calculated rotational speed
-    float target_angle = atan2(y, x); // angle towards waypoint position
-    float target_deg = target_angle * 180 / M_PI; // radians to degrees
-    //printf("Orientation:\t%6.2f deg\n", ori_deg);
-    //printf("Target angle:\t%6.2f deg\n", target_deg);
-    target_deg = target_deg - ori_deg; // angle between drone orientation and angle towards waypoint
-    if (target_deg < 0) target_deg = 360+target_deg; // "translate" orientation to 0
-    printf("target_deg:\t%6.2f deg\n", target_deg);
-    if (target_deg < 180) { // if angle < 180 turn left
-        dir = -1;
-        printf("Turn left\n");
-    } else { // if angle >= 180 turn right
-        dir = 1;
-        target_deg = 360 - target_deg;
-        printf("Turn right\n");
-    }
-   // printf("Angular difference:\t%6.2f deg\n", target_deg);
-    rot_speed = target_deg*target_deg/200;
-   // printf("Rotational speed:\t%6.2f deg\n", rot_speed);
-    if (rot_speed > 0.5) rot_speed = 0.5;
-    rot_speed = rot_speed * dir;
-    //printf("Rotational speed:\t%6.2f deg\n", rot_speed);
-    return rot_speed;
+void turnDegrees(double orientation , double degrees) {
+    srand (time(NULL));
+    if (orientation == 361)
+        orientation = rand() % 360 + 1;
+    if (degrees == 361)
+        degrees = ((rand() % 2 - 1)) * (rand() % 361);
+    double target = formatAngle(orientation + degrees);
+    target = 270;
+    double difference = angleDifference(orientation, target);
+    int direction = angleDirection(orientation, target);
+    int last_direction = direction;
+    int last_ts = 0;
+    int time_counter = 0;
 
+
+    orientation = orientation + direction * 1;
+    int debug_counter = 0;
+    while (true) {
+        int time = last_ts + rand() % 5 + 5;
+        time_counter += (time - last_ts);
+        orientation = formatAngle(orientation + direction * (rand() % 5 + 1));
+        direction = angleDirection(orientation, target);
+        difference = angleDifference(orientation, target);
+        printf("orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \t done-tolerance: %6.1f  \n", orientation, target, direction, difference, (float) ((time_counter * time_counter) / 2000 + 4));
+        if (time_counter > 100) {
+            //printf("HOVER\n");
+            time_counter = 0;
+            last_ts = last_ts + 1000;
+            orientation = orientation + ((rand() % 2 - 1)) * ((rand() % 10 + 5));
+            //printf("%d\n",((rand() % 2 - 1)) );
+        }
+
+        if (difference < (time_counter * time_counter) / 2000 + 4) {
+            //hoverDuration(3);
+            break;
+        }
+
+
+    }
+    printf("DONE! orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \n  ", orientation, target, direction, difference);
+}
+
+void turnDegrees(double orientation , double degrees) {
+    srand (time(NULL));
+    if (orientation == 361)
+        orientation = rand() % 360 + 1;
+    if (degrees == 361)
+        degrees = ((rand() % 2 - 1)) * (rand() % 361);
+    double target = formatAngle(orientation + degrees);
+    target = 270;
+    double difference = angleDifference(orientation, target);
+    int direction = angleDirection(orientation, target);
+    int last_direction = direction;
+    int last_ts = 0;
+    int time_counter = 0;
+
+
+    orientation = orientation + direction * 1;
+    int debug_counter = 0;
+    while (true) {
+        int time = last_ts + rand() % 5 + 5;
+        time_counter += (time - last_ts);
+        orientation = formatAngle(orientation + direction * (rand() % 5 + 1));
+        direction = angleDirection(orientation, target);
+        difference = angleDifference(orientation, target);
+        printf("orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \t done-tolerance: %6.1f  \n", orientation, target, direction, difference, (float) ((time_counter * time_counter) / 2000 + 4));
+        if (time_counter > 100) {
+            //printf("HOVER\n");
+            time_counter = 0;
+            last_ts = last_ts + 1000;
+            orientation = orientation + ((rand() % 2 - 1)) * ((rand() % 10 + 5));
+            //printf("%d\n",((rand() % 2 - 1)) );
+        }
+
+        if (difference < (time_counter * time_counter) / 2000 + 4) {
+            //hoverDuration(3);
+            break;
+        }
+
+
+    }
+    printf("DONE! orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \n  ", orientation, target, direction, difference);
 }
 
 
-float radiansBetweenTwoPoints(float x0, float y0, float x1, float y1) {
-    float len1 = sqrt(x0 * x0 + y0 * y0);
-    float len2 = sqrt(x1 * x1 + y1 * y1);
-    float dot = x0 * x1 + y0 * y1;
-    float a = dot / (len1 * len2);
-    float r;
-    if (a >= 1.0)
-        return 0.0;
-    else if (a <= -1.0)
-        return M_PI;
-    else
-        return acos(a);
-}*/
+
+
+double formatAngle(double angle) {
+    double result = angle;
+    if (result < 0)
+        result += 360;
+    else if (result > 360)
+        result -= 360;
+    // ROS_INFO("FORMAT ANGLE: %6.2f\t RESULT ANGLE: %6.2f", angle, result);
+    return result;
+}
+
+double angleDifference(double a1, double a2) {
+    double angle = a1 - a2;
+    if (angle < -180) {
+        angle = 360 + angle;
+    } else if (angle > 180)
+        angle = 360 - angle;
+    if (angle < 0)
+        angle *= -1;
+    return angle;
+}
+
+int angleDirection(double a1, double a2) {
+    int direction = -1;
+    double difference = a2 - a1; // calculate difference
+    if ((difference < 180 && difference > 0) || (difference < -180))
+        direction = 1;
+    return direction;
+}
+
+
+
 
 
