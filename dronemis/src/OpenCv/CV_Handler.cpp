@@ -34,7 +34,7 @@ CV_Handler::CV_Handler(void) {
 void CV_Handler::run(Nav *nav) {
     imageReady = false;
     navData = nav;
-
+    frontCamSelected = true;
     cascade = new Cascade();
     color = new Color();
     video_channel = nodeHandle.resolveName("ardrone/image_raw");
@@ -401,11 +401,11 @@ void CV_Handler::paintCube(Point center, std::string type) {
     int thickness = -1;
     int lineType = 8;
     if (!type.compare("Green")) {
-        circle(map, center, 7, Scalar(0, 255, 0), thickness, lineType);
+        circle(map, cv::Point(navData->getPosition().x/10, navData->getPosition().y/10), 7, Scalar(0, 255, 0), thickness, lineType);
         imwrite(output_map_name, map);
     }
     else if (!type.compare("Red")){
-        circle(map, center, 7, Scalar(0, 0, 255), thickness, lineType);
+        circle(map, cv::Point(navData->getPosition().x/10, navData->getPosition().y/10), 7, Scalar(0, 0, 255), thickness, lineType);
         imwrite(output_map_name, map);
     }
     imshow("MapMis", map);
