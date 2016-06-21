@@ -163,7 +163,24 @@ void FlightController::run() {
     //ROS_INFO("end while");
     navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
 
-    int startWall = dronePossision.wallNumber;
+    while(myRoute.hasAllBeenVisited()){
+        Command currentCommand;
+        if(firstIteration) {
+            currentCommand = myRoute.findNearestWaypoint(navData->getPosition().x, navData->getPosition().y);
+            firstIteration = false;
+        } else{
+            currentCommand = myRoute.nextCommand();
+        }
+        if(currentCommand.commandType == currentCommand.goTo)
+            goToWaypoint(currentCommand);
+        else if(currentCommand.commandType == currentCommand.hover)
+            hoverDuration(currentCommand.timeToHover);
+        else if(currentCommand.commandType == currentCommand.turn)
+            turnDegrees(currentCommand.degrees);
+    }
+
+
+    /*int startWall = dronePossision.wallNumber;
 
     turnDegrees(-dronePossision.angle);
 
@@ -235,7 +252,7 @@ void FlightController::run() {
             navData->addToX(-700);
             hoverDuration(3);
         }
-    }
+    }*/
    /* else if(dronePossision.wallNumber == 1){
         while (navData->getPosition().y - 1000 > 1500) {
             flyForward(0.7);
