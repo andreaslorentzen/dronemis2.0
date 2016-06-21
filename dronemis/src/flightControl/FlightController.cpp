@@ -123,7 +123,7 @@ void FlightController::run() {
 
     cmd.linear.z = 0.5;
     pub_control.publish(cmd);
-    while (navData->getPosition().z < 850)
+    while (navData->getPosition().z < 1200)
         ros::Rate(LOOP_RATE).sleep();
 
 
@@ -155,10 +155,17 @@ void FlightController::run() {
 
     lookingForQR = false;
 
+    cmd.linear.z = -0.5;
+    pub_control.publish(cmd);
+    while (navData->getPosition().z > 900)
+        ros::Rate(LOOP_RATE).sleep();
+
     //ROS_INFO("end while");
     navData->resetToPosition(dronePossision.x * 10, dronePossision.y * 10, dronePossision.heading);
 
     int startWall = dronePossision.wallNumber;
+
+    turnDegrees(-dronePossision.angle);
 
     if(startWall == 0) {
         while (navData->getPosition().y - 700 > lowerLimit) {
@@ -476,7 +483,7 @@ last_ts = time;*/
 void FlightController::turnDegrees(double degrees) {
     double orientation = navData->getRotation();
     double target = formatAngle(orientation + degrees);
-    turnTowardsAngle(target, 5);
+    turnTowardsAngle(target, 2);
 }
 
 void FlightController::turnTowardsAngle(double target, double hoverTime) {
@@ -502,13 +509,13 @@ void FlightController::turnTowardsAngle(double target, double hoverTime) {
             ROS_INFO("LOOP orientation: %3.1f \ttarget: %3.0f \tdifference: %3.1f \tdirection: %d \ttime_counter: %d", orientation, target, difference, direction, time_counter);
             debug_counter = 0;
         }
-        if (time_counter > 200) {
+        if (time_counter > 150) {
             hoverDuration(1);
             time_counter = 0;
             last_ts = (int) (ros::Time::now().toNSec() / 1000000);
         }
 
-        if( difference < (time_counter*time_counter)/3500+4){
+        if( difference < (time_counter*time_counter)/3000+4){
             break;
         }
         orientation = navData->getRotation();
