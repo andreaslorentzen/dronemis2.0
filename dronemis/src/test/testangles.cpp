@@ -18,7 +18,7 @@ double formatAngle(double angle);
 void turnDegrees(double orientation , double degrees);
 
 int main(void) {
-    turnDegrees(361, 361);
+    turnDegrees(90, 270);
 }
 
 void turnDegrees(double orientation , double degrees) {
@@ -28,6 +28,7 @@ void turnDegrees(double orientation , double degrees) {
     if (degrees == 361)
         degrees = ((rand() % 2 - 1)) * (rand() % 361);
     double target = formatAngle(orientation + degrees);
+    target = 270;
     double difference = angleDifference(orientation, target);
     int direction = angleDirection(orientation, target);
     int last_direction = direction;
@@ -61,6 +62,50 @@ void turnDegrees(double orientation , double degrees) {
     }
     printf("DONE! orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \n  ", orientation, target, direction, difference);
 }
+
+void turnDegrees(double orientation , double degrees) {
+    srand (time(NULL));
+    if (orientation == 361)
+        orientation = rand() % 360 + 1;
+    if (degrees == 361)
+        degrees = ((rand() % 2 - 1)) * (rand() % 361);
+    double target = formatAngle(orientation + degrees);
+    target = 270;
+    double difference = angleDifference(orientation, target);
+    int direction = angleDirection(orientation, target);
+    int last_direction = direction;
+    int last_ts = 0;
+    int time_counter = 0;
+
+
+    orientation = orientation + direction * 1;
+    int debug_counter = 0;
+    while (true) {
+        int time = last_ts + rand() % 5 + 5;
+        time_counter += (time - last_ts);
+        orientation = formatAngle(orientation + direction * (rand() % 5 + 1));
+        direction = angleDirection(orientation, target);
+        difference = angleDifference(orientation, target);
+        printf("orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \t done-tolerance: %6.1f  \n", orientation, target, direction, difference, (float) ((time_counter * time_counter) / 2000 + 4));
+        if (time_counter > 100) {
+            //printf("HOVER\n");
+            time_counter = 0;
+            last_ts = last_ts + 1000;
+            orientation = orientation + ((rand() % 2 - 1)) * ((rand() % 10 + 5));
+            //printf("%d\n",((rand() % 2 - 1)) );
+        }
+
+        if (difference < (time_counter * time_counter) / 2000 + 4) {
+            //hoverDuration(3);
+            break;
+        }
+
+
+    }
+    printf("DONE! orientation: %6.1f \t target: %6.1f \t direction: %d \t difference: %6.1f \n  ", orientation, target, direction, difference);
+}
+
+
 
 
 double formatAngle(double angle) {
