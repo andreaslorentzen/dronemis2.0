@@ -332,14 +332,6 @@ cv::Mat CV_Handler::checkBox(void) {
     // Add gaussian blur
     blur(imageBW, imgModded, Size(3,3));
 
-    int erosion_size = 6;
-    Mat element = getStructuringElement(cv::MORPH_ELLIPSE,
-                                        cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
-                                        cv::Point(erosion_size, erosion_size));
-
-    // Apply erosion or dilation on the image
-    dilate(imageBW,imageBW,element);
-
     // Detect edges using canny
     Canny(imgModded, imgModded, thresh, thresh*2, 3);
 
