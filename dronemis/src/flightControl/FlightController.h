@@ -75,6 +75,7 @@ private:
     double getSpeed(double distance);
     Vector3 getVelocity(Vector3 d);
     void turnDegrees(double degrees);
+    void turnTowardsAngle(double target, double hoverTime);
 
     void rotateDrone(double d);
 
@@ -84,6 +85,7 @@ private:
 
     void flyForward(double time);
     void strafe(double direction, double time);
+    void flyBackward(double time);
 };
 
 #endif //PROJECT_FLIGHTCONTROLLER_H

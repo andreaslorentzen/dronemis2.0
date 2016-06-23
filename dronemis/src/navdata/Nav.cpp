@@ -185,7 +185,7 @@ void Nav::resetToPosition(double x, double y, double heading) {
     position.y = 0;
 }
 
-Vector3 Nav::getPosition() {
+/*Vector3 Nav::getPosition() {
     double temp_rotation = (QRheading-90)*(-1);
 
     if(temp_rotation >= 360)
@@ -215,6 +215,16 @@ Vector3 Nav::getPosition() {
     ROS_INFO("Y = %F", resultVector.y);
     ROS_INFO("Z = %F", resultVector.z);
 #endif
+
+    return resultVector;
+}*/
+
+Vector3 Nav::getPosition() {
+    Vector3 resultVector(position.x, position.y, 0);
+
+    resultVector.x += QRx;
+    resultVector.y += QRy;
+    resultVector.z = position.z;
 
     return resultVector;
 }
